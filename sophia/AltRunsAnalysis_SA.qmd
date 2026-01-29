@@ -9,8 +9,7 @@ editor: visual
 
 This script cleans and analyses the AlternateRuns Dataset.
 
-**Variables**
--   block: 0 for practice, there are a total of 8 blocks per part and each block consists of 112 trials. So 896 trials per participant over all 7 blocks (not counting practice)
+**Variables** - block: 0 for practice, there are a total of 8 blocks per part and each block consists of 112 trials. So 896 trials per participant over all 7 blocks (not counting practice)
 
 -   bal: counterbalancing of conditions across blocks
 
@@ -43,10 +42,12 @@ library(rio)
 library(psych) #generate metrix w scatterplot and cor
 #import dataset
 AlternateRuns <- read_csv("AlternateRuns.csv")
-AlternateRuns
+view(AlternateRuns)
 ```
+
 ## Data Cleaning
-Rename variables for clarity, remove practive blocks and subjects with > 80% accuracy, compute z-scores and create switch + valence + lag variables. 
+
+Rename variables for clarity, remove practive blocks and subjects with \> 80% accuracy, compute z-scores and create switch + valence + lag variables.
 
 ```{r}
 #rename columns to understand better
@@ -77,22 +78,18 @@ alt_run <- alt_run %>%
 
 alt_run <- alt_run %>% 
   mutate(switch = if_else(cycle %in% c(1,5), 1, 0)) %>%  #saying if its 1 or 5 assign switch. Need to also throw out the first trial after each block bc its not a switch or switch. need to separate into cycle positions of 4, so total conditions are 16 
-  mutate(cycle2 = if_else(cycle %in% c(1:4), 'cyc_g1', 'cyc_g2'), lerror = lag(error, 1), ltrial = lag(trial, 1), lrt = lag(rt, 1))
-  
-#coding our valence variable
-
-alt_run <- alt_run %>% 
-  group_by(id, block) %>% 
-  mutate(valence = if_else(dimshape == 4 | dimcolor == 4,1,2), lvalence = lag(valence, 4)) #univalent = 1, bivalalent = 2
+  mutate(cycle2 = ifelse(cycle > 4, cycle - 4, cycle), lerror = lag(error, 1), ltrial = lag(trial, 1), lrt = lag(rt, 1)) %>% 
+  group_by(id, block) %>% #coding our valence variable
+  mutate(valence = if_else(dimshape == 4 | dimcolor == 4,1,2), lvalence = lag(valence, 4)) %>% #univalent = 1, bivalalent = 2; lvalence l = 1 group so for me 4 
+  ungroup()
 alt_run
 
-#compute z-score
+#compute z-score by subject by cycle + valence
 z_score_cycle <- alt_run %>% 
-  group_by(id, cycle, valence, lvalence) %>% 
+  group_by(id, cycle2, valence, lvalence) %>% #cycle or cycle2? 
   filter(error == 0, lerror == 0) %>% 
   mutate(z= (rt- mean(rt))/sd(rt)) %>% 
   summarize(z_score_mean = mean(z, na.rm = TRUE),z_score_sd = sd(z, na.rm = TRUE), response_time_mean = mean(rt, na.rm = TRUE),response_time_mean = sd(rt, na.rm= TRUE))
 z_score_cycle
 
 ```
-
