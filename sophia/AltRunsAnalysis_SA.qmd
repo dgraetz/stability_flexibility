@@ -1,0 +1,98 @@
+---
+title: "AlternateRunsAnalysis"
+author: "Sophia Angleton"
+format: html
+editor: visual
+---
+
+## Multilevel Test of Stability-Flexibility
+
+This script cleans and analyses the AlternateRuns Dataset.
+
+**Variables**
+-   block: 0 for practice, there are a total of 8 blocks per part and each block consists of 112 trials. So 896 trials per participant over all 7 blocks (not counting practice)
+
+-   bal: counterbalancing of conditions across blocks
+
+-   x, y, c2: irrelevant (already taken out)
+
+-   cycle: counting within full alternating cycle (8), switch at 1 and 5
+
+-   task: 1=shape, 2=color
+
+-   dimshape=specific shapes--4=neutral
+
+-   dimcolor=specific color--4=neutral
+
+-   correct: correct response (i.e., value of the currently relevant task dimension)
+
+-   error: 0 = no error, 1 = yes error
+
+-   response: actual response
+
+-   RT: or response time
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+```{r}
+#| include: false
+library(tidyverse)
+library(janitor)
+library(readr)
+library(rio)
+library(psych) #generate metrix w scatterplot and cor
+#import dataset
+AlternateRuns <- read_csv("AlternateRuns.csv")
+AlternateRuns
+```
+## Data Cleaning
+Rename variables for clarity, remove practive blocks and subjects with > 80% accuracy, compute z-scores and create switch + valence + lag variables. 
+
+```{r}
+#rename columns to understand better
+alt_run <- AlternateRuns %>% 
+  rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables
+  filter(block != 0) #filter practice trials out
+
+#determine 80% accuracy 
+crit <- 896 - (896 * .8)
+crit # need at least 179 out of 896 trials to be correct, denoted by 0 in error col
+sum_er <- alt_run %>% 
+  group_by(id) %>% 
+summarize(sum = sum(error)) %>% 
+  print()
+
+sum_er <- sum_er %>% 
+  mutate(outlier_er =  (sum > crit)) %>% 
+  print()
+  
+sum_er <- sum_er %>% 
+  filter(outlier_er == !FALSE) %>% 
+  print() #two people fall below 80% accuracy
+
+#removing those outliers here 
+
+alt_run <- alt_run %>% 
+  filter(id != 70, id != 87)
+
+alt_run <- alt_run %>% 
+  mutate(switch = if_else(cycle %in% c(1,5), 1, 0)) %>%  #saying if its 1 or 5 assign switch. Need to also throw out the first trial after each block bc its not a switch or switch. need to separate into cycle positions of 4, so total conditions are 16 
+  mutate(cycle2 = if_else(cycle %in% c(1:4), 'cyc_g1', 'cyc_g2'), lerror = lag(error, 1), ltrial = lag(trial, 1), lrt = lag(rt, 1))
+  
+#coding our valence variable
+
+alt_run <- alt_run %>% 
+  group_by(id, block) %>% 
+  mutate(valence = if_else(dimshape == 4 | dimcolor == 4,1,2), lvalence = lag(valence, 4)) #univalent = 1, bivalalent = 2
+alt_run
+
+#compute z-score
+z_score_cycle <- alt_run %>% 
+  group_by(id, cycle, valence, lvalence) %>% 
+  filter(error == 0, lerror == 0) %>% 
+  mutate(z= (rt- mean(rt))/sd(rt)) %>% 
+  summarize(z_score_mean = mean(z, na.rm = TRUE),z_score_sd = sd(z, na.rm = TRUE), response_time_mean = mean(rt, na.rm = TRUE),response_time_mean = sd(rt, na.rm= TRUE))
+z_score_cycle
+
+```
+
