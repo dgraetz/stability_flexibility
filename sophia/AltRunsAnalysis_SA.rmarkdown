@@ -122,7 +122,8 @@ z_score_inspect
 
 #I think somewhere in here I need to filter out first trials but I dont know where I should put this in my workflow
 ```
-**Analysis On The Experimental Level:** Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model. 
+
+**Analysis On The Experimental Level:** Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
 
 ```{r}
 
@@ -135,6 +136,7 @@ model_lmer <- lmer(
 summary(model_lmer)
 
 ```
+
 ```{r}
 model_glmer <- glmer(
   error ~ valence * lvalence*switch + (valence + lvalence + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
@@ -142,4 +144,3 @@ model_glmer <- glmer(
 
 model_glmer
 ```
-
