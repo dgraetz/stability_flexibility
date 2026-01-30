@@ -1,0 +1,696 @@
+---
+title: "alternate_cues_analysis"
+author: "Neha"
+date: "2026-01-28"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+note: use data for now 
+do NOT use data_c and data_clean as it has those subjects with weird duplicate trials!! -- should decide if we should exclude them OR keep only the first instance of their trial
+
+--> All the data frames generated and what they include:  
+
+1. data  
+
+2. data_c excludes practice blocks  
+
+3. d_use  has practice blocks and these subjects removed: c(901, 959, 201, 975, 902) 
+
+4. d_fixed has practice blocks, 5 subjects removed, and the duplicate rows of subject 4 removed 
+
+5. d_final builds on d_fixed to now also remove subjects 202 and 914 who had accuracy less than 80%  
+
+6. so now, d_final has experimental blocks, subjects without weird duplicates, duplicate rows of subject 4 removed, and accuracy below 80%. d_final also has the valence_current_group, valence_previous_group and switch variables. 
+
+7. d_final_rt builds on d_final to remove trials with rt above or below z-score of 3  
+
+8. d_final_analysis builds on d_final_rt to remove first trial of each block  
+
+```{r}
+
+library(readr)
+#AlternateCues <- read_csv("~/Desktop/Mayr_lab/Data_analysis_project/AlternateCues/AlternateCues.csv")
+
+AlternateCues <- read_csv("AlternateCues.csv")
+View(AlternateCues)
+
+library(tidyverse)
+tibble_summary<- AlternateCues %>% 
+  summary() %>% 
+  tibble()
+  
+
+
+```
+
+```{r path}
+
+#library(rio)
+
+getwd()
+path <- "/Users/nehanagarkar/Desktop/Mayr_lab/Data_analysis_project/AlternateCues"
+
+
+```
+
+###################################################################### Data cleaning ##################################################################################
+
+a. number of subjects 
+```{r}
+
+ids<- unique(AlternateCues$id)
+print(ids)
+
+```
+```{r 1. getting number of subjects}
+glimpse(AlternateCues)
+tail(AlternateCues)
+
+unsorted_subjects <- c(9, 12   ,  15   ,  10   ,  11    , 16   ,  13  ,   17   ,  14   ,   8   ,   7  ,    3   ,   4  ,    5  ,   99 ,   201  ,  202 ,   203  ,  204  ,  401  ,  402   , 403,
+   404 ,   405   , 406  ,  501  ,  502   , 503  ,  504  ,  505  ,  701  ,  702 ,   703 ,   704 ,   705   , 706  ,  707 ,   708,    752, 750445,  75033,    800 ,   901 ,   902, 903  ,  904 ,   905,    906 ,   907  ,  908  ,  909 ,   910  ,  911  ,  912 ,   913  ,  914 ,   915 ,   916  ,  917  ,  918  ,  919 ,   953 ,   954 ,   975,    958 ,   959, 961422 ,   962,    963  ,  964 ,   965 ,   966  ,  967  ,  968 ,   969,    970  ,  971 ,   974)
+
+length(unsorted_subjects) #there are 78 subjects in this experiment 
+
+subjects<- sort(unsorted_subjects)
+print(subjects)
+as.list(subjects)
+
+
+
+
+
+```
+
+b. number of trials per block for each subject
+
+
+```{r}
+
+data<- AlternateCues
+str(data) #looking at structure 
+
+data_backup <- data
+## id, block, condition, task, cycle, dim1, dim2, cor, error, res-- all should be factors 
+
+# cols <- c("id", "block", "cond", "task", "cycle",
+#           "dim1", "dim2", "cor", "error", "res")
+# 
+# data[cols] <- lapply(data[cols], as.factor)
+
+data$id <- as.factor(data$id)
+data$block <- as.factor(data$block)
+data$cond <- as.factor(data$cond)
+data$task <- as.factor(data$task)
+data$cycle <- as.factor(data$cycle)
+data$dim1 <- as.factor(data$dim1)
+data$dim2 <- as.factor(data$dim2)
+data$cor <- as.factor(data$cor)
+data$error <- as.factor(data$error)
+data$res <- as.factor(data$res)
+
+
+data <- as.data.frame(data)
+str(data)
+
+
+library(dplyr)
+
+# Count trials per block per subject
+data %>%
+  count(id, block, trial)  # returns a row for each unique combination
+
+data %>%
+  group_by(id) %>%              # group by subject
+  summarise(n_blocks = n_distinct(block))  # count unique blocks
+
+
+
+data %>%
+  group_by(id) %>%              # group by subject
+  summarise(n_trials = n_distinct(trial))  # count unique trials
+
+## all participants have 6 blocks (1 practice block and 5 experimental blocks) and 120 trials in each block (42 trials in practice block??)
+
+
+#this is for means of times per subject per block 
+df_mean<- data %>% 
+  
+  group_by(id, block, cycle) %>% 
+  summarize(mean(time, na.rm= TRUE))
+print(df_mean)
+
+
+
+
+
+
+
+
+```
+
+
+
+```{r}
+names(data)
+```
+
+c. checking no. of rows per subject, where the duplicates are, and removing unusable subjects: 
+
+```{r}
+library(dplyr)
+
+data_c <- data %>%
+  # 1. Exclude practice block
+  filter(block != 0) %>%
+  
+#   # 2. Exclude first trial of each block
+#   group_by(block) %>%
+#   filter(trial != min(trial, na.rm = TRUE)) %>%
+#   ungroup() %>%
+#   
+#   # 3. Compute z-scores for reaction time
+#   mutate(rt_z = scale(time)) %>%
+#   
+#   # 4. Remove extreme RTs
+#   filter(abs(rt_z) <= 3) %>% 
+#     droplevels()
+# 
+# levels(data_c$block)
+
+```
+
+```{r}
+
+levels(data_c$id)
+
+
+data_c %>%
+  count(id)
+
+
+
+data_c %>%
+  count(id) %>%
+  arrange(desc(n))
+
+## subject ids with more than 600 trials overall: 901, 4, 959, 201, 975, 902
+
+```
+
+
+
+since subject ids with more than 600 trials overall: 901, 4, 959, 201, 975, 902 have more than 600 trials, should check that: 
+
+```{r}
+
+
+
+
+double <- data%>%
+  count(id, block) %>% 
+  arrange(desc(n))
+
+double
+
+## all 6 subjects have double the number of practice blocks (252)
+## all 6 subjects have double the number of experimental block 1-5 (240)
+
+## all others have 126 trials in practice block and 120 trials in experimental blocks 
+
+
+### so now checking for trial id number resets 
+
+data %>%
+  filter(id %in% c("901","4","959","201","975","902")) %>%
+  group_by(id, block) %>%
+  summarise(
+    min_trial = min(trial),
+    max_trial = max(trial)
+  )
+## this shows that all subjects have 1-42 trials for practice, and 1-120 trials for each blocks. So-- they each have the same block that is recorded twice! 
+
+
+## checking if that is the case:
+data %>%
+  filter(id == 4, block == 1) %>%
+  count(trial) %>%
+  filter(n > 1)
+
+### yes!! there is n == 2 for each trial of block 1 for subject 4
+## so the subject data must have been copied and pasted into the spreadsheet twice? 
+
+
+any_duplicated <- data %>%
+  count(id, block, trial) %>%
+  filter(n > 1) %>%
+  nrow() > 0
+
+any_duplicated ## output is TRUE 
+
+
+data %>%
+  count(id, block, trial) %>%   # count how many times each trial appears per block per subject
+  filter(n > 1)  %>% 
+  arrange(desc(n))
+
+## for 4, 201, 901, 902, 959, 975-- block 0 n is 6?! that is why the trial number in block == 0 showed 42? (6x42 == 252)
+## for all other aubjects-- block 0 with trials 1-42 has n == 3 
+
+
+data %>%
+  count(id, block, trial) %>%
+  group_by(block) %>%
+  summarise(max_n = max(n)) %>%
+  arrange(desc(max_n))
+
+dup_data<- data %>%
+  count(id, block, trial) %>%
+  filter(n > 1) %>%
+  arrange(block, desc(n))
+
+
+
+```
+
+This last code chunk above does NOT check for duplication across all columns, only for exact duplicate (id, block, trial) combinations.
+
+If experimental blocks 1–5 have 2 copies of each trial, but trial numbers are unique within each block, then (id, block, trial) is still unique.
+
+Only block 0 has multiple rows with exactly the same (id, block, trial), which is why only block 0 shows up.
+
+-> This means blocks 1–5 aren’t exact duplicates at the trial level — they may just have more rows per trial, or duplicates in other columns, like time, res, error, etc.
+
+-->How to check all duplicates across all columns: 
+
+```{r}
+
+data %>%
+  group_by(id, block, trial, bal, x, cond, y, c2, task, cycle, dim1, dim2, cor, error, res, time) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  filter(n > 1) %>%
+  arrange(block, desc(n))
+
+##  704 also is showing n == 2 in one row 
+##901 appears 4 times consecutively for block 0 with n == 2,  913 appears in one row and 959 in two consecutive rows for block 0 with n ==2 
+
+## 4- block 1- n = 2 and for all other blocks as well n == 2
+## 901 and 951 block 1 n ==2 but only on one rows for block 2 with n == 2 
+## 901 appears in two consecutive rows and then 959 in one row for block 2 with n ==2 
+## 902, 959, and 975 with one row, for block 3 with n == 2
+## 901, and 959 wth one row appearing against block 4 with n == 2
+## 201 in one row, 902 appearing only in two consecutive rows, 959, 975 in one row for block 5 with n == 2
+
+
+```
+##  704 also is showing n == 2 in one row 
+##901 appears 4 times consecutively for block 0 with n == 2,  913 appears in one row and 959 in two consecutive rows for block 0 with n ==2 
+
+## 4- block 1- n = 2 and for all other blocks as well n == 2
+## 901 and 951 block 1 n ==2 but only on one rows for block 2 with n == 2 
+## 901 appears in two consecutive rows and then 959 in one row for block 2 with n ==2 
+## 902, 959, and 975 with one row, for block 3 with n == 2
+## 901, and 959 wth one row appearing against block 4 with n == 2
+## 201 in one row, 902 appearing only in two consecutive rows, 959, 975 in one row for block 5 with n == 2
+
+-->therefore, this is not a simple “double everything” duplication: 
+
+-Different subjects have n > 1 for certain (id, block, trial) rows.
+
+-The pattern is not consistent across blocks or subjects.
+
+-Sometimes it’s 1 row, sometimes 2–4 consecutive rows.
+
+-Sometimes it’s block 0 (practice), sometimes blocks 1–5.
+
+-- only subject 4 seems to be truly having the data frame copied twice onto the metadata 
+
+
+##### should we remove duplicate by id, block, trial only? 
+so, keeping one row per (id, block, trial)
+No: we ended up removing those 5 subjects and recovering one copy of each row for subject 4 
+
+```{r}
+
+## have not run this 
+# data_clean2 <- data %>%
+#   filter(id == 4) %>% 
+#   group_by(id, block, trial) %>%
+#   slice(1) %>%   # keep first occurrence
+#   ungroup()
+
+# Sanity checks
+# After removing duplication-- should retunr back 0 for n>1
+
+## have not run this 
+# data_clean2 %>%
+#   count(id, block, trial) %>%
+#   filter(n > 1)
+
+```
+
+
+d. have to remove practice blocks + the 5 unusable subjects (901, 959, 201, 975, 902) : 
+
+Note: subject 4 can have duplicate trials removed 
+
+
+```{r}
+
+library(tidyverse)
+d_use <- data %>%
+  filter(!id %in% c(901, 959, 201, 975, 902)) %>% 
+  droplevels()
+
+
+unique(d_use$id) ## 73 subjects 
+
+d_use <- d_use %>% 
+  filter(block != 0) %>% 
+  droplevels()
+
+unique(d_use$block)
+
+```
+
+```{r}
+
+
+id_4_clean <- d_use %>%
+  filter(id == 4) %>% 
+  group_by(id, block, trial) %>%
+  slice(1) %>%   # keep first occurrence
+  ungroup() %>% 
+  droplevels()
+```
+
+
+```{r}
+data_fixed <- d_use %>%
+  filter(id != 4) %>%   # keep everyone else untouched
+  bind_rows(id_4_clean) %>% 
+  droplevels()
+
+```
+
+Sanity checks
+
+After removing duplication-- should return back 0 for n>1
+
+```{r}
+
+
+data_fixed %>%
+  count(id, block, trial) %>%
+  filter(n > 1) %>% 
+  droplevels()
+
+unique(data_fixed$id) ## 73 subjects 
+
+usable_subjects <- c(9  ,    12  ,   15  ,   10    , 11  ,   16    , 13  ,   17   ,  14 ,    8  ,    7 ,     3  ,    5  ,    99 ,    202  ,  203 ,   204  ,  401 ,   402 ,   403  ,  404,    405 ,   406 ,   501 ,   502 ,   503  ,  504 ,   505 ,   701  ,  702 ,   703  ,  704  ,  705 ,   706  ,  707  ,  708  ,  752 ,   750445, 75033,  800 ,   903,    904 ,   905 ,   906 ,   907 ,   908 ,   909 ,   910  ,  911  ,  912  ,  913 ,   914 ,   915,    916 ,   917  ,  918 ,   919  ,  953  ,  954 ,   958 ,   961422, 962,    963  ,  964,    965  ,  966,    967   , 968  ,  969 ,   970 ,   971  ,  974,    4    )
+length(usable_subjects) # 73 subjects 
+
+
+```
+
+
+
+e. removing subjects below accuracy level of 80% 
+
+```{r}
+
+
+d_f <- data_fixed %>%
+  mutate(error = as.numeric(as.character(error)))
+
+str(d_f$error)
+
+table(d_f$error) # 0 with 40814 trials and 1 with 2986 trials 
+
+accuracy_per_subject <- d_f %>%
+  group_by(id) %>%
+  summarise(accuracy = 1 - mean(error, na.rm = TRUE))
+
+# 2. See who falls below 80% accuracy:
+accuracy_per_subject %>%
+  filter(accuracy < 0.80) ## ids 202 and 914 have accuracy less than 80% 
+
+# IDs below 80% accuracy
+low_acc_ids <- accuracy_per_subject %>%
+  filter(accuracy < 0.8) %>%
+  pull(id)
+low_acc_ids
+
+d_final <- d_f %>% 
+   filter(!id %in% c(202, 914)) %>% 
+  droplevels()
+
+unique(d_final$id) ## 71 subjects that are usable ## so overall- had to remove 8 subjects. 
+
+```
+###################################### Making new variables ############################################################################################################
+
+
+A. making the valence of each group 
+
+valence of current group has lwevels 1 and 2
+valence of previous group has levels 1 and 2
+
+- each group consists of three trials with the cycle variable as 1,2, and 3 (so first trials has cycle as 1 and the third trial has cycle as 3)
+-valence of current group is 1 if dim 1 or dim 2 has the value of 4 
+- valence of previous group is also 1 if dim 1 and dim 2 has the value of 4 
+- if dim 1 and dim 2 have any values from 1-3, then the valence of current and previous group will be assigned as 2 
+
+1- valence of current group
+
+
+```{r}
+library(dplyr)
+
+
+d_final <- d_final %>%
+  group_by(id, block) %>% 
+  # valence of current group
+  mutate(valence_current_group = if_else(dim1 == 4 | dim2 == 4, 1, 2)) # univalent is coded as 1 and bivalent is coded as 2 
+
+names(d_final)
+levels(d_final$valence_current_group) ## have to convert this to factor before analysis 
+
+#unique(d_final$id)
+
+```
+
+2- valence_previous_group 
+Lag by 3 trials within each subject (each group = 3 trials)
+
+```{r}
+d_final <- d_final %>%
+  group_by(id, block) %>%       # only by subject
+  #arrange(block, trial) %>%   
+  mutate(valence_previous_group = lag(valence_current_group, 3)) %>%
+  ungroup()
+
+
+names(d_final)
+
+# lag 1 
+# turn all but first trial as NA
+# fill will prapagate first value
+
+```
+
+
+
+3- switch variable 
+
+```{r}
+
+library(dplyr)
+
+d_final <- d_final %>%
+  group_by(id, block) %>%        
+  mutate(
+    switch = if_else(task != lag(task), 1, 0)  # 1 if task changed from previous trial
+  ) %>%
+  ungroup()
+
+names(d_final)
+
+```
+
+Note: so now, d_final has experimental blocks, subjects without weird duplicates, duplicate rows of subject 4 removed, and accuracy below 80%. d_final also has the valence_current_group, valence_previous_group and switch variables. 
+
+B.  additional cleaning after creating the new variables
+
+1- Now, trials with reaction times having a z-score greater or lower than 3 will be removed: 
+actually have to group by id, current group valence, previous group valence, and cycle 
+using only trials with current trial error == 0 and previous trial error == 0 
+
+
+```{r}
+
+# library(dplyr)
+# 
+# d_c <- data_use %>%
+#   
+#   # 2. Compute z-scores for reaction time
+#   mutate(rt_z = scale(time)) %>%
+#   
+#   # 3. Remove extreme reaction times (|z| > 3)
+#   filter(abs(rt_z) <= 3) %>% 
+#   droplevels()
+
+
+
+
+## remove first trial from eaxh bloxk after making the new variables cause it is only used for analysis 
+## have not run this yet
+# d_c_analysis <- data_c %>%
+#   # 1. Remove the first trial of each block
+#   group_by(id, block) %>%
+#   filter(trial != min(trial, na.rm = TRUE)) %>%
+#   ungroup() %>%
+
+
+d_final_rt <- d_final
+
+d_final_rt <- d_final_rt %>%
+  group_by(id, block) %>%     # IMPORTANT
+  mutate(prev_error = lag(error)) %>%
+  ungroup()
+
+rt_estimation <- d_final_rt %>%
+  filter(error == 0, prev_error == 0)
+
+rt_stats <- rt_estimation %>%
+  group_by(
+    id,
+    valence_current_group,
+    valence_previous_group,
+    cycle
+  ) %>%
+  summarise(
+    mean_rt = mean(time, na.rm = TRUE),
+    sd_rt   = sd(time, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+d_final_rt <- d_final_rt %>%
+  left_join(
+    rt_stats,
+    by = c(
+      "id",
+      "valence_current_group",
+      "valence_previous_group",
+      "cycle"
+    )
+  )
+
+d_final_rt <- d_final_rt %>%
+  mutate(rt_z = (time - mean_rt) / sd_rt)
+
+d_final_rt <- d_final_rt %>%
+  filter(abs(rt_z) < 3)
+
+
+## checking for NAs: 
+
+sum(is.na(d_final_rt$rt_z)) # 0 
+
+sum(is.na(d_final_rt$prev_error)) # 0 
+
+
+```
+
+
+2- have to first remove first trial of every block 
+
+```{r}
+
+
+
+d_final_analysis <- d_final_rt %>%
+  group_by(id, block) %>%          
+  filter(trial != min(trial)) %>%  
+  ungroup() %>%
+  droplevels()
+
+  
+
+  
+
+```
+
+
+
+```{r}
+
+getwd()
+write.csv(d_final_analysis, "/Users/nehanagarkar/Desktop/Mayr_lab/Data_analysis_project/AlternateCues/d_final_analysis.csv", row.names = FALSE)
+
+```
+
+
+######################################################################### Analysis #######################################################################
+
+Note: 
+(i)For the RT models, error trials, and trials before errors should also be removed
+(ii) - using the Valence_current_group variable --> make new variable val_c_g with levels -0.5 for univalent and + 0.5 for bivalent 
+     - using the Valence_previous_group variable --> make new variable val_p_g with levels -0.5 for univalent and + 0.5 for bivalent 
+     
+
+Coding: 
+
+- Switch (0 - no switch; 1 - switch) 
+
+- Valence_current_group (-0.5 - univalent; 0.5 bivalent) - so make new variable with this 
+
+- Valence_previous_group (-0.5 - univalent; 0.5 bivalent) - so make new variable with this 
+
+Models: 
+
+lmer(RT ~ Valence_current_group * Valence_previous_group*Switch + (Valence_current_group + Valence_previous_group + Switch|Subject)) 
+
+glmer(Error ~ Valence_current_group * Valence_previous_group*Switch + (Valence_current_group + Valence_previous_group + Switch|Subject), family = “binomial”, control = glmerControl(optimizer = “bobyqa”)) 
+
+ 
+A. Additional cleaning for data analysis
+
+
+
+```{r}
+
+```
+
+
+B. New variables for valence of current and previous group according to -0.5 and +0.5 coding 
+
+
+```{r}
+
+
+
+
+```
+
+
+c. Models 
+
+
+```{r}
+
+
+
+
+```
+
