@@ -76,6 +76,7 @@ alt_run <- alt_run %>%
     switch = if_else(cycle %in% c(1,5), 1, 0),
     cycle2 = ifelse(cycle > 4, cycle - 4, cycle), # i didnt want to overwrite cycle, but this is breaking the cycle of 8 into 1-4 
     group = ifelse(cycle2 == 1,1,0),
+    group = cumsum(group),
     lerror = lag(error, 1), 
     ltrial = lag(trial, 1), 
     lrt = lag(rt, 1),
@@ -121,7 +122,13 @@ z_score_inspect <- alt_run %>%
     )
 z_score_inspect
 
+alt_run <- alt_run %>%
+           filter(group != 1) %>% 
+mutate(rt_log = (log(rt)), 
+       filter_correct = ifelse(error == 1 & lerror == 1, 1, 0)
+       )
 #I think somewhere in here I need to filter out first trials but I dont know where I should put this in my workflow
+view(alt_run)
 ```
 
 
@@ -132,9 +139,9 @@ z_score_inspect
 ```{r}
 
 model_lmer <- lmer(
-  rt ~ valence * lvalence * switch +
-    (valence + lvalence + switch | id),
-  data = alt_run
+  rt ~ valence_contr * lvalence_contr * switch +
+    (valence_contr + lvalence_contr + switch | id),
+  data = alt_run %>% filter(filter_correct == 0)
 )
 
 summary(model_lmer)
@@ -142,8 +149,20 @@ summary(model_lmer)
 tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T)
 ```
 ```{r}
+model_lmer_log <- lmer(
+  rt_log ~ valence_contr * lvalence_contr * switch +
+    (valence_contr + lvalence_contr + switch | id),
+  data = alt_run %>% filter(filter_correct == 0)
+)
+
+summary(model_lmer_log)
+
+tab_model(model_lmer_log, show.est = T, auto.label = F, show.stat = T)
+```
+
+```{r}
 model_glmer <- glmer(
-  error ~ valence * lvalence*switch + (valence + lvalence + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
+  error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
 
 summary(model_glmer)
