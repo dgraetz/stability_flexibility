@@ -55,19 +55,20 @@ alt_run <- AlternateRuns %>%
   rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables
   filter(block != 0) #filter practice trials out
 
-#determine 80% accuracy 
-crit <- 896 - (896 * .8)
+#determine 80% acc
+
 #crit # need at least 179 out of 896 trials to be correct, denoted by 0 in error col
 sum_er <- alt_run %>% 
   group_by(id) %>% 
-summarize(sum = sum(error))
+summarize(acc = mean(1-error), 
+          N = n())
+sum_er
 
 sum_er <- sum_er %>% 
-  mutate(outlier_er =  (sum > crit)) %>% 
-  filter(outlier_er == !FALSE) #two people fall below 80% accuracy
+  filter(acc < .8) 
 
 alt_run <- alt_run %>% 
-  filter(id != 70, id != 87) #removing those outliers here 
+  filter(!id %in% sum_er$id) #removing those outliers here 
 
 #Making new variables
 alt_run <- alt_run %>% 
@@ -168,5 +169,45 @@ model_glmer <- glmer(
 summary(model_glmer)
 
 tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
+```
+
+## ezDDM Analysis
+
+```{r}
+
+alt_run_agg_ID_ddm <- alt_run %>%
+  mutate(RT_s = rt/1000) %>%
+  group_by(id, valence, lvalence, switch, cycle2) %>%
+  summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
+            RT_s_var = var(RT_s, na.rm = TRUE),
+            error = mean(error, na.rm = TRUE),
+            N_trials = n()) %>%
+  rowwise() %>% #this is looking at everything in one row, have to agg data like this for DDM becuase it does not compute vectors but rows
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-error), #were essentially making a dataframe per participant
+                            rtCorrectVariance_seconds = RT_s_m, 
+                            rtCorrectMean_seconds = RT_s_var, 
+                            nTrials = N_trials))) %>%
+  unnest(ezddm) #this is 
+
+
+
+alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
+  group_by(id, valence,lvalence, switch, cycle2) %>%
+  normWS(s = "id", dv = "a") %>%
+  mutate(a = DV_n) %>%
+  normWS(s = "id", dv = "v") %>%
+  mutate(v = DV_n) %>%
+  normWS(s = "id", dv = "Ter") %>%
+  mutate(Ter = DV_n) %>%
+  group_by(valence,lvalence, switch, cycle2) %>%
+  summarize(a_m = mean(a, na.rm = TRUE),
+            a_ci_lower = get_ci(a, a_m)[1],
+            a_ci_upper = get_ci(a, a_m)[2],
+            v_m = mean(v, na.rm = TRUE),
+            v_ci_lower = get_ci(v, v_m)[1],
+            v_ci_upper = get_ci(v, v_m)[2],
+            Ter_m = mean(Ter, na.rm = TRUE),
+            Ter_ci_lower = get_ci(Ter, Ter_m)[1],
+            Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
 ```
 
