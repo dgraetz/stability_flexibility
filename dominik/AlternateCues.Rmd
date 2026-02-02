@@ -39,6 +39,7 @@ source("dominik/functions.R")
 alt_cue <- import("data/AlternateCues.csv")
 
 exclude_subjects <- alt_cue %>%
+  filter(block != 0) %>%
   group_by(id) %>% 
   summarize(acc = mean(1-error),
             N = n())
