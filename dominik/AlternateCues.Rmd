@@ -46,46 +46,51 @@ exclude_subjects <- alt_cue %>%
 exclude_subjects <- exclude_subjects %>%
   filter(acc < 0.8)
 
-exclude_subjects <- c(exclude_subjects$id, 201, 901, 902, 959, 975, 4)
+exclude_subjects <- c(exclude_subjects$id, 201, 901, 902, 959, 975)
 
 alt_cue <- alt_cue %>%
+  group_by(id, block, trial) %>%
+  slice(1) %>%
   filter(!id %in% exclude_subjects) %>%
   group_by(id, block) %>%
   mutate(trialgroup = ifelse(cycle == 1, 1, 0),
          trialgroup = cumsum(trialgroup),
          is_bivalent = ifelse(dim1 == 4 | dim2 == 4, 0, 1),
-         was_prev_bivalent = lag(is_bivalent, 1),
+         prev_bivalent = lag(is_bivalent, 1),
          was_prev_error = lag(error, 1),
          prev_task = lag(task, 1),
          switch = ifelse(prev_task == task, 0, 1)) %>%
   group_by(id, block, trialgroup) %>%
-  mutate(was_prev_bivalent = was_prev_bivalent[1]) %>%
+  mutate(prev_bivalent = prev_bivalent[1]) %>%
   ungroup() %>%
   mutate(id = factor(id),
-         was_prev_bivalent = factor(was_prev_bivalent),
+         prev_bivalent = factor(prev_bivalent),
          is_bivalent = factor(is_bivalent),
          cycle = factor(cycle),
          switch = factor(switch),
-         was_prev_bivalent_contr = case_when(was_prev_bivalent == 1 ~ 0.5,
-                                              was_prev_bivalent == 0 ~ -0.5),
+         prev_bivalent_contr = case_when(prev_bivalent == 1 ~ 0.5,
+                                              prev_bivalent == 0 ~ -0.5),
          is_bivalent_contr = case_when(is_bivalent == 1 ~ 0.5,
                                         is_bivalent == 0 ~ -0.5),
          switch_contr = case_when(switch == 1 ~ 1,
                                   switch == 0 ~ 0)) %>%
-  filter(trialgroup != 1, block != 0) %>%
-  group_by(id, was_prev_bivalent, is_bivalent, cycle) %>%
-  mutate(time_z = scale(time - mean(time[error == 0 & was_prev_error == 0])) %>% as.vector(),
-         time_outlier = ifelse(abs(time_z) > 3, 1, 0),
-         filter_correct = ifelse(error == 1 & was_prev_error == 1, 1, 0),
+  filter(block != 0) %>%
+  group_by(id, prev_bivalent, is_bivalent, cycle) %>%
+  mutate(time_M = mean(time[error == 0 & was_prev_error == 0]),
+         time_SD = sd(time[error == 0 & was_prev_error == 0]),
+         time_z = (time - time_M)/time_SD,
+         time_outlier = ifelse(abs(time_z) >= 3, 1, 0),
+         filter_correct = ifelse(error == 1 | was_prev_error == 1, 1, 0),
          time_log = log(time)) %>%
-  filter(time_outlier == 0)
+  filter(time_outlier == 0) %>%
+  filter(trialgroup != 1, block != 0) 
 ```
 
 # Data Aggregation by cycle
 
 ```{r}
 alt_cue_agg_ID <- alt_cue %>%
-  group_by(id, is_bivalent, was_prev_bivalent, switch, cycle) %>%
+  group_by(id, is_bivalent, prev_bivalent, switch, cycle) %>%
   summarize(RT = mean(time[filter_correct == 0], na.rm = TRUE),
             RT_log = mean(time_log[filter_correct == 0], na.rm = TRUE),
             Error = mean(error, na.rm = TRUE))
@@ -97,7 +102,7 @@ alt_cue_agg <- alt_cue_agg_ID %>%
   mutate(RT_log = DV_n) %>%
   normWS(s = "id", dv = "Error") %>%
   mutate(Error = DV_n) %>%
-  group_by(is_bivalent, was_prev_bivalent, switch, cycle) %>%
+  group_by(is_bivalent, prev_bivalent, switch, cycle) %>%
   summarize(RT_m = mean(RT, na.rm = TRUE),
             RT_ci_lower = get_ci(RT, RT_m)[1],
             RT_ci_upper = get_ci(RT, RT_m)[2],
@@ -116,20 +121,20 @@ alt_cue_agg <- alt_cue_agg_ID %>%
 ```{r}
 pos <- position_dodge(width = 0.1)
 
-ggplot(alt_cue_agg, aes(x = cycle, y = RT_log_m, color = is_bivalent, linetype = was_prev_bivalent, group = interaction(is_bivalent, was_prev_bivalent)))+
+ggplot(alt_cue_agg, aes(x = cycle, y = RT_log_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = RT_log_ci_lower, ymax = RT_log_ci_upper), width = 0.1, position = pos)+
   theme_classic()
 
 
-ggplot(alt_cue_agg, aes(x = cycle, y = RT_m, color = is_bivalent, linetype = was_prev_bivalent, group = interaction(is_bivalent, was_prev_bivalent)))+
+ggplot(alt_cue_agg, aes(x = cycle, y = RT_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = RT_ci_lower, ymax = RT_ci_upper), width = 0.1, position = pos)+
   theme_classic()
 
 
 
-ggplot(alt_cue_agg, aes(x = cycle, y = Error_m, color = is_bivalent, linetype = was_prev_bivalent, group = interaction(is_bivalent, was_prev_bivalent)))+
+ggplot(alt_cue_agg, aes(x = cycle, y = Error_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = Error_ci_lower, ymax = Error_ci_upper), width = 0.1, position = pos)+
   theme_classic()
@@ -140,7 +145,7 @@ ggplot(alt_cue_agg, aes(x = cycle, y = Error_m, color = is_bivalent, linetype = 
 
 
 ```{r}
-alt_cue_rt_log <- lmer(time_log ~ is_bivalent_contr * was_prev_bivalent_contr * switch_contr + (is_bivalent_contr + was_prev_bivalent_contr + switch_contr||id), 
+alt_cue_rt_log <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), 
      alt_cue %>% 
        filter(filter_correct == 0))
 
@@ -148,7 +153,7 @@ alt_cue_rt_log <- lmer(time_log ~ is_bivalent_contr * was_prev_bivalent_contr * 
 
 make_model_table(alt_cue_rt_log)
 
-alt_cue_rt <- lmer(time ~ is_bivalent_contr * was_prev_bivalent_contr * switch_contr + (is_bivalent_contr + was_prev_bivalent_contr + switch_contr||id), 
+alt_cue_rt <- lmer(time ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), 
      alt_cue %>% 
        filter(filter_correct == 0))
 
@@ -164,16 +169,24 @@ make_model_table(alt_cue_rt)
 ## Errors
 
 ```{r}
-# alt_cue_error <- glmer(error ~ is_bivalent_contr * was_prev_bivalent_contr * switch_contr + (is_bivalent_contr + was_prev_bivalent_contr + switch_contr||id),
+# alt_cue_error <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
 #                       family = "binomial",
 #                       control = glmerControl(optimizer = "bobyqa"),
 #                    alt_cue)
-
+# 
+# saveRDS(alt_cue_error, "dominik/models/alt_cue_errors.RDS")
 alt_cue_error <- readRDS("dominik/models/alt_cue_errors.RDS")
-saveRDS(alt_cue_error, "dominik/models/alt_cue_errors.RDS")
-
 make_model_table(alt_cue_error)
 
+
+# alt_cue_error2 <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (switch_contr|id),
+#                       family = "binomial",
+#                       control = glmerControl(optimizer = "bobyqa"),
+#                    alt_cue)
+# 
+# saveRDS(alt_cue_error2, "dominik/models/alt_cue_error2.RDS")
+alt_cue_error2 <- readRDS("dominik/models/alt_cue_error2.RDS")
+make_model_table(alt_cue_error2)
 ```
 
 # DDM analysis
@@ -184,7 +197,7 @@ make_model_table(alt_cue_error)
 ```{r}
 alt_cue_agg_ID_ddm <- alt_cue %>%
   mutate(RT_s = time/1000) %>%
-  group_by(id, is_bivalent, was_prev_bivalent, switch, cycle) %>%
+  group_by(id, is_bivalent, prev_bivalent, switch, cycle) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s, na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
@@ -199,14 +212,14 @@ alt_cue_agg_ID_ddm <- alt_cue %>%
 
 
 alt_cue_agg_ddm <- alt_cue_agg_ID_ddm %>%
-  group_by(id, is_bivalent, was_prev_bivalent, switch, cycle) %>%
+  group_by(id, is_bivalent, prev_bivalent, switch, cycle) %>%
   normWS(s = "id", dv = "a") %>%
   mutate(a = DV_n) %>%
   normWS(s = "id", dv = "v") %>%
   mutate(v = DV_n) %>%
   normWS(s = "id", dv = "Ter") %>%
   mutate(Ter = DV_n) %>%
-  group_by(is_bivalent, was_prev_bivalent, switch, cycle) %>%
+  group_by(is_bivalent, prev_bivalent, switch, cycle) %>%
   summarize(a_m = mean(a, na.rm = TRUE),
             a_ci_lower = get_ci(a, a_m)[1],
             a_ci_upper = get_ci(a, a_m)[2],
@@ -221,18 +234,18 @@ alt_cue_agg_ddm <- alt_cue_agg_ID_ddm %>%
 ## Plots
 
 ```{r}
-plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = is_bivalent, linetype = was_prev_bivalent, group = interaction(is_bivalent, was_prev_bivalent)))+
+plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
   theme_classic()
 
-plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = is_bivalent, linetype = was_prev_bivalent, group = interaction(is_bivalent, was_prev_bivalent)))+
+plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
   theme_classic()
 
 
-plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = is_bivalent, linetype = was_prev_bivalent, group = interaction(is_bivalent, was_prev_bivalent)))+
+plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
   theme_classic()
@@ -249,7 +262,7 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow 
 ```{r}
 alt_cue_agg_ID_ddm_nocycle <- alt_cue %>%
   mutate(RT_s = time/1000) %>%
-  group_by(id, is_bivalent, is_bivalent_contr, was_prev_bivalent, was_prev_bivalent_contr, switch, switch_contr) %>%
+  group_by(id, is_bivalent, is_bivalent_contr, prev_bivalent, prev_bivalent_contr, switch, switch_contr) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s, na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
@@ -265,19 +278,19 @@ alt_cue_agg_ID_ddm_nocycle <- alt_cue %>%
 ### Models
 
 ```{r}
-alt_cue_a <- lmer(a ~ is_bivalent_contr * was_prev_bivalent_contr * switch_contr + (is_bivalent_contr + was_prev_bivalent_contr + switch_contr||id), 
+alt_cue_a <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
      alt_cue_agg_ID_ddm_nocycle)
 
 #summary(alt_cue_a)
 make_model_table(alt_cue_a)
 
-alt_cue_v <- lmer(v ~ is_bivalent_contr * was_prev_bivalent_contr * switch_contr + (is_bivalent_contr + was_prev_bivalent_contr + switch_contr||id), 
+alt_cue_v <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
      alt_cue_agg_ID_ddm_nocycle)
 #summary(alt_cue_v)
 make_model_table(alt_cue_v)
 
 
-alt_cue_Ter <- lmer(Ter ~ is_bivalent_contr * was_prev_bivalent_contr * switch_contr + (is_bivalent_contr + was_prev_bivalent_contr + switch_contr||id), 
+alt_cue_Ter <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
      alt_cue_agg_ID_ddm_nocycle)
 #summary(alt_cue_Ter)
 make_model_table(alt_cue_Ter)
