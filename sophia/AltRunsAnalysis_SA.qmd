@@ -42,7 +42,7 @@ library(lme4)
 library(sjPlot)
 #import dataset
 AlternateRuns <- read_csv("AlternateRuns.csv")
-#view(AlternateRuns)
+#view(AlternateRuns) 
 ```
 
 ## Data Cleaning
@@ -126,7 +126,7 @@ z_score_inspect
 alt_run <- alt_run %>%
            filter(group != 1) %>% 
 mutate(rt_log = (log(rt)), 
-       filter_correct = ifelse(error == 1 & lerror == 1, 1, 0)
+       filter_correct = ifelse(error == 1 | lerror == 1, 1, 0)
        )
 #I think somewhere in here I need to filter out first trials but I dont know where I should put this in my workflow
 view(alt_run)
@@ -152,7 +152,7 @@ tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T)
 ```{r}
 model_lmer_log <- lmer(
   rt_log ~ valence_contr * lvalence_contr * switch +
-    (valence_contr + lvalence_contr + switch | id),
+    (valence_contr + lvalence_contr + switch || id),
   data = alt_run %>% filter(filter_correct == 0)
 )
 
@@ -162,6 +162,7 @@ tab_model(model_lmer_log, show.est = T, auto.label = F, show.stat = T)
 ```
 
 ```{r}
+set.seed(10)
 model_glmer <- glmer(
   error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
@@ -174,7 +175,7 @@ tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
 ## ezDDM Analysis
 
 ```{r}
-
+library(hausekeep) # need to download Rtools (maybe separately) to run this agg
 alt_run_agg_ID_ddm <- alt_run %>%
   mutate(RT_s = rt/1000) %>%
   group_by(id, valence, lvalence, switch, cycle2) %>%
@@ -183,7 +184,7 @@ alt_run_agg_ID_ddm <- alt_run %>%
             error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
   rowwise() %>% #this is looking at everything in one row, have to agg data like this for DDM becuase it does not compute vectors but rows
-  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-error), #were essentially making a dataframe per participant
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-error), #were essentially making a dataframe that shows up as an extra cell next to each part
                             rtCorrectVariance_seconds = RT_s_m, 
                             rtCorrectMean_seconds = RT_s_var, 
                             nTrials = N_trials))) %>%
