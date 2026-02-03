@@ -150,8 +150,6 @@ alt_cue_rt_log <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * swit
      alt_cue %>% 
        filter(filter_correct == 0))
 
-#summary(alt_cue_rt)
-
 make_model_table(alt_cue_rt_log)
 
 alt_cue_rt <- lmer(time ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), 
@@ -170,24 +168,16 @@ make_model_table(alt_cue_rt)
 ## Errors
 
 ```{r}
-# alt_cue_error <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
-#                       family = "binomial",
-#                       control = glmerControl(optimizer = "bobyqa"),
-#                    alt_cue)
-# 
-# saveRDS(alt_cue_error, "dominik/models/alt_cue_errors.RDS")
+alt_cue_error <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
+                      family = "binomial",
+                      control = glmerControl(optimizer = "bobyqa"),
+                   alt_cue)
+
+saveRDS(alt_cue_error, "dominik/models/alt_cue_errors.RDS")
 alt_cue_error <- readRDS("dominik/models/alt_cue_errors.RDS")
 make_model_table(alt_cue_error)
 
 
-# alt_cue_error2 <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (switch_contr|id),
-#                       family = "binomial",
-#                       control = glmerControl(optimizer = "bobyqa"),
-#                    alt_cue)
-# 
-# saveRDS(alt_cue_error2, "dominik/models/alt_cue_error2.RDS")
-alt_cue_error2 <- readRDS("dominik/models/alt_cue_error2.RDS")
-make_model_table(alt_cue_error2)
 ```
 
 # DDM analysis
@@ -200,13 +190,13 @@ alt_cue_agg_ID_ddm <- alt_cue %>%
   mutate(RT_s = time/1000) %>%
   group_by(id, is_bivalent, prev_bivalent, switch, cycle) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
-            RT_s_var = var(RT_s, na.rm = TRUE),
+            RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
   rowwise() %>%
   mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
-                            rtCorrectVariance_seconds = RT_s_m, 
-                            rtCorrectMean_seconds = RT_s_var, 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
                             nTrials = N_trials))) %>%
   unnest(ezddm)
 
@@ -265,13 +255,13 @@ alt_cue_agg_ID_ddm_nocycle <- alt_cue %>%
   mutate(RT_s = time/1000) %>%
   group_by(id, is_bivalent, is_bivalent_contr, prev_bivalent, prev_bivalent_contr, switch, switch_contr) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
-            RT_s_var = var(RT_s, na.rm = TRUE),
+            RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
   rowwise() %>%
   mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
-                            rtCorrectVariance_seconds = RT_s_m, 
-                            rtCorrectMean_seconds = RT_s_var, 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
                             nTrials = N_trials))) %>%
   unnest(ezddm)
 ```
