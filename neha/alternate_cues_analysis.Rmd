@@ -463,7 +463,7 @@ unique(d_final$id) ## 71 subjects that are usable ## so overall- had to remove 8
 
 A. making the valence of each group 
 
-valence of current group has lwevels 1 and 2
+valence of current group has levels 1 and 2
 valence of previous group has levels 1 and 2
 
 - each group consists of three trials with the cycle variable as 1,2, and 3 (so first trials has cycle as 1 and the third trial has cycle as 3)
@@ -569,6 +569,11 @@ d_final_rt <- d_final_rt %>%
   mutate(prev_error = lag(error)) %>%
   ungroup()
 
+# d_final_rt %>%
+#   group_by(subject) %>%   
+#   filter(!(error == 1 | lead(error) == 1)) %>%
+#   ungroup()
+
 rt_estimation <- d_final_rt %>%
   filter(error == 0, prev_error == 0)
 
@@ -621,17 +626,26 @@ sum(is.na(d_final_rt$prev_error)) # 0
 
 d_final_analysis <- d_final_rt %>%
   group_by(id, block) %>%          
-  filter(trial != min(trial)) %>%  
+  filter( trial>3) %>%   ## removes all the trials on each block that are less than the third trial 
   ungroup() %>%
   droplevels()
 
-  
 
+# trial != min(trial) &
+
+##note: trial 4 of some blocks for some subjects (203,402,405,502,503,504) are being removed for d_final_analysis- is this due to trial != min(trial) & trial>3: because min trial is now 4??  so, removed trial != min(trial) and now i do have trial 4 for all the subjects. 
   
+#   checking if all ids have trial 4: 
+
+# num_id <- d_final_analysis %>% 
+#  group_by(id, block) %>% 
+#   filter( trial ==4)
+# 
+# unique(num_id$id) ## so all ids have trial == 4 for all blocks 
 
 ```
 
-
+UPTO THIS POINT THE DATA FRAME SEEMS TO BE CORRECT AND ALIGNS WITH DOMINIK'S: d_final_analysis- 40,454 observations 
 
 ```{r}
 
@@ -645,8 +659,8 @@ write.csv(d_final_analysis, "/Users/nehanagarkar/Desktop/Mayr_lab/Data_analysis_
 
 Note: 
 (i)For the RT models, error trials, and trials before errors should also be removed
-(ii) - using the Valence_current_group variable --> make new variable val_c_g with levels -0.5 for univalent and + 0.5 for bivalent 
-     - using the Valence_previous_group variable --> make new variable val_p_g with levels -0.5 for univalent and + 0.5 for bivalent 
+(ii) - using the Valence_current_group variable --> make new variable val_c_g with levels -0.5 for (Valence_current_group == 1) and + 0.5 for (Valence_current_group == 2) 
+     - using the Valence_previous_group variable --> make new variable val_p_g with levels -0.5 for (Valence_previous_group == 1) and + 0.5 for Valence_previous_group == 2) 
      
 
 Coding: 
@@ -663,23 +677,51 @@ lmer(RT ~ Valence_current_group * Valence_previous_group*Switch + (Valence_curre
 
 glmer(Error ~ Valence_current_group * Valence_previous_group*Switch + (Valence_current_group + Valence_previous_group + Switch|Subject), family = “binomial”, control = glmerControl(optimizer = “bobyqa”)) 
 
- 
-A. Additional cleaning for data analysis
 
+A. New variables for valence of current and previous group according to -0.5 and +0.5 coding 
 
 
 ```{r}
+
+
+class(d_final_analysis)
+
+d_final_analysis$val_c_g <- ifelse(d_final_analysis$valence_current_group == 1, -0.5,
+                     ifelse(d_final_analysis$valence_current_group == 2,  0.5, NA))
+
+d_final_analysis$val_p_g <- ifelse(d_final_analysis$valence_previous_group == 1, -0.5,
+                     ifelse(d_final_analysis$valence_previous_group == 2,  0.5, NA))
+
+
+
 
 ```
+ 
+B. Additional df prep for data analysis
 
 
-B. New variables for valence of current and previous group according to -0.5 and +0.5 coding 
-
+a. make required variables as factors 
 
 ```{r}
 
+df_models <- d_final_analysis
 
+### DO NOT CONVERT VARIABLES THAT THE MODEL SHOULD TREAT AS FACTORS MANUALLY INTO AS FACTORS!! BECAUSE IT WILL TREAT THE VARIABLES AS DDUMMY CODING!!! 
 
+# df_models$id <- factor(df_models$id)
+# df_models$val_c_g <- factor(df_models$val_c_g)
+# df_models$val_p_g <- factor(df_models$val_p_g)
+# df_models$switch <- factor(df_models$switch)
+# df_models$error <- factor(df_models$error)
+# df_models$prev_error <- factor(df_models$prev_error)
+# 
+# 
+# levels(df_models$id)
+# levels(df_models$val_c_g)
+# levels(df_models$val_p_g)
+# levels(df_models$switch)
+# levels(df_models$error)
+# levels(df_models$prev_error)
 
 ```
 
@@ -687,10 +729,63 @@ B. New variables for valence of current and previous group according to -0.5 and
 c. Models 
 
 
+1. lmer model
+
+-For the RT models, error trials, and trials before errors should also be removed
+Q: should it be block wise? or across all trials? 
+
+remove  error == 0 and prev_error == 0 for the d_final_analysis inside lmer model filter()
+
+```{r}
+
+library(lme4)
+
+df_models_rt <- df_models 
+
+library(tidyverse)
+
+df_models_rt <- df_models_rt %>%
+  filter(error == 0, prev_error == 0)
+  
+
+  m_rt<- lmer(log(time) ~  val_c_g * val_p_g* switch + (val_c_g + val_p_g + switch ||  id),
+                 data = df_models_rt,
+                  na.action = na.exclude)
+              
+                # control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt)
+ 
+ 
+#
+ tab_model(m_rt,show.est=T,auto.label=F,show.stat=T)
+ 
+ 
+ names(df_models)
+```
+
+
+2. glmer model
+
 ```{r}
 
 
+levels(df_models$error)
 
+  m_error<- glmer(error ~  val_c_g * val_p_g * switch + ( val_c_g +  val_p_g + switch| id),
+                 data = df_models, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
 
+ 
+ summary(m_error)
+ 
+ tab_model(m_error,show.est=T,auto.label=F,show.stat=T)
 ```
+
+
+
 
