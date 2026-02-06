@@ -38,6 +38,10 @@ source(here::here("dominik/functions.R"))
 #Alternate Cues
 alt_run <- import("data/AlternateRuns.csv")
 
+# alt_run %>%
+#   filter(id == 57) %>%
+#   arrange(block, trial) %>% View()
+
 exclude_subjects <- alt_run %>%
   filter(block != 0) %>%
   group_by(id) %>% 
@@ -51,6 +55,8 @@ exclude_subjects <- c(exclude_subjects$id)
 
 
 alt_run <- alt_run %>%
+  group_by(id, block, trial) %>%
+  slice(1) %>%
   filter(!id %in% exclude_subjects) %>%
   group_by(id, block) %>%
   mutate(cycle = ifelse(cycle > 4, cycle - 4, cycle), #transforming cycle variable to the range of 1-4
@@ -163,11 +169,11 @@ make_model_table(alt_run_rt)
 
 ```{r}
 
-# alt_run_error <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
-#                     family = "binomial",
-#                     control = glmerControl(optimizer = "bobyqa"),
-#                     alt_run)
-# saveRDS(alt_run_error, "dominik/models/alt_run_errors.RDS")
+alt_run_error <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
+                    family = "binomial",
+                    control = glmerControl(optimizer = "bobyqa"),
+                    alt_run)
+saveRDS(alt_run_error, "dominik/models/alt_run_errors.RDS")
 alt_run_error <- readRDS("dominik/models/alt_run_errors.RDS")
 make_model_table(alt_run_error)
 
@@ -194,8 +200,8 @@ alt_run_agg_ID_ddm <- alt_run %>%
             N_trials = n()) %>%
   rowwise() %>%
   mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
-                            rtCorrectVariance_seconds = RT_s_m, 
-                            rtCorrectMean_seconds = RT_s_var, 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
                             nTrials = N_trials))) %>%
   unnest(ezddm)
 
@@ -253,13 +259,13 @@ alt_run_agg_ID_ddm_nocycle <- alt_run %>%
   mutate(RT_s = time/1000) %>%
   group_by(id, is_bivalent, is_bivalent_contr, prev_bivalent, prev_bivalent_contr, switch, switch_contr) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
-            RT_s_var = var(RT_s, na.rm = TRUE),
+            RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
   rowwise() %>%
   mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
-                            rtCorrectVariance_seconds = RT_s_m, 
-                            rtCorrectMean_seconds = RT_s_var, 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
                             nTrials = N_trials))) %>%
   unnest(ezddm)
 ```
