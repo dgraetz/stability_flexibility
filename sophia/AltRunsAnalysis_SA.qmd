@@ -60,6 +60,7 @@ alt_run <- AlternateRuns %>%
   rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables also need to remove sub 57 showing up 3 times
   filter(block != 0) #filter practice trials out
 
+alt_run <- alt_run %>% arrange(id, block, trial) %>% distinct(id, block, trial, .keep_all = TRUE)
 #determine 80% acc
 
 #crit # need at least 179 out of 896 trials to be correct, denoted by 0 in error col
@@ -77,17 +78,23 @@ alt_run <- alt_run %>%
 
 #Making new variables
 alt_run <- alt_run %>% 
+  arrange(id, trial) %>% 
   group_by(id, block) %>%
   mutate(
     switch = if_else(cycle %in% c(1,5), 1, 0),
-    cycle2 = ifelse(cycle > 4, cycle - 4, cycle), # i didnt want to overwrite cycle, but this is breaking the cycle of 8 into 1-4 
-    group = ifelse(cycle2 == 1,1,0),
+    cycle2 = ifelse(cycle > 4, cycle - 4, cycle),
+    group = ifelse(cycle2 == 1, 1, 0),
     group = cumsum(group),
     lerror = lag(error, 1), 
     ltrial = lag(trial, 1), 
     lrt = lag(rt, 1),
-    valence = if_else(dimshape == 4 | dimcolor == 4,1,2),#univalent = 1, bivalalent = 2
-    lvalence = lag(valence, 4))#lvalence l = 1 group so for me 4 ... is this right? 
+    valence = if_else(dimshape == 4 | dimcolor == 4, 1, 2),  # 1 = uni, 2 = bi
+    lvalence = lag(valence, 1)                               # previous trial’s valence
+  ) %>%
+  group_by(id, block, group) %>%
+  mutate(lvalence = lvalence[1]) %>%                         # constant within 4‑trial group
+  ungroup()
+
 
 alt_run <- alt_run %>% #making contrasts outlined in prereg
   group_by(id, block, group) %>% 
@@ -133,8 +140,166 @@ alt_run <- alt_run %>%
 mutate(rt_log = (log(rt)), 
        filter_correct = ifelse(error == 1 | lerror == 1, 1, 0)
        )
-#I think somewhere in here I need to filter out first trials but I dont know where I should put this in my workflow
+
 view(alt_run)
+
+
+
+```
+## Aggragation experimental level analysis
+
+```{r}
+#function for CI
+
+norm_for_errorbars <- function(dv,ID){
+  dat <- tibble(dv = dv,ID=ID)
+  dat2 <- dat %>%
+    mutate(grand_mean = mean(dv,na.rm=T)) %>%
+    group_by(ID) %>%
+    mutate(submean = mean(dv,na.rm=T)) %>%
+    ungroup() %>%
+    mutate(normdv = dv - submean + grand_mean)
+  return(dat2$normdv)
+}
+```
+
+```{r}
+
+alt_run <- alt_run %>% #norm on trial level
+  group_by(id) %>%
+  mutate(
+    rt_norm       = norm_for_errorbars(rt, id),
+    rt_log_norm   = norm_for_errorbars(rt_log, id),
+    error_norm    = norm_for_errorbars(error, id)
+  ) %>%
+  ungroup()
+
+
+allagg <- alt_run %>%
+  group_by(id, cycle2, switch, valence, lvalence) %>% #first agg
+  summarize(
+    rt_mean          = mean(rt[filter_correct == 0], na.rm = TRUE),
+    rt_log_mean      = mean(rt_log[filter_correct == 0], na.rm = TRUE),
+    error_mean       = mean(error, na.rm = TRUE),
+
+    rt_norm_mean     = mean(rt_norm[filter_correct == 0], na.rm = TRUE),
+    rt_log_norm_mean = mean(rt_log_norm[filter_correct == 0], na.rm = TRUE),
+    error_norm_mean  = mean(error_norm, na.rm = TRUE),
+
+    .groups = "drop"
+  )
+
+
+allagg_ci <- allagg %>% #group level CIs
+  group_by(cycle2, switch, valence, lvalence) %>%
+  summarize(
+    n = n(),
+
+    rt_mean      = mean(rt_mean),    # grand means
+    rt_log_mean  = mean(rt_log_mean),
+    error_mean   = mean(error_mean),
+
+    rt_se        = sd(rt_norm_mean) / sqrt(n),    # SEs using normalized participant means
+    rt_log_se    = sd(rt_log_norm_mean) / sqrt(n),
+    error_se     = sd(error_norm_mean) / sqrt(n),
+
+    rt_ci_low        = rt_mean - 1.96 * rt_se,    # 95% 
+    rt_ci_high       = rt_mean + 1.96 * rt_se,
+    rt_log_ci_low    = rt_log_mean - 1.96 * rt_log_se,
+    rt_log_ci_high   = rt_log_mean + 1.96 * rt_log_se,
+    error_ci_low     = error_mean - 1.96 * error_se,
+    error_ci_high    = error_mean + 1.96 * error_se,
+
+    .groups = "drop"
+  ) %>%
+  mutate(
+    valence = factor(valence, #make it nice for plot
+                     levels = c(1, 2),
+                     labels = c("Univalent", "Bivalent")),
+    lvalence = factor(lvalence,
+                      levels = c(1, 2),
+                      labels = c("Univalent", "Bivalent")),
+    cycle2 = factor(cycle2)
+  )
+
+```
+
+## Visualizations
+
+By logged RT
+```{r}
+
+rtlogplot <- ggplot(
+  allagg_ci,
+  aes(
+    x = cycle2,
+    y = rt_log_mean,
+    color = valence,
+    linetype = lvalence,
+    group = interaction(valence, lvalence)
+  )
+) +
+  geom_line(position = position_dodge(width = 0.25)) +
+  geom_point(position = position_dodge(width = 0.25)) +
+  geom_errorbar(
+    aes(ymin = rt_log_ci_low, ymax = rt_log_ci_high),
+    width = 0.15,
+    position =position_dodge(width = 0.25),
+    linewidth = 0.8
+  ) +
+  theme_classic()
+
+rtlogplot
+
+
+```
+By Error
+```{r}
+
+
+erplot <- ggplot(allagg_ci,
+  aes(x = cycle2,
+      y = error_mean,
+      color = valence,
+      linetype = lvalence,
+      group = interaction(valence, lvalence))
+) +
+  geom_line(position = position_dodge(width = 0.25)) +
+  geom_point(position = position_dodge(width = 0.25)) +
+  geom_errorbar(
+    aes(ymin = error_ci_low, ymax = error_ci_high),
+    width = 0.15,
+    position =position_dodge(width = 0.25),
+    linewidth = 0.8
+  ) +
+  theme_classic()
+
+erplot
+```
+by reg rt
+```{r}
+
+rtplot <- ggplot(
+  allagg_ci,
+  aes(
+    x = cycle2,
+    y = rt_mean,
+    color = valence,
+    linetype = lvalence,
+    group = interaction(valence, lvalence)
+  )
+) +
+  geom_line(position = position_dodge(width = 0.25)) +
+  geom_point(position = position_dodge(width = 0.25)) +
+  geom_errorbar(
+    aes(ymin = rt_ci_low, ymax = rt_ci_high),
+    width = 0.15,
+    position =position_dodge(width = 0.25),
+    linewidth = 0.8
+  ) +
+  theme_classic()
+
+rtplot
 ```
 
 **Analysis On The Experimental Level:** Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
@@ -155,7 +320,7 @@ tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T)
 ```{r}
 model_lmer_log <- lmer(
   rt_log ~ valence_contr * lvalence_contr * switch +
-    (valence_contr + lvalence_contr + switch || id),
+    (valence_contr + lvalence_contr + switch || id), #double bar bc does not converge with single, is less complex w double
   data = alt_run %>% filter(filter_correct == 0)
 )
 
@@ -165,7 +330,6 @@ tab_model(model_lmer_log, show.est = T, auto.label = F, show.stat = T)
 ```
 
 ```{r}
-set.seed(10)
 model_glmer <- glmer(
   error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
@@ -175,9 +339,12 @@ summary(model_glmer)
 tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
 ```
 
-## ezDDM Analysis
+## ezDDM Analysis 
 ```{r}
-normWS <- function(d ,s, dv, between = NULL) {
+#| include: false
+#first putting in some pre-made functions that will go into the ezDDM analysis: 
+
+normWS <- function(d ,s, dv, between = NULL) { #within subject normalization
   eval(substitute(d %>%
                     dplyr::group_by(s) %>%
                     dplyr::mutate(sAV = mean(dv, na.rm = TRUE)) %>%
@@ -212,12 +379,11 @@ convert_extremes <- function(value){
 }#making sure error is either .99 or .001
 ```
 
-
+### DDM aggragation
 ```{r}
 
-
 alt_run_agg_ID_ddm <- alt_run %>%
-  mutate(RT_s = rt/1000) %>%
+  mutate(RT_s = rt/1000) %>% #convert rt to seconds
   group_by(id, valence, lvalence, switch, cycle2) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
@@ -230,15 +396,13 @@ alt_run_agg_ID_ddm <- alt_run %>%
                             nTrials = N_trials))) %>%
   unnest(ezddm) #this extracts the newly created dataframe per column into its own separate columns 
 
-#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances 
-
 alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
   group_by(id, valence,lvalence, switch, cycle2) %>%
-  normWS(s = "id", dv = "a") %>%
+  normWS(s = "id", dv = "a") %>% #boundary separation
   mutate(a = DV_n) %>%
-  normWS(s = "id", dv = "v") %>%
+  normWS(s = "id", dv = "v") %>% #drift rate
   mutate(v = DV_n) %>%
-  normWS(s = "id", dv = "Ter") %>%
+  normWS(s = "id", dv = "Ter") %>% #non-decision time
   mutate(Ter = DV_n) %>%
   group_by(valence,lvalence, switch, cycle2) %>%
   summarize(a_m = mean(a, na.rm = TRUE),
@@ -250,4 +414,22 @@ alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
             Ter_m = mean(Ter, na.rm = TRUE),
             Ter_ci_lower = get_ci(Ter, Ter_m)[1],
             Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
+
+#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances
+alt_run_agg_ID_ddm_collapsed <- alt_run_agg_ID_ddm %>% 
+  filter(switch == 0, cycle2 %in% c(2, 3, 4)) %>%
+  group_by(id, valence, lvalence) %>% 
+  summarize( # average the DDM parameters across cycles 2–4 
+    a = mean(a, na.rm = TRUE), 
+    v = mean(v, na.rm = TRUE), #average within those 
+    Ter = mean(Ter, na.rm = TRUE), 
+    a_var = mean(a^2, na.rm = TRUE), #average within those variances
+    v_var = mean(v^2, na.rm = TRUE), 
+    Ter_var = mean(Ter^2, na.rm = TRUE), 
+    .groups = "drop" )
+
+alt_run_agg_ID_ddm_collapsed
+
+alt_run_agg_ID_ddm %>% filter(switch == 0, cycle2 %in% c(2,3,4)) %>% count(id, valence, lvalence)
+
 ```
