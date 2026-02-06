@@ -40,9 +40,12 @@ library(rio)
 library(psych) 
 library(lme4)
 library(sjPlot)
+library(hausekeep)
 #import dataset
 AlternateRuns <- read_csv("AlternateRuns.csv")
 #view(AlternateRuns) 
+
+#sub 57 has 2352 trials check this 
 ```
 
 ## Data Cleaning
@@ -50,9 +53,11 @@ AlternateRuns <- read_csv("AlternateRuns.csv")
 Rename variables for clarity, remove practice blocks and subjects with \> 80% accuracy, compute z-scores and create switch + valence + lag variables.
 
 ```{r}
+
+
 #rename columns to understand better
 alt_run <- AlternateRuns %>% 
-  rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables
+  rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables also need to remove sub 57 showing up 3 times
   filter(block != 0) #filter practice trials out
 
 #determine 80% acc
@@ -132,10 +137,7 @@ mutate(rt_log = (log(rt)),
 view(alt_run)
 ```
 
-
-
-**Analysis On The Experimental Level:** Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model. 
-
+**Analysis On The Experimental Level:** Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
 
 ```{r}
 
@@ -149,6 +151,7 @@ summary(model_lmer)
 
 tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T)
 ```
+
 ```{r}
 model_lmer_log <- lmer(
   rt_log ~ valence_contr * lvalence_contr * switch +
@@ -173,24 +176,61 @@ tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
 ```
 
 ## ezDDM Analysis
+```{r}
+normWS <- function(d ,s, dv, between = NULL) {
+  eval(substitute(d %>%
+                    dplyr::group_by(s) %>%
+                    dplyr::mutate(sAV = mean(dv, na.rm = TRUE)) %>%
+                    dplyr::group_by_at(between) %>% #this is grouping by between subjects variables
+                    dplyr::mutate(gAV = mean(dv, na.rm = TRUE)) %>%
+                    dplyr::mutate(DV_n = dv - sAV + gAV), list(s = as.name(s), dv = as.name(dv))))
+}
+
+
+get_ci <- function(var, mean){
+  sd <- sd(var, na.rm = TRUE)
+  n <- length(var)
+  se <- sd/sqrt(n)
+  ci <- abs(qt(0.025, n-1, lower.tail = FALSE))*se
+  return(c(mean + ci, mean - ci, sd, se, n))
+}
+
+convert_extremes <- function(value){
+  
+  if(value == 1){
+    
+    value = value - 1e-5
+    
+  } else if (value == 0 ){
+    
+    value = value + 1e-5
+    
+  }
+  
+  return(value)
+  
+}#making sure error is either .99 or .001
+```
+
 
 ```{r}
-library(hausekeep) # need to download Rtools (maybe separately) to run this agg
+
+
 alt_run_agg_ID_ddm <- alt_run %>%
   mutate(RT_s = rt/1000) %>%
   group_by(id, valence, lvalence, switch, cycle2) %>%
   summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
-            RT_s_var = var(RT_s, na.rm = TRUE),
+            RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
   rowwise() %>% #this is looking at everything in one row, have to agg data like this for DDM becuase it does not compute vectors but rows
   mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-error), #were essentially making a dataframe that shows up as an extra cell next to each part
-                            rtCorrectVariance_seconds = RT_s_m, 
-                            rtCorrectMean_seconds = RT_s_var, 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
                             nTrials = N_trials))) %>%
-  unnest(ezddm) #this is 
+  unnest(ezddm) #this extracts the newly created dataframe per column into its own separate columns 
 
-
+#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances 
 
 alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
   group_by(id, valence,lvalence, switch, cycle2) %>%
@@ -211,4 +251,3 @@ alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
             Ter_ci_lower = get_ci(Ter, Ter_m)[1],
             Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
 ```
-
