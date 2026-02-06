@@ -128,82 +128,105 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#rename columns to understand better</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> AlternateRuns <span class="sc">%&gt;%</span> </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dimshape =</span> dim1, <span class="at">dimcolor =</span> dim2, <span class="at">rt =</span> time) <span class="sc">%&gt;%</span> <span class="co">#remane variables</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">dimshape =</span> dim1, <span class="at">dimcolor =</span> dim2, <span class="at">rt =</span> time) <span class="sc">%&gt;%</span> <span class="co">#remane variables also need to remove sub 57 showing up 3 times</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(block <span class="sc">!=</span> <span class="dv">0</span>) <span class="co">#filter practice trials out</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#determine 80% accuracy </span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>crit <span class="ot">&lt;-</span> <span class="dv">896</span> <span class="sc">-</span> (<span class="dv">896</span> <span class="sc">*</span> .<span class="dv">8</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">#crit # need at least 179 out of 896 trials to be correct, denoted by 0 in error col</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>sum_er <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(<span class="at">sum =</span> <span class="fu">sum</span>(error))</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>sum_er <span class="ot">&lt;-</span> sum_er <span class="sc">%&gt;%</span> </span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">outlier_er =</span>  (sum <span class="sc">&gt;</span> crit)) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(outlier_er <span class="sc">==</span> <span class="sc">!</span><span class="cn">FALSE</span>) <span class="co">#two people fall below 80% accuracy</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">!=</span> <span class="dv">70</span>, id <span class="sc">!=</span> <span class="dv">87</span>) <span class="co">#removing those outliers here </span></span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">#Making new variables</span></span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, block) <span class="sc">%&gt;%</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">switch =</span> <span class="fu">if_else</span>(cycle <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>), <span class="dv">1</span>, <span class="dv">0</span>),</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">cycle2 =</span> <span class="fu">ifelse</span>(cycle <span class="sc">&gt;</span> <span class="dv">4</span>, cycle <span class="sc">-</span> <span class="dv">4</span>, cycle), <span class="co"># i didnt want to overwrite cycle, but this is breaking the cycle of 8 into 1-4 </span></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">ifelse</span>(cycle2 <span class="sc">==</span> <span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">0</span>),</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">cumsum</span>(group),</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">lerror =</span> <span class="fu">lag</span>(error, <span class="dv">1</span>), </span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">ltrial =</span> <span class="fu">lag</span>(trial, <span class="dv">1</span>), </span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">lrt =</span> <span class="fu">lag</span>(rt, <span class="dv">1</span>),</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">valence =</span> <span class="fu">if_else</span>(dimshape <span class="sc">==</span> <span class="dv">4</span> <span class="sc">|</span> dimcolor <span class="sc">==</span> <span class="dv">4</span>,<span class="dv">1</span>,<span class="dv">2</span>),<span class="co">#univalent = 1, bivalalent = 2</span></span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">lvalence =</span> <span class="fu">lag</span>(valence, <span class="dv">4</span>))<span class="co">#lvalence l = 1 group so for me 4 ... is this right? </span></span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> <span class="co">#making contrasts outlined in prereg</span></span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, block, group) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">lvalence_contr =</span> <span class="fu">case_when</span>(lvalence <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="sc">-</span><span class="fl">0.5</span>, lvalence <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fl">0.5</span>),</span>
-<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">valence_contr =</span> <span class="fu">case_when</span>(valence <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="sc">-</span><span class="fl">0.5</span>, valence <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fl">0.5</span>)</span>
-<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co">#compute z-score on trial level </span></span>
-<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>alt_run_z <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
-<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, cycle2, valence, lvalence) <span class="sc">%&gt;%</span> <span class="co">#cycle or cycle2</span></span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">z =</span> (rt <span class="sc">-</span> <span class="fu">mean</span>(rt[error <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> lerror <span class="sc">==</span> <span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(rt[error <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> lerror <span class="sc">==</span> <span class="dv">0</span>])) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="co"># Overall count </span></span>
-<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>overall_outliers <span class="ot">&lt;-</span> alt_run_z <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="at">n_outliers =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(z) <span class="sc">&gt;</span> <span class="dv">3</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="co">#overall_outliers</span></span>
-<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Per participant </span></span>
-<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>outliers_by_id <span class="ot">&lt;-</span> alt_run_z <span class="sc">%&gt;%</span> </span>
-<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
-<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n_outliers =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(z) <span class="sc">&gt;</span> <span class="dv">3</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a><span class="co">#outliers_by_id</span></span>
-<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a><span class="co">#Remove z‑score outliers</span></span>
-<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run_z <span class="sc">%&gt;%</span></span>
-<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(z) <span class="sc">&lt;=</span> <span class="dv">3</span> <span class="sc">|</span> <span class="fu">is.na</span>(z)) </span>
-<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a><span class="co"># Final summary dataset</span></span>
-<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>z_score_inspect <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span></span>
-<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, cycle2, valence, lvalence) <span class="sc">%&gt;%</span></span>
-<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>( </span>
-<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">z_score_mean =</span> <span class="fu">mean</span>(z, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
-<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">z_score_sd =</span> <span class="fu">sd</span>(z, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
-<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">response_time_mean =</span> <span class="fu">mean</span>(rt, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">response_time_sd =</span> <span class="fu">sd</span>(rt, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
-<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(id, block, trial) <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(id, block, trial, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#determine 80% acc</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">#crit # need at least 179 out of 896 trials to be correct, denoted by 0 in error col</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>sum_er <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summarize</span>(<span class="at">acc =</span> <span class="fu">mean</span>(<span class="dv">1</span><span class="sc">-</span>error), </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>          <span class="at">N =</span> <span class="fu">n</span>())</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>sum_er</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 99 × 3
+      id   acc     N
+   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt;
+ 1     1 0.950   784
+ 2     2 0.886   784
+ 3     3 0.957   784
+ 4     4 0.958   784
+ 5     5 0.995   784
+ 6     6 0.980   784
+ 7     7 0.967   784
+ 8     8 0.950   784
+ 9     9 0.968   784
+10    10 0.973   784
+# ℹ 89 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>sum_er <span class="ot">&lt;-</span> sum_er <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(acc <span class="sc">&lt;</span> .<span class="dv">8</span>) </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>id <span class="sc">%in%</span> sum_er<span class="sc">$</span>id) <span class="co">#removing those outliers here </span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Making new variables</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(id, trial) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, block) <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">switch =</span> <span class="fu">if_else</span>(cycle <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>), <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">cycle2 =</span> <span class="fu">ifelse</span>(cycle <span class="sc">&gt;</span> <span class="dv">4</span>, cycle <span class="sc">-</span> <span class="dv">4</span>, cycle),</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">ifelse</span>(cycle2 <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>),</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">cumsum</span>(group),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">lerror =</span> <span class="fu">lag</span>(error, <span class="dv">1</span>), </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">ltrial =</span> <span class="fu">lag</span>(trial, <span class="dv">1</span>), </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">lrt =</span> <span class="fu">lag</span>(rt, <span class="dv">1</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">valence =</span> <span class="fu">if_else</span>(dimshape <span class="sc">==</span> <span class="dv">4</span> <span class="sc">|</span> dimcolor <span class="sc">==</span> <span class="dv">4</span>, <span class="dv">1</span>, <span class="dv">2</span>),  <span class="co"># 1 = uni, 2 = bi</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">lvalence =</span> <span class="fu">lag</span>(valence, <span class="dv">1</span>)                               <span class="co"># previous trial’s valence</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, block, group) <span class="sc">%&gt;%</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lvalence =</span> lvalence[<span class="dv">1</span>]) <span class="sc">%&gt;%</span>                         <span class="co"># constant within 4‑trial group</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> <span class="co">#making contrasts outlined in prereg</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, block, group) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">lvalence_contr =</span> <span class="fu">case_when</span>(lvalence <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="sc">-</span><span class="fl">0.5</span>, lvalence <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fl">0.5</span>),</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">valence_contr =</span> <span class="fu">case_when</span>(valence <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="sc">-</span><span class="fl">0.5</span>, valence <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="fl">0.5</span>)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#compute z-score on trial level </span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>alt_run_z <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> </span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, cycle2, valence, lvalence) <span class="sc">%&gt;%</span> <span class="co">#cycle or cycle2</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">z =</span> (rt <span class="sc">-</span> <span class="fu">mean</span>(rt[error <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> lerror <span class="sc">==</span> <span class="dv">0</span>])) <span class="sc">/</span> <span class="fu">sd</span>(rt[error <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> lerror <span class="sc">==</span> <span class="dv">0</span>])) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Overall count </span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>overall_outliers <span class="ot">&lt;-</span> alt_run_z <span class="sc">%&gt;%</span> <span class="fu">summarize</span>(<span class="at">n_outliers =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(z) <span class="sc">&gt;</span> <span class="dv">3</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="co">#overall_outliers</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a><span class="co"># Per participant </span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>outliers_by_id <span class="ot">&lt;-</span> alt_run_z <span class="sc">%&gt;%</span> </span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n_outliers =</span> <span class="fu">sum</span>(<span class="fu">abs</span>(z) <span class="sc">&gt;</span> <span class="dv">3</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co">#outliers_by_id</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="co">#Remove z‑score outliers</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run_z <span class="sc">%&gt;%</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">abs</span>(z) <span class="sc">&lt;=</span> <span class="dv">3</span> <span class="sc">|</span> <span class="fu">is.na</span>(z)) </span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Final summary dataset</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>z_score_inspect <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, cycle2, valence, lvalence) <span class="sc">%&gt;%</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>( </span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">z_score_mean =</span> <span class="fu">mean</span>(z, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    <span class="at">z_score_sd =</span> <span class="fu">sd</span>(z, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">response_time_mean =</span> <span class="fu">mean</span>(rt, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="at">response_time_sd =</span> <span class="fu">sd</span>(rt, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has grouped output by 'id', 'cycle2', 'valence'. You can override
 using the `.groups` argument.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>z_score_inspect</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>z_score_inspect</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2,328 × 8
-# Groups:   id, cycle2, valence [776]
+<pre><code># A tibble: 2,304 × 8
+# Groups:   id, cycle2, valence [768]
       id cycle2 valence lvalence z_score_mean z_score_sd response_time_mean
    &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;              &lt;dbl&gt;
  1     1      1       1        1     1.68e- 1      1.04                608.
@@ -216,69 +239,237 @@ using the `.groups` argument.</code></pre>
  8     1      2       1        2    -1.24e- 1      0.837               529.
  9     1      2       1       NA     6.11e-16      1                   441.
 10     1      2       2        1    -9.58e- 2      0.794               548.
-# ℹ 2,318 more rows
+# ℹ 2,294 more rows
 # ℹ 1 more variable: response_time_sd &lt;dbl&gt;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>           <span class="fu">filter</span>(group <span class="sc">!=</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">rt_log =</span> (<span class="fu">log</span>(rt)), </span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">filter_correct =</span> <span class="fu">ifelse</span>(error <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> lerror <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>       )</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">#I think somewhere in here I need to filter out first trials but I dont know where I should put this in my workflow</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(alt_run)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>           <span class="fu">filter</span>(group <span class="sc">!=</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">rt_log =</span> (<span class="fu">log</span>(rt)), </span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">filter_correct =</span> <span class="fu">ifelse</span>(error <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span> lerror <span class="sc">==</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>       )</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="fu">view</span>(alt_run)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="aggragation-experimental-level-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="aggragation-experimental-level-analysis">Aggragation experimental level analysis</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#function for CI</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>norm_for_errorbars <span class="ot">&lt;-</span> <span class="cf">function</span>(dv,ID){</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  dat <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">dv =</span> dv,<span class="at">ID=</span>ID)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  dat2 <span class="ot">&lt;-</span> dat <span class="sc">%&gt;%</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">grand_mean =</span> <span class="fu">mean</span>(dv,<span class="at">na.rm=</span>T)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(ID) <span class="sc">%&gt;%</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">submean =</span> <span class="fu">mean</span>(dv,<span class="at">na.rm=</span>T)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">normdv =</span> dv <span class="sc">-</span> submean <span class="sc">+</span> grand_mean)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(dat2<span class="sc">$</span>normdv)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>alt_run <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span> <span class="co">#norm on trial level</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_norm       =</span> <span class="fu">norm_for_errorbars</span>(rt, id),</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_norm   =</span> <span class="fu">norm_for_errorbars</span>(rt_log, id),</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_norm    =</span> <span class="fu">norm_for_errorbars</span>(error, id)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>allagg <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, cycle2, <span class="cf">switch</span>, valence, lvalence) <span class="sc">%&gt;%</span> <span class="co">#first agg</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_mean          =</span> <span class="fu">mean</span>(rt[filter_correct <span class="sc">==</span> <span class="dv">0</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_mean      =</span> <span class="fu">mean</span>(rt_log[filter_correct <span class="sc">==</span> <span class="dv">0</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_mean       =</span> <span class="fu">mean</span>(error, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_norm_mean     =</span> <span class="fu">mean</span>(rt_norm[filter_correct <span class="sc">==</span> <span class="dv">0</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_norm_mean =</span> <span class="fu">mean</span>(rt_log_norm[filter_correct <span class="sc">==</span> <span class="dv">0</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_norm_mean  =</span> <span class="fu">mean</span>(error_norm, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>allagg_ci <span class="ot">&lt;-</span> allagg <span class="sc">%&gt;%</span> <span class="co">#group level CIs</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(cycle2, <span class="cf">switch</span>, valence, lvalence) <span class="sc">%&gt;%</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_mean      =</span> <span class="fu">mean</span>(rt_mean),    <span class="co"># grand means</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_mean  =</span> <span class="fu">mean</span>(rt_log_mean),</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_mean   =</span> <span class="fu">mean</span>(error_mean),</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_se        =</span> <span class="fu">sd</span>(rt_norm_mean) <span class="sc">/</span> <span class="fu">sqrt</span>(n),    <span class="co"># SEs using normalized participant means</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_se    =</span> <span class="fu">sd</span>(rt_log_norm_mean) <span class="sc">/</span> <span class="fu">sqrt</span>(n),</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_se     =</span> <span class="fu">sd</span>(error_norm_mean) <span class="sc">/</span> <span class="fu">sqrt</span>(n),</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_ci_low        =</span> rt_mean <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> rt_se,    <span class="co"># 95% </span></span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_ci_high       =</span> rt_mean <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> rt_se,</span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_ci_low    =</span> rt_log_mean <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> rt_log_se,</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">rt_log_ci_high   =</span> rt_log_mean <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> rt_log_se,</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_ci_low     =</span> error_mean <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> error_se,</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    <span class="at">error_ci_high    =</span> error_mean <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> error_se,</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>    <span class="at">valence =</span> <span class="fu">factor</span>(valence, <span class="co">#make it nice for plot</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>                     <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Univalent"</span>, <span class="st">"Bivalent"</span>)),</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">lvalence =</span> <span class="fu">factor</span>(lvalence,</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>                      <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>                      <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Univalent"</span>, <span class="st">"Bivalent"</span>)),</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">cycle2 =</span> <span class="fu">factor</span>(cycle2)</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="visualizations" class="level2">
+<h2 class="anchored" data-anchor-id="visualizations">Visualizations</h2>
+<p>By logged RT</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>rtlogplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  allagg_ci,</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> cycle2,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> rt_log_mean,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> valence,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">linetype =</span> lvalence,</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">interaction</span>(valence, lvalence)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>)) <span class="sc">+</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>)) <span class="sc">+</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> rt_log_ci_low, <span class="at">ymax =</span> rt_log_ci_high),</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.15</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span><span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>),</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">linewidth =</span> <span class="fl">0.8</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>rtlogplot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="AltRunsAnalysis_SA_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>By Error</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>erplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(allagg_ci,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">x =</span> cycle2,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">y =</span> error_mean,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">color =</span> valence,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">linetype =</span> lvalence,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">group =</span> <span class="fu">interaction</span>(valence, lvalence))</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>)) <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>)) <span class="sc">+</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> error_ci_low, <span class="at">ymax =</span> error_ci_high),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.15</span>,</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span><span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">linewidth =</span> <span class="fl">0.8</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>erplot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="AltRunsAnalysis_SA_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>by reg rt</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>rtplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  allagg_ci,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> cycle2,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> rt_mean,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> valence,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">linetype =</span> lvalence,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">group =</span> <span class="fu">interaction</span>(valence, lvalence)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>)) <span class="sc">+</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>)) <span class="sc">+</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> rt_ci_low, <span class="at">ymax =</span> rt_ci_high),</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="fl">0.15</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span><span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.25</span>),</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">linewidth =</span> <span class="fl">0.8</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>()</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>rtplot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="AltRunsAnalysis_SA_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 </div>
 <p><strong>Analysis On The Experimental Level:</strong> Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model_lmer <span class="ot">&lt;-</span> <span class="fu">lmer</span>(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  rt <span class="sc">~</span> valence_contr <span class="sc">*</span> lvalence_contr <span class="sc">*</span> <span class="cf">switch</span> <span class="sc">+</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    (valence_contr <span class="sc">+</span> lvalence_contr <span class="sc">+</span> <span class="cf">switch</span> <span class="sc">|</span> id),</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> alt_run <span class="sc">%&gt;%</span> <span class="fu">filter</span>(filter_correct <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_lmer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>model_lmer <span class="ot">&lt;-</span> <span class="fu">lmer</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  rt <span class="sc">~</span> valence_contr <span class="sc">*</span> lvalence_contr <span class="sc">*</span> <span class="cf">switch</span> <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    (valence_contr <span class="sc">+</span> lvalence_contr <span class="sc">+</span> <span class="cf">switch</span> <span class="sc">|</span> id),</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> alt_run <span class="sc">%&gt;%</span> <span class="fu">filter</span>(filter_correct <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_lmer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear mixed model fit by REML ['lmerMod']
 Formula: rt ~ valence_contr * lvalence_contr * switch + (valence_contr +  
     lvalence_contr + switch | id)
    Data: alt_run %&gt;% filter(filter_correct == 0)
 
-REML criterion at convergence: 1132583
+REML criterion at convergence: 972235.3
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--3.5260 -0.4984 -0.1720  0.2093 20.6301 
+-3.5358 -0.4907 -0.1704  0.2035 21.0016 
 
 Random effects:
  Groups   Name           Variance Std.Dev. Corr          
- id       (Intercept)     13572   116.50                 
-          valence_contr    4785    69.17   0.50          
-          lvalence_contr   3812    61.74   0.41 0.82     
-          switch          36454   190.93   0.57 0.11 0.04
- Residual                176203   419.76                 
-Number of obs: 75865, groups:  id, 97
+ id       (Intercept)     13236   115.05                 
+          valence_contr    4209    64.88   0.49          
+          lvalence_contr   3607    60.06   0.40 0.78     
+          switch          38219   195.50   0.56 0.13 0.06
+ Residual                172851   415.75                 
+Number of obs: 65203, groups:  id, 96
 
 Fixed effects:
                                     Estimate Std. Error t value
-(Intercept)                          687.954     11.966  57.493
-valence_contr                        108.922      7.889  13.807
-lvalence_contr                        60.068      7.225   8.314
-switch                               400.950     19.710  20.342
-valence_contr:lvalence_contr          97.242      7.184  13.536
-valence_contr:switch                  20.738      7.109   2.917
-lvalence_contr:switch                 24.941      7.111   3.507
-valence_contr:lvalence_contr:switch -137.763     14.154  -9.733
+(Intercept)                          680.090     11.898  57.159
+valence_contr                         98.729      7.647  12.911
+lvalence_contr                        59.148      7.225   8.187
+switch                               410.975     20.315  20.230
+valence_contr:lvalence_contr          91.643      7.670  11.948
+valence_contr:switch                  27.798      7.654   3.632
+lvalence_contr:switch                 26.641      7.655   3.480
+valence_contr:lvalence_contr:switch -119.898     15.226  -7.874
 
 Correlation of Fixed Effects:
             (Intr) vlnc_c lvlnc_ switch vln_:_ vlnc_: lvln_:
-valenc_cntr  0.444                                          
-lvalnc_cntr  0.351  0.658                                   
-switch       0.540  0.100  0.033                            
-vlnc_cntr:_  0.017  0.002  0.004 -0.008                     
-vlnc_cntr:s -0.001 -0.226 -0.025  0.000 -0.001              
-lvlnc_cntr:  0.000 -0.023 -0.247  0.000 -0.002  0.102       
-vlnc_cnt:_: -0.007  0.000 -0.001  0.017 -0.494 -0.003 -0.001</code></pre>
+valenc_cntr  0.422                                          
+lvalnc_cntr  0.337  0.606                                   
+switch       0.532  0.113  0.045                            
+vlnc_cntr:_  0.019  0.008  0.012 -0.008                     
+vlnc_cntr:s -0.001 -0.246 -0.026  0.003 -0.005              
+lvlnc_cntr: -0.001 -0.025 -0.260  0.002 -0.009  0.106       
+vlnc_cnt:_: -0.007 -0.002 -0.004  0.018 -0.488  0.011  0.013</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_model</span>(model_lmer, <span class="at">show.est =</span> T, <span class="at">auto.label =</span> F, <span class="at">show.stat =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_model</span>(model_lmer, <span class="at">show.est =</span> T, <span class="at">auto.label =</span> F, <span class="at">show.stat =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table style="border-collapse:collapse; border:none;">
 <tbody><tr>
@@ -294,58 +485,58 @@ vlnc_cnt:_: -0.007  0.000 -0.001  0.017 -0.494 -0.003 -0.001</code></pre>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">(Intercept)</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">687.95</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">664.50&nbsp;–&nbsp;711.41</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">57.49</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">680.09</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">656.77&nbsp;–&nbsp;703.41</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">57.16</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">108.92</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">93.46&nbsp;–&nbsp;124.38</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">13.81</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">98.73</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">83.74&nbsp;–&nbsp;113.72</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">12.91</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">60.07</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">45.91&nbsp;–&nbsp;74.23</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">8.31</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">59.15</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">44.99&nbsp;–&nbsp;73.31</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">8.19</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">400.95</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">362.32&nbsp;–&nbsp;439.58</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">20.34</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">410.97</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">371.16&nbsp;–&nbsp;450.79</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">20.23</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:lvalence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">97.24</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">83.16&nbsp;–&nbsp;111.32</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">13.54</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">91.64</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">76.61&nbsp;–&nbsp;106.68</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">11.95</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">20.74</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">6.80&nbsp;–&nbsp;34.67</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.92</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.004</strong></td>
-</tr>
-<tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr:switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">24.94</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">11.00&nbsp;–&nbsp;38.88</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.51</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">27.80</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">12.80&nbsp;–&nbsp;42.80</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.63</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr:switch</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">26.64</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">11.64&nbsp;–&nbsp;41.64</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.48</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.001</strong></td>
+</tr>
+<tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:lvalence_contr:switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-137.76</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-165.50&nbsp;–&nbsp;-110.02</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-9.73</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-119.90</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-149.74&nbsp;–&nbsp;-90.05</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-7.87</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
@@ -354,36 +545,36 @@ vlnc_cnt:_: -0.007  0.000 -0.001  0.017 -0.494 -0.003 -0.001</code></pre>
 
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">σ<sup>2</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">176202.50</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">172851.38</td>
 </tr>
 
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>00</sub> <sub>id</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">13571.74</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">13235.79</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>11</sub> <sub>id.valence_contr</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">4784.50</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">4209.30</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>11</sub> <sub>id.lvalence_contr</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">3811.51</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">3606.83</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>11</sub> <sub>id.switch</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">36454.20</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">38219.11</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ρ<sub>01</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.50</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.49</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;"></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.41</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.40</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;"></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.57</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.56</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ICC</td>
@@ -391,70 +582,71 @@ vlnc_cnt:_: -0.007  0.000 -0.001  0.017 -0.494 -0.003 -0.001</code></pre>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">N <sub>id</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">97</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">96</td>
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="4">75865</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="4">65203</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">Marginal R<sup>2</sup> / Conditional R<sup>2</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.145 / 0.273</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.149 / 0.277</td>
 </tr>
 
 </tbody></table>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>model_lmer_log <span class="ot">&lt;-</span> <span class="fu">lmer</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  rt_log <span class="sc">~</span> valence_contr <span class="sc">*</span> lvalence_contr <span class="sc">*</span> <span class="cf">switch</span> <span class="sc">+</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    (valence_contr <span class="sc">+</span> lvalence_contr <span class="sc">+</span> <span class="cf">switch</span> <span class="sc">|</span> id),</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> alt_run <span class="sc">%&gt;%</span> <span class="fu">filter</span>(filter_correct <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_lmer_log)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>model_lmer_log <span class="ot">&lt;-</span> <span class="fu">lmer</span>(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  rt_log <span class="sc">~</span> valence_contr <span class="sc">*</span> lvalence_contr <span class="sc">*</span> <span class="cf">switch</span> <span class="sc">+</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    (valence_contr <span class="sc">+</span> lvalence_contr <span class="sc">+</span> <span class="cf">switch</span> <span class="sc">||</span> id), <span class="co">#double bar bc does not converge with single, is less complex w double</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> alt_run <span class="sc">%&gt;%</span> <span class="fu">filter</span>(filter_correct <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_lmer_log)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Linear mixed model fit by REML ['lmerMod']
-Formula: rt_log ~ valence_contr * lvalence_contr * switch + (valence_contr +  
-    lvalence_contr + switch | id)
+Formula: rt_log ~ valence_contr * lvalence_contr * switch + ((1 | id) +  
+    (0 + valence_contr | id) + (0 + lvalence_contr | id) + (0 +  
+    switch | id))
    Data: alt_run %&gt;% filter(filter_correct == 0)
 
-REML criterion at convergence: 69137.1
+REML criterion at convergence: 58342.5
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--4.5541 -0.6498 -0.1137  0.4944  6.1074 
+-3.8463 -0.6505 -0.1155  0.4902  6.4195 
 
 Random effects:
- Groups   Name           Variance Std.Dev. Corr             
- id       (Intercept)    0.020131 0.14189                   
-          valence_contr  0.003817 0.06178   0.31            
-          lvalence_contr 0.002826 0.05316   0.29  0.92      
-          switch         0.019452 0.13947   0.27 -0.04 -0.06
- Residual                0.143687 0.37906                   
-Number of obs: 75865, groups:  id, 97
+ Groups   Name           Variance Std.Dev.
+ id       (Intercept)    0.020346 0.14264 
+ id.1     valence_contr  0.003280 0.05727 
+ id.2     lvalence_contr 0.002564 0.05064 
+ id.3     switch         0.021219 0.14567 
+ Residual                0.140938 0.37542 
+Number of obs: 65203, groups:  id, 96
 
 Fixed effects:
                                      Estimate Std. Error t value
-(Intercept)                          6.440335   0.014499 444.207
-valence_contr                        0.121697   0.007063  17.231
-lvalence_contr                       0.066918   0.006298  10.626
-switch                               0.420845   0.014522  28.980
-valence_contr:lvalence_contr         0.096620   0.006491  14.886
-valence_contr:switch                -0.018897   0.006421  -2.943
-lvalence_contr:switch                0.011265   0.006422   1.754
-valence_contr:lvalence_contr:switch -0.128193   0.012782 -10.029
+(Intercept)                          6.429880   0.014661 438.574
+valence_contr                        0.110536   0.006790  16.280
+lvalence_contr                       0.066832   0.006216  10.752
+switch                               0.432459   0.015262  28.335
+valence_contr:lvalence_contr         0.090696   0.006916  13.113
+valence_contr:switch                -0.009485   0.006914  -1.372
+lvalence_contr:switch                0.014946   0.006914   2.162
+valence_contr:lvalence_contr:switch -0.113319   0.013751  -8.241
 
 Correlation of Fixed Effects:
             (Intr) vlnc_c lvlnc_ switch vln_:_ vlnc_: lvln_:
-valenc_cntr  0.277                                          
-lvalnc_cntr  0.251  0.725                                   
-switch       0.248 -0.034 -0.048                            
-vlnc_cntr:_  0.013  0.002  0.003 -0.010                     
-vlnc_cntr:s  0.000 -0.228 -0.026  0.001  0.000              
-lvlnc_cntr:  0.000 -0.023 -0.256  0.000 -0.002  0.102       
-vlnc_cnt:_: -0.005  0.000 -0.001  0.020 -0.494 -0.003 -0.001</code></pre>
+valenc_cntr  0.001                                          
+lvalnc_cntr  0.001  0.031                                   
+switch      -0.013 -0.001 -0.001                            
+vlnc_cntr:_  0.014  0.007  0.011 -0.010                     
+vlnc_cntr:s -0.001 -0.250 -0.028  0.003 -0.004              
+lvlnc_cntr: -0.001 -0.025 -0.273  0.003 -0.008  0.107       
+vlnc_cnt:_: -0.005 -0.002 -0.004  0.022 -0.489  0.011  0.013</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_model</span>(model_lmer_log, <span class="at">show.est =</span> T, <span class="at">auto.label =</span> F, <span class="at">show.stat =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_model</span>(model_lmer_log, <span class="at">show.est =</span> T, <span class="at">auto.label =</span> F, <span class="at">show.stat =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table style="border-collapse:collapse; border:none;">
 <tbody><tr>
@@ -470,58 +662,58 @@ vlnc_cnt:_: -0.005  0.000 -0.001  0.020 -0.494 -0.003 -0.001</code></pre>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">(Intercept)</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">6.44</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">6.41&nbsp;–&nbsp;6.47</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">444.21</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">6.43</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">6.40&nbsp;–&nbsp;6.46</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">438.57</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.12</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.11&nbsp;–&nbsp;0.14</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">17.23</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.11</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.10&nbsp;–&nbsp;0.12</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">16.28</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.07</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.05&nbsp;–&nbsp;0.08</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">10.63</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">10.75</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.42</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.39&nbsp;–&nbsp;0.45</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">28.98</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.43</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.40&nbsp;–&nbsp;0.46</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">28.34</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:lvalence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.10</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.08&nbsp;–&nbsp;0.11</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">14.89</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.09</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.08&nbsp;–&nbsp;0.10</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">13.11</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.02</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.03&nbsp;–&nbsp;-0.01</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-2.94</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.003</strong></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.01</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.02&nbsp;–&nbsp;0.00</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-1.37</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.170</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr:switch</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.01</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.00&nbsp;–&nbsp;0.02</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.75</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.079</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.00&nbsp;–&nbsp;0.03</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.16</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.031</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:lvalence_contr:switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.13</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.15&nbsp;–&nbsp;-0.10</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-10.03</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.11</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.14&nbsp;–&nbsp;-0.09</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-8.24</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
@@ -551,37 +743,37 @@ vlnc_cnt:_: -0.005  0.000 -0.001  0.020 -0.494 -0.003 -0.001</code></pre>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ρ<sub>01</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.31</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">&nbsp;</td>
 
 </tr><tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;"></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.29</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ρ<sub>01</sub></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">&nbsp;</td>
 
 </tr><tr>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;"></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.27</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ICC</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.13</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">N <sub>id</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">97</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">96</td>
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="4">75865</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="4">65203</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">Marginal R<sup>2</sup> / Conditional R<sup>2</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.211 / NA</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.196 / 0.298</td>
 </tr>
 
 </tbody></table>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>model_glmer <span class="ot">&lt;-</span> <span class="fu">glmer</span>(</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  error <span class="sc">~</span> valence_contr <span class="sc">*</span> lvalence_contr<span class="sc">*</span><span class="cf">switch</span> <span class="sc">+</span> (valence_contr <span class="sc">+</span> lvalence_contr <span class="sc">+</span> <span class="cf">switch</span><span class="sc">|</span>id), <span class="at">family =</span> <span class="st">'binomial'</span>, <span class="at">control =</span> <span class="fu">glmerControl</span>(<span class="at">optimizer =</span> <span class="st">'bobyqa'</span>), <span class="at">data =</span> alt_run</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_glmer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>model_glmer <span class="ot">&lt;-</span> <span class="fu">glmer</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  error <span class="sc">~</span> valence_contr <span class="sc">*</span> lvalence_contr<span class="sc">*</span><span class="cf">switch</span> <span class="sc">+</span> (valence_contr <span class="sc">+</span> lvalence_contr <span class="sc">+</span> <span class="cf">switch</span><span class="sc">|</span>id), <span class="at">family =</span> <span class="st">'binomial'</span>, <span class="at">control =</span> <span class="fu">glmerControl</span>(<span class="at">optimizer =</span> <span class="st">'bobyqa'</span>), <span class="at">data =</span> alt_run</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(model_glmer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Generalized linear mixed model fit by maximum likelihood (Laplace
   Approximation) [glmerMod]
@@ -592,44 +784,44 @@ Formula: error ~ valence_contr * lvalence_contr * switch + (valence_contr +
 Control: glmerControl(optimizer = "bobyqa")
 
       AIC       BIC    logLik -2*log(L)  df.resid 
-  35399.6   35566.1  -17681.8   35363.6     76556 
+  33990.0   34155.9  -16977.0   33954.0     74281 
 
 Scaled residuals: 
     Min      1Q  Median      3Q     Max 
--1.0994 -0.3036 -0.2163 -0.1608 12.6386 
+-1.1013 -0.3035 -0.2164 -0.1596 12.7670 
 
 Random effects:
  Groups Name           Variance Std.Dev. Corr             
- id     (Intercept)    0.58264  0.7633                    
-        valence_contr  0.27084  0.5204   -0.08            
-        lvalence_contr 0.25009  0.5001    0.08  0.89      
-        switch         0.03048  0.1746    0.22 -0.03 -0.19
-Number of obs: 76574, groups:  id, 97
+ id     (Intercept)    0.56107  0.7490                    
+        valence_contr  0.27745  0.5267   -0.07            
+        lvalence_contr 0.25381  0.5038    0.09  0.89      
+        switch         0.03195  0.1787    0.20 -0.03 -0.15
+Number of obs: 74299, groups:  id, 96
 
 Fixed effects:
                                     Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)                         -3.05470    0.08046 -37.964  &lt; 2e-16 ***
-valence_contr                        0.24495    0.06641   3.689 0.000226 ***
-lvalence_contr                       0.07702    0.06458   1.193 0.233020    
-switch                               0.53527    0.03704  14.450  &lt; 2e-16 ***
-valence_contr:lvalence_contr        -0.04411    0.07490  -0.589 0.555916    
-valence_contr:switch                 0.16379    0.06290   2.604 0.009216 ** 
-lvalence_contr:switch                0.15758    0.06286   2.507 0.012179 *  
-valence_contr:lvalence_contr:switch  0.18324    0.12536   1.462 0.143814    
+(Intercept)                         -3.07048    0.07954 -38.605  &lt; 2e-16 ***
+valence_contr                        0.24428    0.06759   3.614 0.000301 ***
+lvalence_contr                       0.08294    0.06553   1.266 0.205612    
+switch                               0.52980    0.03792  13.972  &lt; 2e-16 ***
+valence_contr:lvalence_contr        -0.06604    0.07658  -0.862 0.388471    
+valence_contr:switch                 0.16904    0.06435   2.627 0.008616 ** 
+lvalence_contr:switch                0.15776    0.06430   2.453 0.014152 *  
+valence_contr:lvalence_contr:switch  0.18263    0.12822   1.424 0.154338    
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 Correlation of Fixed Effects:
             (Intr) vlnc_c lvlnc_ switch vln_:_ vlnc_: lvln_:
-valenc_cntr -0.082                                          
-lvalnc_cntr  0.054  0.625                                   
-switch      -0.016  0.015 -0.077                            
-vlnc_cntr:_  0.029 -0.022 -0.051 -0.041                     
-vlnc_cntr:s  0.010 -0.323 -0.029 -0.100  0.013              
-lvlnc_cntr:  0.003 -0.029 -0.332 -0.054  0.042  0.078       
-vlnc_cnt:_: -0.012  0.008  0.025  0.061 -0.571 -0.062 -0.114</code></pre>
+valenc_cntr -0.072                                          
+lvalnc_cntr  0.066  0.625                                   
+switch      -0.032  0.009 -0.060                            
+vlnc_cntr:_  0.031 -0.022 -0.048 -0.041                     
+vlnc_cntr:s  0.009 -0.324 -0.030 -0.098  0.012              
+lvlnc_cntr:  0.003 -0.030 -0.334 -0.054  0.038  0.079       
+vlnc_cnt:_: -0.012  0.007  0.022  0.062 -0.569 -0.061 -0.109</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_model</span>(model_glmer, <span class="at">show.est =</span> T, <span class="at">auto.label =</span> F, <span class="at">show.stat =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tab_model</span>(model_glmer, <span class="at">show.est =</span> T, <span class="at">auto.label =</span> F, <span class="at">show.stat =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table style="border-collapse:collapse; border:none;">
 <tbody><tr>
@@ -646,58 +838,58 @@ vlnc_cnt:_: -0.012  0.008  0.025  0.061 -0.571 -0.062 -0.114</code></pre>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">(Intercept)</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.05</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.04&nbsp;–&nbsp;0.06</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-37.96</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.04&nbsp;–&nbsp;0.05</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-38.61</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.28</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.12&nbsp;–&nbsp;1.46</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.69</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">3.61</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.08</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.95&nbsp;–&nbsp;1.23</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.19</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.233</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.09</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.96&nbsp;–&nbsp;1.24</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.27</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.206</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">switch</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.71</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.59&nbsp;–&nbsp;1.84</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">14.45</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.70</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.58&nbsp;–&nbsp;1.83</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">13.97</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>&lt;0.001</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:lvalence_contr</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.96</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.83&nbsp;–&nbsp;1.11</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.59</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.556</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.94</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.81&nbsp;–&nbsp;1.09</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">-0.86</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.388</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:switch</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.18</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.04&nbsp;–&nbsp;1.33</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.60</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.04&nbsp;–&nbsp;1.34</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.63</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.009</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">lvalence_contr:switch</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.17</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.03&nbsp;–&nbsp;1.32</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.51</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.012</strong></td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.03&nbsp;–&nbsp;1.33</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">2.45</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  "><strong>0.014</strong></td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; ">valence_contr:lvalence_contr:switch</td>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.20</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.94&nbsp;–&nbsp;1.54</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.46</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.144</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.93&nbsp;–&nbsp;1.54</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">1.42</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:center;  ">0.154</td>
 </tr>
 <tr>
 <td colspan="5" style="font-weight:bold; text-align:left; padding-top:.8em;">Random Effects</td>
@@ -710,11 +902,11 @@ vlnc_cnt:_: -0.012  0.008  0.025  0.061 -0.571 -0.062 -0.114</code></pre>
 
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>00</sub> <sub>id</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.58</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.56</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>11</sub> <sub>id.valence_contr</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.27</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.28</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">τ<sub>11</sub> <sub>id.lvalence_contr</sub></td>
@@ -726,15 +918,15 @@ vlnc_cnt:_: -0.012  0.008  0.025  0.061 -0.571 -0.062 -0.114</code></pre>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ρ<sub>01</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">-0.08</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">-0.07</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;"></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.08</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.09</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;"></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.22</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.20</td>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">ICC</td>
@@ -742,19 +934,118 @@ vlnc_cnt:_: -0.012  0.008  0.025  0.061 -0.571 -0.062 -0.114</code></pre>
 
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">N <sub>id</sub></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">97</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">96</td>
 </tr><tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm; border-top:1px solid;">Observations</td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="4">76574</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left; border-top:1px solid;" colspan="4">74299</td>
 </tr>
 <tr>
 <td style=" padding:0.2cm; text-align:left; vertical-align:top; text-align:left; padding-top:0.1cm; padding-bottom:0.1cm;">Marginal R<sup>2</sup> / Conditional R<sup>2</sup></td>
-<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.019 / 0.196</td>
+<td style=" padding:0.2cm; text-align:left; vertical-align:top; padding-top:0.1cm; padding-bottom:0.1cm; text-align:left;" colspan="4">0.019 / 0.192</td>
 </tr>
 
 </tbody></table>
 </div>
 </div>
+</section>
+<section id="ezddm-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="ezddm-analysis">ezDDM Analysis</h2>
+<section id="ddm-aggragation" class="level3">
+<h3 class="anchored" data-anchor-id="ddm-aggragation">DDM aggragation</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>alt_run_agg_ID_ddm <span class="ot">&lt;-</span> alt_run <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">RT_s =</span> rt<span class="sc">/</span><span class="dv">1000</span>) <span class="sc">%&gt;%</span> <span class="co">#convert rt to seconds</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, valence, lvalence, <span class="cf">switch</span>, cycle2) <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">RT_s_m =</span> <span class="fu">mean</span>(RT_s[filter_correct <span class="sc">==</span> <span class="dv">0</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">RT_s_var =</span> <span class="fu">var</span>(RT_s[filter_correct <span class="sc">==</span> <span class="dv">0</span>], <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>            <span class="at">error =</span> <span class="fu">mean</span>(error, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">N_trials =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span> <span class="co">#this is looking at everything in one row, have to agg data like this for DDM becuase it does not compute vectors but rows</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ezddm =</span> <span class="fu">list</span>(<span class="fu">ezddm</span>(<span class="at">propCorrect =</span> <span class="fu">convert_extremes</span>(<span class="dv">1</span><span class="sc">-</span>error), <span class="co">#were essentially making a dataframe that shows up as an extra cell next to each part</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                            <span class="at">rtCorrectVariance_seconds =</span> RT_s_var, </span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>                            <span class="at">rtCorrectMean_seconds =</span> RT_s_m, </span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>                            <span class="at">nTrials =</span> N_trials))) <span class="sc">%&gt;%</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest</span>(ezddm) <span class="co">#this extracts the newly created dataframe per column into its own separate columns </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'id', 'valence', 'lvalence', 'switch'. You
+can override using the `.groups` argument.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Oops, propCorrect == 0.5 (chance performance; drift will be close to 0). Added 0.00001 to propCorrect.
+Oops, propCorrect == 0.5 (chance performance; drift will be close to 0). Added 0.00001 to propCorrect.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>alt_run_agg_ddm <span class="ot">&lt;-</span> alt_run_agg_ID_ddm <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, valence,lvalence, <span class="cf">switch</span>, cycle2) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">normWS</span>(<span class="at">s =</span> <span class="st">"id"</span>, <span class="at">dv =</span> <span class="st">"a"</span>) <span class="sc">%&gt;%</span> <span class="co">#boundary separation</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">a =</span> DV_n) <span class="sc">%&gt;%</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">normWS</span>(<span class="at">s =</span> <span class="st">"id"</span>, <span class="at">dv =</span> <span class="st">"v"</span>) <span class="sc">%&gt;%</span> <span class="co">#drift rate</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">v =</span> DV_n) <span class="sc">%&gt;%</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">normWS</span>(<span class="at">s =</span> <span class="st">"id"</span>, <span class="at">dv =</span> <span class="st">"Ter"</span>) <span class="sc">%&gt;%</span> <span class="co">#non-decision time</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Ter =</span> DV_n) <span class="sc">%&gt;%</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(valence,lvalence, <span class="cf">switch</span>, cycle2) <span class="sc">%&gt;%</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">a_m =</span> <span class="fu">mean</span>(a, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>            <span class="at">a_ci_lower =</span> <span class="fu">get_ci</span>(a, a_m)[<span class="dv">1</span>],</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>            <span class="at">a_ci_upper =</span> <span class="fu">get_ci</span>(a, a_m)[<span class="dv">2</span>],</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">v_m =</span> <span class="fu">mean</span>(v, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">v_ci_lower =</span> <span class="fu">get_ci</span>(v, v_m)[<span class="dv">1</span>],</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>            <span class="at">v_ci_upper =</span> <span class="fu">get_ci</span>(v, v_m)[<span class="dv">2</span>],</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>            <span class="at">Ter_m =</span> <span class="fu">mean</span>(Ter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>            <span class="at">Ter_ci_lower =</span> <span class="fu">get_ci</span>(Ter, Ter_m)[<span class="dv">1</span>],</span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">Ter_ci_upper =</span> <span class="fu">get_ci</span>(Ter, Ter_m)[<span class="dv">2</span>],)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'valence', 'lvalence', 'switch'. You can
+override using the `.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co">#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>alt_run_agg_ID_ddm_collapsed <span class="ot">&lt;-</span> alt_run_agg_ID_ddm <span class="sc">%&gt;%</span> </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="cf">switch</span> <span class="sc">==</span> <span class="dv">0</span>, cycle2 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(id, valence, lvalence) <span class="sc">%&gt;%</span> </span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>( <span class="co"># average the DDM parameters across cycles 2–4 </span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">a =</span> <span class="fu">mean</span>(a, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">v =</span> <span class="fu">mean</span>(v, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="co">#average within those </span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ter =</span> <span class="fu">mean</span>(Ter, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">a_var =</span> <span class="fu">mean</span>(a<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="co">#average within those variances</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">v_var =</span> <span class="fu">mean</span>(v<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ter_var =</span> <span class="fu">mean</span>(Ter<span class="sc">^</span><span class="dv">2</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), </span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span> )</span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>alt_run_agg_ID_ddm_collapsed</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 384 × 9
+      id valence lvalence     a     v     Ter  a_var  v_var Ter_var
+   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+ 1     1       1        1 0.122 0.401  0.404  0.0150 0.161  0.163  
+ 2     1       1        2 0.103 0.302  0.357  0.0106 0.0913 0.127  
+ 3     1       2        1 0.109 0.297  0.363  0.0118 0.0885 0.132  
+ 4     1       2        2 0.119 0.253  0.349  0.0142 0.0641 0.122  
+ 5     2       1        1 0.136 0.185  0.227  0.0185 0.0343 0.0517 
+ 6     2       1        2 0.110 0.206  0.326  0.0120 0.0425 0.106  
+ 7     2       2        1 0.138 0.165  0.241  0.0189 0.0272 0.0579 
+ 8     2       2        2 0.261 0.238  0.0670 0.0681 0.0565 0.00448
+ 9     3       1        1 0.452 0.184 -0.247  0.205  0.0338 0.0610 
+10     3       1        2 0.221 0.152  0.253  0.0487 0.0231 0.0641 
+# ℹ 374 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>alt_run_agg_ID_ddm <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="cf">switch</span> <span class="sc">==</span> <span class="dv">0</span>, cycle2 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>)) <span class="sc">%&gt;%</span> <span class="fu">count</span>(id, valence, lvalence)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 384 × 5
+# Groups:   id, valence, lvalence, switch [384]
+      id valence lvalence switch     n
+   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt;
+ 1     1       1        1      0     3
+ 2     1       1        2      0     3
+ 3     1       2        1      0     3
+ 4     1       2        2      0     3
+ 5     2       1        1      0     3
+ 6     2       1        2      0     3
+ 7     2       2        1      0     3
+ 8     2       2        2      0     3
+ 9     3       1        1      0     3
+10     3       1        2      0     3
+# ℹ 374 more rows</code></pre>
+</div>
+</div>
+</section>
 </section>
 
 </main>
