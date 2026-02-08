@@ -76,6 +76,7 @@ alt_cue <- alt_cue %>%
          switch_contr = case_when(switch == 1 ~ 1,
                                   switch == 0 ~ 0)) %>%
   filter(block != 0) %>%
+  filter(trialgroup != 1) %>%
   group_by(id, prev_bivalent, is_bivalent, cycle) %>%
   mutate(time_M = mean(time[error == 0 & was_prev_error == 0]),
          time_SD = sd(time[error == 0 & was_prev_error == 0]),
@@ -83,8 +84,9 @@ alt_cue <- alt_cue %>%
          time_outlier = ifelse(abs(time_z) >= 3, 1, 0),
          filter_correct = ifelse(error == 1 | was_prev_error == 1, 1, 0),
          time_log = log(time)) %>%
-  filter(time_outlier == 0) %>%
-  filter(trialgroup != 1, block != 0) 
+  filter(time_outlier == 0) 
+
+nrow(alt_cue)
 ```
 
 # Data Aggregation by cycle
