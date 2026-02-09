@@ -1,0 +1,666 @@
+---
+title: "alternate_cues_analysis_updated"
+author: "Neha"
+date: "2026-02-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(readr)
+#AlternateCues <- read_csv("~/Desktop/Mayr_lab/Data_analysis_project/AlternateCues/AlternateCues.csv")
+
+AlternateCues <- read_csv("AlternateCues.csv")
+View(AlternateCues)
+
+library(tidyverse)
+tibble_summary<- AlternateCues %>% 
+  summary() %>% 
+  tibble()
+  
+
+
+```
+
+ have to remove practice blocks + the 5 unusable subjects (901, 959, 201, 975, 902) : 
+
+Note: subject 4 can have duplicate trials removed 
+
+
+```{r}
+
+library(tidyverse)
+d_use <- data %>%
+  filter(!id %in% c(901, 959, 201, 975, 902)) %>% 
+  droplevels()
+
+
+unique(d_use$id) ## 73 subjects 
+
+d_use <- d_use %>% 
+  filter(block != 0) %>% 
+  droplevels()
+
+unique(d_use$block)
+
+```
+
+
+```{r}
+
+
+id_4_clean <- d_use %>%
+  filter(id == 4) %>% 
+  group_by(id, block, trial) %>%
+  slice(1) %>%   # keep first occurrence
+  ungroup() %>% 
+  droplevels()
+```
+
+
+```{r}
+data_fixed <- d_use %>%
+  filter(id != 4) %>%   # keep everyone else untouched
+  bind_rows(id_4_clean) %>% 
+  droplevels()
+
+```
+
+Sanity checks
+
+After removing duplication-- should return back 0 for n>1
+
+```{r}
+
+
+data_fixed %>%
+  count(id, block, trial) %>%
+  filter(n > 1) %>% 
+  droplevels()
+
+unique(data_fixed$id) ## 73 subjects 
+
+usable_subjects <- c(9  ,    12  ,   15  ,   10    , 11  ,   16    , 13  ,   17   ,  14 ,    8  ,    7 ,     3  ,    5  ,    99 ,    202  ,  203 ,   204  ,  401 ,   402 ,   403  ,  404,    405 ,   406 ,   501 ,   502 ,   503  ,  504 ,   505 ,   701  ,  702 ,   703  ,  704  ,  705 ,   706  ,  707  ,  708  ,  752 ,   750445, 75033,  800 ,   903,    904 ,   905 ,   906 ,   907 ,   908 ,   909 ,   910  ,  911  ,  912  ,  913 ,   914 ,   915,    916 ,   917  ,  918 ,   919  ,  953  ,  954 ,   958 ,   961422, 962,    963  ,  964,    965  ,  966,    967   , 968  ,  969 ,   970 ,   971  ,  974,    4    )
+length(usable_subjects) # 73 subjects 
+
+
+```
+
+removing subjects below accuracy level of 80% 
+
+```{r}
+
+
+d_f <- data_fixed %>%
+  mutate(error = as.numeric(as.character(error)))
+
+str(d_f$error)
+
+table(d_f$error) # 0 with 40814 trials and 1 with 2986 trials 
+
+accuracy_per_subject <- d_f %>%
+  group_by(id) %>%
+  summarise(accuracy = 1 - mean(error, na.rm = TRUE))
+
+# 2. See who falls below 80% accuracy:
+accuracy_per_subject %>%
+  filter(accuracy < 0.80) ## ids 202 and 914 have accuracy less than 80% 
+
+# IDs below 80% accuracy
+low_acc_ids <- accuracy_per_subject %>%
+  filter(accuracy < 0.8) %>%
+  pull(id)
+low_acc_ids
+
+d_final <- d_f %>% 
+   filter(!id %in% c(202, 914)) %>% 
+  droplevels()
+
+unique(d_final$id) ## 71 subjects that are usable ## so overall- had to remove 8 subjects. 
+
+```
+
+###################################### Making new variables ############################################################################################################
+
+
+A. making the valence of each group 
+
+valence of current group has levels 1 and 2
+valence of previous group has levels 1 and 2
+
+- each group consists of three trials with the cycle variable as 1,2, and 3 (so first trials has cycle as 1 and the third trial has cycle as 3)
+-valence of current group is 1 if dim 1 or dim 2 has the value of 4 
+- valence of previous group is also 1 if dim 1 and dim 2 has the value of 4 
+- if dim 1 and dim 2 have any values from 1-3, then the valence of current and previous group will be assigned as 2 
+
+1- valence of current group
+
+
+```{r}
+library(dplyr)
+
+
+d_final <- d_final %>%
+  group_by(id, block) %>% 
+  # valence of current group
+  mutate(valence_current_group = if_else(dim1 == 4 | dim2 == 4, 1, 2)) # univalent is coded as 1 and bivalent is coded as 2 
+
+names(d_final)
+levels(d_final$valence_current_group) ## have to convert this to factor before analysis 
+
+#unique(d_final$id)
+
+```
+
+2- valence_previous_group 
+Lag by 3 trials within each subject (each group = 3 trials)
+
+```{r}
+d_final <- d_final %>%
+  group_by(id, block) %>%       # only by subject
+  #arrange(block, trial) %>%   
+  mutate(valence_previous_group = lag(valence_current_group, 3)) %>%
+  ungroup()
+
+
+names(d_final)
+
+# lag 1 
+# turn all but first trial as NA
+# fill will prapagate first value
+
+```
+
+3- switch variable 
+
+```{r}
+
+library(dplyr)
+
+d_final <- d_final %>%
+  group_by(id, block) %>%        
+  mutate(
+    switch = if_else(task != lag(task), 1, 0)  # 1 if task changed from previous trial
+  ) %>%
+  ungroup()
+
+names(d_final)
+
+```
+I should also make prev_error variable before removing the first group of trials 
+
+```{r}
+
+library(tidyverse)
+
+d_final <- d_final %>%
+  group_by(id, block) %>%     # IMPORTANT
+  mutate(prev_error = lag(error)) %>%
+  ungroup()
+
+
+
+```
+
+
+have to first remove trials below the third trial of every block as they may not be in a group of three 
+
+```{r}
+
+
+
+d_final <- d_final %>%
+  group_by(id, block) %>%          
+  filter( trial>3) %>%   ## removes all the trials on each block that are less than the third trial 
+  ungroup() %>%
+  droplevels()
+
+
+# trial != min(trial) &
+
+##note: trial 4 of some blocks for some subjects (203,402,405,502,503,504) are being removed for d_final_analysis- is this due to trial != min(trial) & trial>3: because min trial is now 4??  so, removed trial != min(trial) and now i do have trial 4 for all the subjects. 
+  
+#   checking if all ids have trial 4: 
+
+# num_id <- d_final_analysis %>% 
+#  group_by(id, block) %>% 
+#   filter( trial ==4)
+# 
+# unique(num_id$id) ## so all ids have trial == 4 for all blocks 
+
+```
+
+
+```{r}
+
+# library(dplyr)
+# 
+# d_c <- data_use %>%
+#   
+#   # 2. Compute z-scores for reaction time
+#   mutate(rt_z = scale(time)) %>%
+#   
+#   # 3. Remove extreme reaction times (|z| > 3)
+#   filter(abs(rt_z) <= 3) %>% 
+#   droplevels()
+
+
+
+
+## remove first trial from eaxh bloxk after making the new variables cause it is only used for analysis 
+## have not run this yet
+# d_c_analysis <- data_c %>%
+#   # 1. Remove the first trial of each block
+#   group_by(id, block) %>%
+#   filter(trial != min(trial, na.rm = TRUE)) %>%
+#   ungroup() %>%
+
+
+d_final_rt <- d_final
+
+# d_final_rt %>%
+#   group_by(subject) %>%   
+#   filter(!(error == 1 | lead(error) == 1)) %>%
+#   ungroup()
+
+rt_estimation <- d_final_rt %>%
+  filter(error == 0, prev_error == 0)
+
+rt_stats <- rt_estimation %>%
+  group_by(
+    id,
+    valence_current_group,
+    valence_previous_group,
+    cycle
+  ) %>%
+  summarise(
+    mean_rt = mean(time, na.rm = TRUE),
+    sd_rt   = sd(time, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+d_final_rt <- d_final_rt %>%
+  left_join(
+    rt_stats,
+    by = c(
+      "id",
+      "valence_current_group",
+      "valence_previous_group",
+      "cycle"
+    )
+  )
+
+d_final_rt <- d_final_rt %>%
+  mutate(rt_z = (time - mean_rt) / sd_rt)
+
+d_final_rt <- d_final_rt %>%
+  filter(abs(rt_z) < 3)
+
+
+## checking for NAs: 
+
+sum(is.na(d_final_rt$rt_z)) # 0 
+
+sum(is.na(d_final_rt$prev_error)) # 0 
+
+d_final_analysis <- d_final_rt
+
+```
+
+
+No, after removing outlier trials based on rt cutoff, I have 40,454 observations of 23 variables 
+
+
+```{r}
+
+getwd()
+write.csv(d_final_analysis, "/Users/nehanagarkar/Desktop/Mayr_lab/Data_analysis_project/AlternateCues/d_final_analysis.csv", row.names = FALSE)
+
+```
+
+######################################################################### Analysis #######################################################################
+
+Note: 
+(i)For the RT models, error trials, and trials before errors should also be removed
+(ii) - using the Valence_current_group variable --> make new variable val_c_g with levels -0.5 for (Valence_current_group == 1) and + 0.5 for (Valence_current_group == 2) 
+     - using the Valence_previous_group variable --> make new variable val_p_g with levels -0.5 for (Valence_previous_group == 1) and + 0.5 for Valence_previous_group == 2) 
+     
+
+Coding: 
+
+- Switch (0 - no switch; 1 - switch) 
+
+- Valence_current_group (-0.5 - univalent; 0.5 bivalent) - so make new variable with this 
+
+- Valence_previous_group (-0.5 - univalent; 0.5 bivalent) - so make new variable with this 
+
+Models: 
+
+lmer(RT ~ Valence_current_group * Valence_previous_group*Switch + (Valence_current_group + Valence_previous_group + Switch|Subject)) 
+
+glmer(Error ~ Valence_current_group * Valence_previous_group*Switch + (Valence_current_group + Valence_previous_group + Switch|Subject), family = “binomial”, control = glmerControl(optimizer = “bobyqa”)) 
+
+
+A. New variables for valence of current and previous group according to -0.5 and +0.5 coding 
+
+
+```{r}
+
+
+class(d_final_analysis)
+
+d_final_analysis$val_c_g <- ifelse(d_final_analysis$valence_current_group == 1, -0.5,
+                     ifelse(d_final_analysis$valence_current_group == 2,  0.5, NA))
+
+d_final_analysis$val_p_g <- ifelse(d_final_analysis$valence_previous_group == 1, -0.5,
+                     ifelse(d_final_analysis$valence_previous_group == 2,  0.5, NA))
+
+
+
+
+```
+
+```{r}
+
+df_models <- d_final_analysis
+
+### DO NOT CONVERT VARIABLES THAT THE MODEL SHOULD TREAT AS FACTORS MANUALLY INTO AS FACTORS!! BECAUSE IT WILL TREAT THE VARIABLES AS DDUMMY CODING!!! 
+
+# df_models$id <- factor(df_models$id)
+# df_models$val_c_g <- factor(df_models$val_c_g)
+# df_models$val_p_g <- factor(df_models$val_p_g)
+# df_models$switch <- factor(df_models$switch)
+# df_models$error <- factor(df_models$error)
+# df_models$prev_error <- factor(df_models$prev_error)
+# 
+# 
+# levels(df_models$id)
+# levels(df_models$val_c_g)
+# levels(df_models$val_p_g)
+# levels(df_models$switch)
+# levels(df_models$error)
+# levels(df_models$prev_error)
+
+```
+
+c. Models 
+
+
+1. lmer model
+
+-For the RT models, error trials, and trials before errors should also be removed
+Q: should it be block wise? or across all trials? 
+
+remove  error == 0 and prev_error == 0 for the d_final_analysis inside lmer model filter()
+
+```{r}
+
+library(lme4)
+
+df_models_rt <- df_models 
+
+library(tidyverse)
+
+df_models_rt <- df_models_rt %>%
+  filter(error == 0, prev_error == 0)
+  
+
+  m_rt<- lmer(log(time) ~  val_c_g * val_p_g* switch + (val_c_g + val_p_g + switch ||  id),
+                 data = df_models_rt,
+                  na.action = na.exclude)
+              
+                # control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt)
+ 
+ 
+#library(sjPlot)
+ tab_model(m_rt,show.est=T,auto.label=F,show.stat=T)
+ 
+ 
+ names(df_models)
+```
+
+
+2. glmer model
+
+```{r}
+
+
+df_models$error <- as.factor(df_models$error)
+levels(df_models$error)
+
+  m_error<- glmer(error ~  val_c_g * val_p_g * switch + ( val_c_g +  val_p_g + switch| id),
+                 data = df_models, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+ 
+ summary(m_error)
+ 
+ tab_model(m_error,show.est=T,auto.label=F,show.stat=T)
+```
+
+################################################################################################################################
+                                                   DDM 
+#| include: false
+#first putting in some pre-made functions that will go into the ezDDM analysis: 
+
+```{r}
+
+normWS <- function(d ,s, dv, between = NULL) { #within subject normalization
+  eval(substitute(d %>%
+                    dplyr::group_by(s) %>%
+                    dplyr::mutate(sAV = mean(dv, na.rm = TRUE)) %>%
+                    dplyr::group_by_at(between) %>% #this is grouping by between subjects variables
+                    dplyr::mutate(gAV = mean(dv, na.rm = TRUE)) %>%
+                    dplyr::mutate(DV_n = dv - sAV + gAV), list(s = as.name(s), dv = as.name(dv))))
+}
+
+
+get_ci <- function(var, mean){
+  sd <- sd(var, na.rm = TRUE)
+  n <- length(var)
+  se <- sd/sqrt(n)
+  ci <- abs(qt(0.025, n-1, lower.tail = FALSE))*se
+  return(c(mean + ci, mean - ci, sd, se, n))
+}
+
+convert_extremes <- function(value){
+  
+  if(value == 1){
+    
+    value = value - 1e-5
+    
+  } else if (value == 0 ){
+    
+    value = value + 1e-5
+    
+  }
+  
+  return(value)
+  
+}#making sure error is either .99 or .001
+```
+
+
+## Aggregation and data processing
+
+--hausekeep 
+
+install.packages("cli")
+packageVersion("cli") -- should show ≥ 3.6.5-- it is 3.6.5 
+install.packages("devtools")
+devtools::install_github("hauselin/hausekeep")
+library(hausekeep)
+
+```{r}
+library(devtools)
+library(rio)
+library(hausekeep)
+
+
+library(tidyverse)
+alt_cue_agg_ID_ddm <- d_final_analysis %>%
+  mutate(RT_s = time/1000) %>%
+  group_by(id, val_c_g, val_p_g, switch, cycle) %>%
+  summarize(RT_s_m = mean(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            RT_s_var = var(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            Error = mean(error, na.rm = TRUE),
+            N_trials = n()) %>%
+  rowwise() %>%
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
+                            nTrials = N_trials))) %>%
+  
+  unnest(ezddm)
+
+
+
+alt_cue_agg_ddm <- alt_cue_agg_ID_ddm %>%
+  group_by(id, val_c_g, val_p_g, switch, cycle) %>%
+  normWS(s = "id", dv = "a") %>%
+  mutate(a = DV_n) %>%
+  normWS(s = "id", dv = "v") %>%
+  mutate(v = DV_n) %>%
+  normWS(s = "id", dv = "Ter") %>%
+  mutate(Ter = DV_n) %>%
+  group_by(val_c_g, val_p_g, switch, cycle) %>%
+  summarize(a_m = mean(a, na.rm = TRUE),
+            a_ci_lower = get_ci(a, a_m)[1],
+            a_ci_upper = get_ci(a, a_m)[2],
+            v_m = mean(v, na.rm = TRUE),
+            v_ci_lower = get_ci(v, v_m)[1],
+            v_ci_upper = get_ci(v, v_m)[2],
+            Ter_m = mean(Ter, na.rm = TRUE),
+            Ter_ci_lower = get_ci(Ter, Ter_m)[1],
+            Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
+
+#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances
+alt_cue_agg_ID_ddm_collapsed <- alt_cue_agg_ID_ddm %>% 
+  filter(switch == 0, cycle %in% c(2, 3)) %>%
+  group_by(id, val_c_g, val_p_g) %>% 
+  summarize( # average the DDM parameters across cycles 2&3 
+    a = mean(a, na.rm = TRUE), 
+    v = mean(v, na.rm = TRUE), #average within those 
+    Ter = mean(Ter, na.rm = TRUE), 
+    a_var = mean(a^2, na.rm = TRUE), #average within those variances
+    v_var = mean(v^2, na.rm = TRUE), 
+    Ter_var = mean(Ter^2, na.rm = TRUE), 
+    .groups = "drop" )
+
+alt_cue_agg_ID_ddm_collapsed
+
+alt_cue_agg_ID_ddm %>% filter(switch == 0, cycle %in% c(2,3)) %>% count(id, val_c_g, val_p_g)
+```
+
+
+
+```{r}
+
+# alt_cue_agg_ddm$is_bivalent <- ifelse(alt_cue_agg_ddm$valence_current_group == 1 , 1,
+#                      ifelse(d_final_analysis$valence_current_group == 2,  2, NA))
+# 
+# alt_cue_agg_ddm$prev_bivalent <- ifelse(alt_cue_agg_ddm$valence_previous_group == 1, 1,
+#                      ifelse(d_final_analysis$valence_previous_group == 2,  2, NA))
+# 
+# 
+# alt_cue_agg_ID_ddm$is_bivalent <- ifelse(alt_cue_agg_ID_ddm$valence_current_group == 1 , 1,
+#                      ifelse(d_final_analysis$valence_current_group == 2,  2, NA))
+# 
+# alt_cue_agg_ID_ddm$prev_bivalent <- ifelse(alt_cue_agg_ID_ddm$valence_previous_group == 1, 1,
+#                      ifelse(d_final_analysis$valence_previous_group == 2,  2, NA))
+
+
+```
+
+
+## Plots
+
+```{r}
+pos <- position_dodge(width = 0.1)
+
+alt_cue_agg_ddm$val_c_g <- as.factor(alt_cue_agg_ddm$val_c_g)
+alt_cue_agg_ddm$val_p_g <- as.factor(alt_cue_agg_ddm$val_p_g)
+
+plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
+  theme_classic()
+
+plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
+  theme_classic()
+
+
+plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
+  theme_classic()
+
+ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow = 1)  
+  
+
+```
+
+## Statistical Models
+
+### First prep data so that it's ignoring cycle
+
+```{r}
+alt_cue_agg_ID_ddm_nocycle <- d_final_analysis %>%
+  mutate(RT_s = time/1000) %>%
+  group_by(id, valence_current_group, valence_previous_group, val_c_g, val_p_g, switch) %>%
+  summarize(RT_s_m = mean(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            RT_s_var = var(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            Error = mean(error, na.rm = TRUE),
+            N_trials = n()) %>%
+  rowwise() %>%
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
+                            nTrials = N_trials))) %>%
+  unnest(ezddm)
+```
+
+### Models
+
+```{r}
+
+# library(sjPlot)
+# library(lme4)
+
+
+### all these models do not converge 
+
+
+alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch|id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+#summary(alt_cue_a)
+tab_model(alt_cue_a)
+
+alt_cue_v <- lmer(v ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch|id), 
+     alt_cue_agg_ID_ddm_nocycle)
+#summary(alt_cue_v)
+tab_model(alt_cue_v)
+
+
+alt_cue_Ter <- lmer(Ter ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch|id), 
+     alt_cue_agg_ID_ddm_nocycle)
+#summary(alt_cue_Ter)
+tab_model(alt_cue_Ter)
+```
+
+
+
+
