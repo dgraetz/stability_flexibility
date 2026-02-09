@@ -123,28 +123,31 @@ outliers_by_id <- alt_run_z %>%
 alt_run <- alt_run_z %>%
   filter(abs(z) <= 3 | is.na(z)) 
 
-
-# Final summary dataset
-z_score_inspect <- alt_run %>%
-  group_by(id, cycle2, valence, lvalence) %>%
-  summarize( 
-    z_score_mean = mean(z, na.rm = TRUE), 
-    z_score_sd = sd(z, na.rm = TRUE), 
-    response_time_mean = mean(rt, na.rm = TRUE),
-    response_time_sd = sd(rt, na.rm = TRUE) 
-    )
-z_score_inspect
-
 alt_run <- alt_run %>%
            filter(group != 1) %>% 
 mutate(rt_log = (log(rt)), 
        filter_correct = ifelse(error == 1 | lerror == 1, 1, 0)
        )
 
+
+
+# # Final summary dataset
+# z_score_inspect <- alt_run %>%
+#   group_by(id, cycle2, valence, lvalence) %>%
+#   summarize( 
+#     z_score_mean = mean(z, na.rm = TRUE), 
+#     z_score_sd = sd(z, na.rm = TRUE), 
+#     response_time_mean = mean(rt, na.rm = TRUE),
+#     response_time_sd = sd(rt, na.rm = TRUE) 
+#     )
+# z_score_inspect
+
+
+alt_run <- alt_run %>% 
+  mutate( valence = factor(valence), 
+    lvalence = factor(lvalence),
+    cycle2 = factor(cycle2))
 view(alt_run)
-
-
-
 ```
 ## Aggragation experimental level analysis
 
@@ -225,6 +228,7 @@ allagg_ci <- allagg %>% #group level CIs
 ```
 
 ## Visualizations
+also make figures with averages of no-switch by cycle
 
 By logged RT
 ```{r}
@@ -379,7 +383,7 @@ convert_extremes <- function(value){
 }#making sure error is either .99 or .001
 ```
 
-### DDM aggragation
+### DDM aggregation
 ```{r}
 
 alt_run_agg_ID_ddm <- alt_run %>%
@@ -398,7 +402,7 @@ alt_run_agg_ID_ddm <- alt_run %>%
 
 alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
   group_by(id, valence,lvalence, switch, cycle2) %>%
-  normWS(s = "id", dv = "a") %>% #boundary separation
+  normWS(s = "id", dv = "a") %>% #boundary separation. this is starting value
   mutate(a = DV_n) %>%
   normWS(s = "id", dv = "v") %>% #drift rate
   mutate(v = DV_n) %>%
@@ -415,21 +419,108 @@ alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
             Ter_ci_lower = get_ci(Ter, Ter_m)[1],
             Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
 
-#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances
-alt_run_agg_ID_ddm_collapsed <- alt_run_agg_ID_ddm %>% 
-  filter(switch == 0, cycle2 %in% c(2, 3, 4)) %>%
-  group_by(id, valence, lvalence) %>% 
-  summarize( # average the DDM parameters across cycles 2–4 
-    a = mean(a, na.rm = TRUE), 
-    v = mean(v, na.rm = TRUE), #average within those 
-    Ter = mean(Ter, na.rm = TRUE), 
-    a_var = mean(a^2, na.rm = TRUE), #average within those variances
-    v_var = mean(v^2, na.rm = TRUE), 
-    Ter_var = mean(Ter^2, na.rm = TRUE), 
-    .groups = "drop" )
+#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances. 
+#this agg is the one we use for he lmer models
 
-alt_run_agg_ID_ddm_collapsed
+alt_run_agg_ID_ddm_collapsed <- alt_run  %>% #doing this a different way, if we groupby everything but cycle, the switch v no-switch will auto treat 2,3,4 as averaged i think
+  mutate(RT_s = rt/1000) %>% #convert rt to seconds
+  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch) %>%
+  summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
+            RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
+            error = mean(error, na.rm = TRUE),
+            N_trials = n()) %>%
+  rowwise() %>% #this is looking at everything in one row, have to agg data like this for DDM becuase it does not compute vectors but rows
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-error), #were essentially making a dataframe that shows up as an extra cell next to each part
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
+                            nTrials = N_trials))) %>%
+  unnest(ezddm) #this extracts the newly created dataframe per column into its own separate columns 
 
-alt_run_agg_ID_ddm %>% filter(switch == 0, cycle2 %in% c(2,3,4)) %>% count(id, valence, lvalence)
+alt_run_agg_ddm_collapsed <- alt_run_agg_ID_ddm_collapsed %>%
+  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch) %>%
+  normWS(s = "id", dv = "a") %>% #boundary separation. this is starting value
+  mutate(a = DV_n) %>%
+  normWS(s = "id", dv = "v") %>% #drift rate
+  mutate(v = DV_n) %>%
+  normWS(s = "id", dv = "Ter") %>% #non-decision time
+  mutate(Ter = DV_n) %>%
+  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch) %>%
+  summarize(a_m = mean(a, na.rm = TRUE),
+            a_ci_lower = get_ci(a, a_m)[1],
+            a_ci_upper = get_ci(a, a_m)[2],
+            v_m = mean(v, na.rm = TRUE),
+            v_ci_lower = get_ci(v, v_m)[1],
+            v_ci_upper = get_ci(v, v_m)[2],
+            Ter_m = mean(Ter, na.rm = TRUE),
+            Ter_ci_lower = get_ci(Ter, Ter_m)[1],
+            Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
 
 ```
+```{r}
+plt_ddm_a <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
+  geom_line(position = position_dodge(width = 0.25))+
+  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
+  theme_classic()
+
+plt_ddm_v <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = v_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
+  geom_line(position = position_dodge(width = 0.25))+
+  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
+  theme_classic()
+
+
+plt_ddm_Ter <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = Ter_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
+  geom_line(position = position_dodge(width = 0.25))+
+  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
+  theme_classic()
+
+ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow = 1)  
+
+#ok this works but idk how to interpret
+```
+```{r}
+#plotting with the aggregation averaging between no-switch cycles
+plt_ddm_a <- ggplot(alt_run_agg_ddm_collapsed, aes(x = switch, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence)))+
+  geom_line(position = position_dodge(width = 0.25))+
+  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
+  theme_classic()
+
+plt_ddm_v <- ggplot(alt_run_agg_ddm_collapsed, aes(x = switch, y = v_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence)))+
+  geom_line(position = position_dodge(width = 0.25))+
+  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
+  theme_classic()
+
+
+plt_ddm_Ter <- ggplot(alt_run_agg_ddm_collapsed, aes(x = switch, y = Ter_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence)))+
+  geom_line(position = position_dodge(width = 0.25))+
+  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
+  theme_classic()
+
+ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow = 1) 
+```
+### DDM Models 
+
+```{r}
+model_a <- lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_a)
+
+tab_model(model_a, show.est = T, auto.label = F, show.stat = T)
+```
+
+
+```{r}
+model_v <- lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_v)
+
+tab_model(model_v, show.est = T, auto.label = F, show.stat = T)
+```
+```{r}
+model_Ter <- lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_Ter)
+
+tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T)
+```
+
+
