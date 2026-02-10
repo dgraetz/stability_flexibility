@@ -70,13 +70,15 @@ alt_cue <- alt_cue %>%
          cycle = factor(cycle),
          switch = factor(switch),
          prev_bivalent_contr = case_when(prev_bivalent == 1 ~ 0.5,
-                                              prev_bivalent == 0 ~ -0.5),
+                                         prev_bivalent == 0 ~ -0.5),
          is_bivalent_contr = case_when(is_bivalent == 1 ~ 0.5,
-                                        is_bivalent == 0 ~ -0.5),
+                                       is_bivalent == 0 ~ -0.5),
          switch_contr = case_when(switch == 1 ~ 1,
                                   switch == 0 ~ 0)) %>%
   filter(block != 0) %>%
   filter(trialgroup != 1) %>%
+  group_by(id) %>%
+  mutate(trial_cont = seq(1, n()), .after = trial) %>%
   group_by(id, prev_bivalent, is_bivalent, cycle) %>%
   mutate(time_M = mean(time[error == 0 & was_prev_error == 0]),
          time_SD = sd(time[error == 0 & was_prev_error == 0]),
@@ -88,6 +90,49 @@ alt_cue <- alt_cue %>%
 
 nrow(alt_cue)
 ```
+
+
+```{r}
+
+model_RT_trial <- lmer(time_log ~ poly(trial_cont, 2) + (poly(trial_cont, 2)|id), 
+                       control = lmerControl(optimizer = "bobyqa"),
+                       alt_cue %>% 
+                         filter(filter_correct == 0))
+
+
+model_RT_trial %>%
+  make_model_table()
+
+
+alt_cue <- alt_cue %>%
+  ungroup() %>%
+  mutate(time_log_pred = predict(model_RT_trial, .)) #%>%
+  
+subs <- alt_cue$id %>% unique() %>% head(5)
+
+
+ggplot(alt_cue %>% filter(id %in% subs), aes(x = trial_cont, y = time_log, color = block, group = interaction(id, block)))+
+  geom_line(alpha = 0.5, lwd = 0.3)+
+  geom_smooth(se = FALSE)+
+  geom_line(aes(y = time_log_pred), color = "green")+
+  facet_grid(~id)+
+  theme_classic()+
+  theme(legend.position = "none")
+
+
+alt_cue$time_log_res <- NA
+alt_cue$time_log_res[alt_cue$filter_correct == 0] <- residuals(model_RT_trial)
+
+
+alt_cue <- alt_cue %>%
+  group_by(id, block) %>%
+  mutate(lag1_time_log_res = lag(time_log_res, 1)) %>%
+  filter(time_outlier == 0)
+
+
+
+```
+
 
 # Data Aggregation by cycle
 
@@ -116,6 +161,33 @@ alt_cue_agg <- alt_cue_agg_ID %>%
             Error_ci_lower = get_ci(Error, Error_m)[1],
             Error_ci_upper = get_ci(Error, Error_m)[2]
   )
+
+alt_cue_contr_agg_ID <- alt_cue %>%
+  group_by(id, is_bivalent, prev_bivalent, switch) %>%
+  summarize(RT = mean(time[filter_correct == 0], na.rm = TRUE),
+            RT_log = mean(time_log[filter_correct == 0], na.rm = TRUE),
+            Error = mean(error, na.rm = TRUE))
+
+alt_cue_contr_agg <- alt_cue_agg_ID %>%
+  normWS(s = "id", dv = "RT") %>%
+  mutate(RT = DV_n) %>%
+  normWS(s = "id", dv = "RT_log") %>%
+  mutate(RT_log = DV_n) %>%
+  normWS(s = "id", dv = "Error") %>%
+  mutate(Error = DV_n) %>%
+  group_by(is_bivalent, prev_bivalent, switch) %>%
+  summarize(RT_m = mean(RT, na.rm = TRUE),
+            RT_ci_lower = get_ci(RT, RT_m)[1],
+            RT_ci_upper = get_ci(RT, RT_m)[2],
+            RT_log_m = mean(RT_log, na.rm = TRUE),
+            RT_log_ci_lower = get_ci(RT_log, RT_log_m)[1],
+            RT_log_ci_upper = get_ci(RT_log, RT_log_m)[2],
+            Error_m = mean(Error, na.rm = TRUE),
+            Error_ci_lower = get_ci(Error, Error_m)[1],
+            Error_ci_upper = get_ci(Error, Error_m)[2]
+  )
+
+
 ```
 
 
@@ -124,23 +196,49 @@ alt_cue_agg <- alt_cue_agg_ID %>%
 ```{r}
 pos <- position_dodge(width = 0.1)
 
-ggplot(alt_cue_agg, aes(x = cycle, y = RT_log_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+plt_rtlog_cycle <- ggplot(alt_cue_agg, aes(x = cycle, y = RT_log_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = RT_log_ci_lower, ymax = RT_log_ci_upper), width = 0.1, position = pos)+
   theme_classic()
 
-
-ggplot(alt_cue_agg, aes(x = cycle, y = RT_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+plt_rt_cycle <- ggplot(alt_cue_agg, aes(x = cycle, y = RT_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = RT_ci_lower, ymax = RT_ci_upper), width = 0.1, position = pos)+
   theme_classic()
 
 
-
-ggplot(alt_cue_agg, aes(x = cycle, y = Error_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+plt_error_cycle <- ggplot(alt_cue_agg, aes(x = cycle, y = Error_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = Error_ci_lower, ymax = Error_ci_upper), width = 0.1, position = pos)+
   theme_classic()
+
+#########################
+
+plt_rtlog_switch <- ggplot(alt_cue_contr_agg, aes(x = switch, y = RT_log_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = RT_log_ci_lower, ymax = RT_log_ci_upper), width = 0.1, position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+plt_rtlog_switch
+
+plt_rt_switch <- ggplot(alt_cue_contr_agg, aes(x = switch, y = RT_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = RT_ci_lower, ymax = RT_ci_upper), width = 0.1, position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+
+
+plt_error_switch <- ggplot(alt_cue_contr_agg, aes(x = switch, y = Error_m, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = Error_ci_lower, ymax = Error_ci_upper), width = 0.1, position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+
+
+ggpubr::ggarrange(plt_rtlog_cycle, plt_rtlog_switch)
+ggpubr::ggarrange(plt_rt_cycle, plt_rt_switch)
+ggpubr::ggarrange(plt_error_cycle, plt_error_switch)
+
 ```
 
 # Stats: 
@@ -149,14 +247,14 @@ ggplot(alt_cue_agg, aes(x = cycle, y = Error_m, color = is_bivalent, linetype = 
 
 ```{r}
 alt_cue_rt_log <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), 
-     alt_cue %>% 
-       filter(filter_correct == 0))
+                       alt_cue %>% 
+                         filter(filter_correct == 0))
 
 make_model_table(alt_cue_rt_log)
 
 alt_cue_rt <- lmer(time ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), 
-     alt_cue %>% 
-       filter(filter_correct == 0))
+                   alt_cue %>% 
+                     filter(filter_correct == 0))
 
 #summary(alt_cue_rt)
 
@@ -171,9 +269,9 @@ make_model_table(alt_cue_rt)
 
 ```{r}
 alt_cue_error <- glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
-                      family = "binomial",
-                      control = glmerControl(optimizer = "bobyqa"),
-                   alt_cue)
+                       family = "binomial",
+                       control = glmerControl(optimizer = "bobyqa"),
+                       alt_cue)
 
 saveRDS(alt_cue_error, "dominik/models/alt_cue_errors.RDS")
 alt_cue_error <- readRDS("dominik/models/alt_cue_errors.RDS")
@@ -244,7 +342,7 @@ plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = is_biva
   theme_classic()
 
 ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow = 1)  
-  
+
 
 ```
 
@@ -271,21 +369,64 @@ alt_cue_agg_ID_ddm_nocycle <- alt_cue %>%
 ### Models
 
 ```{r}
-alt_cue_a <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
-     alt_cue_agg_ID_ddm_nocycle)
+alt_cue_a <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id),
+                  alt_cue_agg_ID_ddm_nocycle)
 
 #summary(alt_cue_a)
 make_model_table(alt_cue_a)
 
-alt_cue_v <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
-     alt_cue_agg_ID_ddm_nocycle)
+alt_cue_v <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id), 
+                  alt_cue_agg_ID_ddm_nocycle)
 #summary(alt_cue_v)
 make_model_table(alt_cue_v)
 
 
-alt_cue_Ter <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
-     alt_cue_agg_ID_ddm_nocycle)
+alt_cue_Ter <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr||id), 
+                    alt_cue_agg_ID_ddm_nocycle)
 #summary(alt_cue_Ter)
 make_model_table(alt_cue_Ter)
 ```
+
+
+
+# RT residual analysis
+
+```{r}
+
+alt_cue_rt_log_resrt <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), control = lmerControl(optimizer = "bobyqa"),
+     alt_cue %>% 
+       filter(filter_correct == 0))
+
+make_model_table(alt_cue_rt_log_resrt)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res, type = "response",
+                 at = list(is_bivalent_contr = c(-0.5, 0.5),
+                           prev_bivalent_contr = c(-0.5, 0.5),
+                           switch_contr = c(0, 1),
+                           lag1_time_log_res = c(6.5, 10.5))) %>%
+  as.data.frame() %>%
+  mutate(prev_bivalent = case_when(prev_bivalent_contr == -0.5 ~ 0, 
+                                   prev_bivalent_contr ==  0.5 ~ 1) %>% factor(),
+         is_bivalent = case_when(is_bivalent_contr == -0.5 ~ 0,
+                                   is_bivalent_contr ==  0.5 ~ 1) %>% factor(),
+         switch = factor(switch_contr),
+         speed = case_when(lag1_time_log_res == min(lag1_time_log_res) ~ "fast",
+                           lag1_time_log_res == max(lag1_time_log_res) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+```
+
+
+
 
