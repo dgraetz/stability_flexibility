@@ -38,6 +38,7 @@ library(janitor)
 library(readr)
 library(rio)
 library(psych) 
+library(stats)
 library(lme4)
 library(sjPlot)
 library(hausekeep)
@@ -45,7 +46,6 @@ library(hausekeep)
 AlternateRuns <- read_csv("AlternateRuns.csv")
 #view(AlternateRuns) 
 
-#sub 57 has 2352 trials check this 
 ```
 
 ## Data Cleaning
@@ -53,7 +53,6 @@ AlternateRuns <- read_csv("AlternateRuns.csv")
 Rename variables for clarity, remove practice blocks and subjects with \> 80% accuracy, compute z-scores and create switch + valence + lag variables.
 
 ```{r}
-
 
 #rename columns to understand better
 alt_run <- AlternateRuns %>% 
@@ -89,7 +88,9 @@ alt_run <- alt_run %>%
     ltrial = lag(trial, 1), 
     lrt = lag(rt, 1),
     valence = if_else(dimshape == 4 | dimcolor == 4, 1, 2),  # 1 = uni, 2 = bi
-    lvalence = lag(valence, 1)                               # previous trial’s valence
+    lvalence = lag(valence, 1), 
+    conflict = if_else(dimshape != dimcolor & dimshape !=4 & dimcolor != 4, 1,0), 
+    lconflict = lag(conflict)
   ) %>%
   group_by(id, block, group) %>%
   mutate(lvalence = lvalence[1]) %>%                         # constant within 4‑trial group
@@ -102,6 +103,13 @@ alt_run <- alt_run %>% #making contrasts outlined in prereg
     lvalence_contr = case_when(lvalence == 1 ~ -0.5, lvalence == 2 ~ 0.5),
     valence_contr = case_when(valence == 1 ~ -0.5, valence == 2 ~ 0.5)
     )
+
+alt_run <- alt_run %>% 
+  mutate( valence = factor(valence), 
+    lvalence = factor(lvalence),
+    cycle2 = factor(cycle2)) %>% 
+      group_by(id) %>% 
+  mutate(conttrials = 1:n())
 
 #compute z-score on trial level 
 alt_run_z <- alt_run %>% 
@@ -143,10 +151,6 @@ mutate(rt_log = (log(rt)),
 # z_score_inspect
 
 
-alt_run <- alt_run %>% 
-  mutate( valence = factor(valence), 
-    lvalence = factor(lvalence),
-    cycle2 = factor(cycle2))
 view(alt_run)
 ```
 ## Aggragation experimental level analysis
@@ -320,6 +324,17 @@ summary(model_lmer)
 
 tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T)
 ```
+```{r}
+model_conflictcheck <- lmer(
+  rt_log ~ valence_contr * lvalence_contr * switch +(valence_contr + lvalence_contr + switch || id),
+  data = alt_run %>% filter(filter_correct == 0, conflict == 0, lconflict == 0)
+)
+
+summary(model_conflictcheck)
+
+tab_model(model_conflictcheck, show.est = T, auto.label = F, show.stat = T) #this does change the significance of two way interactions with switch
+```
+
 
 ```{r}
 model_lmer_log <- lmer(
@@ -330,8 +345,28 @@ model_lmer_log <- lmer(
 
 summary(model_lmer_log)
 
+
 tab_model(model_lmer_log, show.est = T, auto.label = F, show.stat = T)
+
+ 
 ```
+
+adding conflict as a fixed effect into the rt_log
+
+```{r}
+model_lmer_log_conflict <- lmer(
+  rt_log ~ valence_contr * lvalence_contr * conflict * lconflict *switch +
+    (valence_contr + lvalence_contr + switch + conflict + lconflict || id), #double bar bc does not converge with single, is less complex w double
+  data = alt_run %>% filter(filter_correct == 0)
+)
+
+summary(model_lmer_log_conflict)
+
+
+tab_model(model_lmer_log_conflict, show.est = T, auto.label = F, show.stat = T)
+
+```
+
 
 ```{r}
 model_glmer <- glmer(
@@ -342,6 +377,16 @@ summary(model_glmer)
 
 tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
 ```
+```{r}
+model_glmer_conflictcheck <- glmer(
+  error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run %>% filter(conflict == 0, lconflict == 0)
+)
+
+summary(model_glmer_conflictcheck)
+
+tab_model(model_glmer_conflictcheck, show.est = T, auto.label = F, show.stat = T)
+```
+
 
 ## ezDDM Analysis 
 ```{r}
@@ -522,5 +567,38 @@ summary(model_Ter)
 
 tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T)
 ```
+altcues: no contruency in the ambigious trials, but for alt runs there is 
+eliminate all congruent trials and check patterns for general trends
+- see if there is an effect, may need to trhow out congruent trials 
 
+
+## Within subject analysis
+(althrough altruns does show a speed accuracy relationship)
+
+```{r}
+
+#create a new variable in initial data with trial numbers that continue adding person 
+#new model to take the residuals from, this needs to include block trial and sub, need to add poly function within the model
+
+polymodel <- lmer(
+  rt_log ~ poly(conttrials, 2)* (poly(conttrials, 2) | id),
+  data = alt_run %>% filter(filter_correct == 0) #filers out prev er and cur er 
+)
+polymodel
+
+#poly(x,2) is specifications for linear and quadratic
+
+#looking for 1 is linear 2 is quadratic
+
+summary(polymodel)
+#residuals for this new model 
+
+tab_model(polymodel, show.est = T, auto.label = F, show.stat = T)
+
+#create a new column in the dataframe residuals() 
+# converges using the bobyqua optimizer if we dont want to filter out errors
+# residual <- NA
+#alt_runs <- mutate(residual = ifelse(filter_correct == 0), residuals(polymodel), NA)
+
+```
 
