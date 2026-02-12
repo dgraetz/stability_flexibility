@@ -442,6 +442,10 @@ ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_b
 
 ## Lag RT based on previous trial group
 
+One concern I have with the analysis above (but maybe I'm wrong), is that the lag1 residual log RT is problematic for no-switch trials. In trial 2 of a trialgroup for instance, lag1 RT corresponds to the switch RT trial (trial 1 in a trialgroup). However, for trials 3 and 4 of a trialgroup, lag 1 RT corresponds to a no-switch trial. Therefore, in the graph above, the 0 switch is hard to interpret. This is especially problematic for the Alternate Runs experiment, because there are three no switch trials, one of which has the problematic lag 1 RT corresponding to the switch trial. In the Alternate Cues experiment, at least the no switch trials are averaged (trials 2 and 3, one of which is biased, so it's a balanced average). 
+
+Therefore, here, I am using, instead of a lag 1 RT, a new variable which calculates the mean of the *previous group RTs of no switch trials*. So again, not previous trial, but previous group averaged no switch trial RTs. That might be a better indicated for previous group stability.
+
 ```{r}
 
 
