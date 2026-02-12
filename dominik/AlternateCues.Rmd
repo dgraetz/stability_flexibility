@@ -108,26 +108,36 @@ alt_cue <- alt_cue %>%
   ungroup() %>%
   mutate(time_log_pred = predict(model_RT_trial, .)) #%>%
   
-subs <- alt_cue$id %>% unique() %>% head(5)
-
-
-ggplot(alt_cue %>% filter(id %in% subs), aes(x = trial_cont, y = time_log, color = block, group = interaction(id, block)))+
-  geom_line(alpha = 0.5, lwd = 0.3)+
-  geom_smooth(se = FALSE)+
-  geom_line(aes(y = time_log_pred), color = "green")+
-  facet_grid(~id)+
-  theme_classic()+
-  theme(legend.position = "none")
-
 
 alt_cue$time_log_res <- NA
 alt_cue$time_log_res[alt_cue$filter_correct == 0] <- residuals(model_RT_trial)
 
-
 alt_cue <- alt_cue %>%
   group_by(id, block) %>%
-  mutate(lag1_time_log_res = lag(time_log_res, 1)) %>%
-  filter(time_outlier == 0)
+  mutate(lag1_time_log_res = lag(time_log_res, 1))
+
+subs <- alt_cue$id %>% unique() %>% head(5)
+
+plt_rt_w_model <- ggplot(alt_cue %>% filter(id %in% subs), aes(x = trial_cont, y = time_log, color = block, group = interaction(id, block)))+
+  geom_line(alpha = 0.5, lwd = 0.3)+
+  geom_smooth(se = FALSE)+
+  geom_line(aes(y = time_log_pred), color = "green")+
+  scale_color_viridis_c(end = 0.8)+
+  facet_grid(~id)+
+  labs(x = "Continuous Trial", y = "log(RT)", title = "log(RT) with trend model, by subject")+
+  theme_classic()+
+  theme(legend.position = "none")
+
+plt_rt_residuals <- ggplot(alt_cue %>% filter(id %in% subs), aes(x = trial_cont, y = time_log_res, color = block, group = interaction(id, block)))+
+  geom_line(alpha = 0.5, lwd = 0.3)+
+  geom_smooth(se = FALSE)+
+  scale_color_viridis_c(end = 0.8)+
+  facet_grid(~id)+
+  labs(x = "Continuous Trial", y = "log(RT)", title = "Residual RTs, by subject")+
+  theme_classic()+
+  theme(legend.position = "none")
+
+ggpubr::ggarrange(plt_rt_w_model, plt_rt_residuals, nrow = 2)
 
 
 
@@ -393,7 +403,7 @@ make_model_table(alt_cue_Ter)
 
 ```{r}
 
-alt_cue_rt_log_resrt <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res + (is_bivalent_contr + prev_bivalent_contr + switch_contr||id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt <- lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res + (is_bivalent_contr + prev_bivalent_contr + switch_contr + lag1_time_log_res||id), control = lmerControl(optimizer = "bobyqa"),
      alt_cue %>% 
        filter(filter_correct == 0))
 
@@ -403,7 +413,7 @@ preds <- emmeans::emmeans(alt_cue_rt_log_resrt, ~ is_bivalent_contr * prev_bival
                  at = list(is_bivalent_contr = c(-0.5, 0.5),
                            prev_bivalent_contr = c(-0.5, 0.5),
                            switch_contr = c(0, 1),
-                           lag1_time_log_res = c(6.5, 10.5))) %>%
+                           lag1_time_log_res = c(-1.5, 1.5))) %>%
   as.data.frame() %>%
   mutate(prev_bivalent = case_when(prev_bivalent_contr == -0.5 ~ 0, 
                                    prev_bivalent_contr ==  0.5 ~ 1) %>% factor(),
@@ -421,7 +431,7 @@ ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_b
   scale_x_discrete(limits = c("1", "0"))+
   facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
                                                    "fast" = "lag RT fast")))+
-  labs(title = "Model predictions for log RTs",
+  labs(title = "Model predictions for residual log RTs",
        y = "log(RT) prediction")+
   theme_classic()
 
@@ -429,4 +439,53 @@ ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_b
 
 
 
+
+## Lag RT based on previous trial group
+
+```{r}
+
+
+alt_cue <- alt_cue %>%
+  group_by(id, block, trialgroup) %>%
+  mutate(avg_ns_rt_res_log = mean(time_log_res[switch == 0], na.rm = TRUE)) %>%
+  group_by(id, block) %>%
+  mutate(prev_avg_ns_rt_res_log = lag(avg_ns_rt_res_log, 1)) %>%
+  group_by(id, block, trialgroup) %>%
+  mutate(prev_avg_ns_rt_res_log = prev_avg_ns_rt_res_log[1])
+  
+
+alt_cue_rt_log_resrt_prev <- lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log + (is_bivalent_contr + prev_bivalent_contr + switch_contr + prev_avg_ns_rt_res_log||id), control = lmerControl(optimizer = "bobyqa"),
+     alt_cue %>% 
+       filter(filter_correct == 0))
+
+make_model_table(alt_cue_rt_log_resrt_prev)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log, type = "response",
+                 at = list(is_bivalent_contr = c(-0.5, 0.5),
+                           prev_bivalent_contr = c(-0.5, 0.5),
+                           switch_contr = c(0, 1),
+                           prev_avg_ns_rt_res_log = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(prev_bivalent = case_when(prev_bivalent_contr == -0.5 ~ 0, 
+                                   prev_bivalent_contr ==  0.5 ~ 1) %>% factor(),
+         is_bivalent = case_when(is_bivalent_contr == -0.5 ~ 0,
+                                   is_bivalent_contr ==  0.5 ~ 1) %>% factor(),
+         switch = factor(switch_contr),
+         speed = case_when(prev_avg_ns_rt_res_log == min(prev_avg_ns_rt_res_log) ~ "fast",
+                           prev_avg_ns_rt_res_log == max(prev_avg_ns_rt_res_log) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+
+```
 
