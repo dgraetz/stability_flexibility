@@ -42,6 +42,7 @@ library(stats)
 library(lme4)
 library(sjPlot)
 library(hausekeep)
+
 #import dataset
 AlternateRuns <- read_csv("AlternateRuns.csv")
 #view(AlternateRuns) 
@@ -580,13 +581,13 @@ polymodel <- lmer(
   rt_log ~ poly(conttrials, 2)* (poly(conttrials, 2) | id),
   data = alt_run %>% filter(filter_correct == 0) #filers out prev er and cur er 
 )
-polymodel
+#polymodel
 
 #poly(x,2) is specifications for linear and quadratic
 
 #looking for 1 is linear 2 is quadratic
 
-summary(polymodel)
+#summary(polymodel)
 #residuals for this new model 
 
 tab_model(polymodel, show.est = T, auto.label = F, show.stat = T)
@@ -594,11 +595,31 @@ tab_model(polymodel, show.est = T, auto.label = F, show.stat = T)
 # converges using the bobyqua optimizer if we dont want to filter out errors
 
 #create a new column in the dataframe using residuals() 
-alt_run$residual <- NA
-alt_run$residual[alt_run$filter_correct == 0] <- residuals(polymodel)
+alt_run$logresidual <- NA
+alt_run$logresidual[alt_run$filter_correct == 0] <- residuals(polymodel)
 
-#view(alt_run)
+view(alt_run)
 
+
+```
+autocorrelations lag rt and rt
+
+```{r}
+alt_run <- alt_run %>%
+  group_by(id, block, group) %>%
+  mutate(meanlogres_noswitch = mean(logresidual[switch == 0], na.rm = TRUE)) %>%
+  group_by(id, block) %>%
+  mutate(lmeanlogres_noswitch = lag(meanlogres_noswitch, 1)) %>% #we want lrt res
+  group_by(id, block, group) %>%
+  mutate(lmeanlogres_noswitch = lmeanlogres_noswitch[1])
+
+autocor_model <- lmer(logresidual ~ valence_contr * lvalence_contr * switch * lmeanlogres_noswitch + (valence_contr + lvalence_contr + switch + lmeanlogres_noswitch||id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% 
+       filter(filter_correct == 0))
+
+summary(autocor_model)
+
+tab_model(autocor_model, show.est = T, auto.label = F, show.stat = T)
 
 ```
 
