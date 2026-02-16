@@ -152,7 +152,7 @@ mutate(rt_log = (log(rt)),
 # z_score_inspect
 
 
-view(alt_run)
+head(alt_run)
 ```
 ## Aggragation experimental level analysis
 
@@ -598,7 +598,7 @@ tab_model(polymodel, show.est = T, auto.label = F, show.stat = T)
 alt_run$logresidual <- NA
 alt_run$logresidual[alt_run$filter_correct == 0] <- residuals(polymodel)
 
-view(alt_run)
+head(alt_run)
 
 
 ```
