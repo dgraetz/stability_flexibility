@@ -42,6 +42,7 @@ library(stats)
 library(lme4)
 library(sjPlot)
 library(hausekeep)
+library(hlmer)
 
 #import dataset
 AlternateRuns <- read_csv("AlternateRuns.csv")
@@ -571,6 +572,14 @@ tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T)
 
 ## Within subject analysis
 (although altruns does show a speed accuracy relationship)
+
+not only residualize the general trends but by task (bc task is assymetric) 
+
+add in helmert contrast (3 for runs, 2 for cues) 
+
+visualization for models 
+
+to fix singularity, can run a model comparisons to see what fixed effects to keep, can do this by running an ANOVA
 
 ```{r}
 
