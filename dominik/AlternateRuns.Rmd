@@ -102,9 +102,10 @@ alt_run <- alt_run %>%
 
 model_RT_trial <- lmer(time_log ~ poly(trial_cont, 2) + (poly(trial_cont, 2)|id), 
                        alt_run %>% 
-                         filter(filter_correct == 0))
+                         filter(error == 0))
 
-
+alt_run %>% 
+                         filter(error == 0) %>% nrow()
 model_RT_trial %>%
   make_model_table()
 
@@ -493,3 +494,63 @@ ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_b
 ```
 
 
+1. figure out RT removal
+1. 0/1 contrasts
+1. helmert
+
+```{r}
+
+alt_run <- alt_run %>%
+  mutate(cycle_helmert = factor(cycle))
+
+mat <- contr.helmert(4)
+
+mat[,1] <- mat[,1] %>% rev()
+mat[,2] <- mat[,2] %>% rev()
+mat[,3] <- mat[,3] %>% rev()
+
+colnames(mat) <- c("2_v_3", "1_v_23")
+
+contrasts(alt_cue$cycle_helmert) <- mat
+
+alt_cue_rt_log_resrt_prev_helmert <- lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * lag1_time_log_res * cycle_helmert + (is_bivalent_contr + prev_bivalent_contr + lag1_time_log_res + cycle_helmert ||id), control = lmerControl(optimizer = "bobyqa"),
+     alt_cue %>% 
+       filter(filter_correct == 0))
+
+
+make_model_table(alt_cue_rt_log_resrt_prev_helmert)
+
+sjPlot::plot_model(alt_cue_rt_log_resrt_prev_helmert, type = "pred", terms = c("cycle_helmert", "prev_bivalent_contr", "is_bivalent_contr"))
+
+
+
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev_helmert, ~ is_bivalent_contr * prev_bivalent_contr * cycle_helmert * lag1_time_log_res, type = "response",
+                 at = list(is_bivalent_contr = c(-0.5, 0.5),
+                           prev_bivalent_contr = c(-0.5, 0.5),
+                           switch_contr = c(0, 1),
+                           cycle_helmert = factor(c(1, 2, 3)),
+                           lag1_time_log_res = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(prev_bivalent = case_when(prev_bivalent_contr == -0.5 ~ 0, 
+                                   prev_bivalent_contr ==  0.5 ~ 1) %>% factor(),
+         is_bivalent = case_when(is_bivalent_contr == -0.5 ~ 0,
+                                   is_bivalent_contr ==  0.5 ~ 1) %>% factor(),
+         speed = case_when(lag1_time_log_res == min(lag1_time_log_res) ~ "fast",
+                           lag1_time_log_res == max(lag1_time_log_res) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  #scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+
+
+```
