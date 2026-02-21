@@ -39,7 +39,7 @@ library(readr)
 library(rio)
 library(psych) 
 library(stats)
-library(lme4)
+library(lmerTest)
 library(sjPlot)
 library(hausekeep)
 library(hlmer)
@@ -48,6 +48,7 @@ library(hlmer)
 AlternateRuns <- read_csv("AlternateRuns.csv")
 #view(AlternateRuns) 
 
+#make lmer models lmertests
 ```
 
 ## Data Cleaning
@@ -58,10 +59,12 @@ Rename variables for clarity, remove practice blocks and subjects with \> 80% ac
 
 #rename columns to understand better
 alt_run <- AlternateRuns %>% 
-  rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables also need to remove sub 57 showing up 3 times
+  rename(dimshape = dim1, dimcolor = dim2, rt = time) %>% #remane variables 
   filter(block != 0) #filter practice trials out
 
-alt_run <- alt_run %>% arrange(id, block, trial) %>% distinct(id, block, trial, .keep_all = TRUE)
+alt_run <- alt_run %>% group_by(id, block, trial) %>% #remove sub 57 showing up 3 times
+slice(1)
+
 #determine 80% acc
 
 #crit # need at least 179 out of 896 trials to be correct, denoted by 0 in error col
@@ -79,7 +82,7 @@ alt_run <- alt_run %>%
 
 #Making new variables
 alt_run <- alt_run %>% 
-  arrange(id, trial) %>% 
+ # arrange(id, trial) %>% 
   group_by(id, block) %>%
   mutate(
     switch = if_else(cycle %in% c(1,5), 1, 0),
@@ -92,11 +95,14 @@ alt_run <- alt_run %>%
     valence = if_else(dimshape == 4 | dimcolor == 4, 1, 2),  # 1 = uni, 2 = bi
     lvalence = lag(valence, 1), 
     conflict = if_else(dimshape != dimcolor & dimshape !=4 & dimcolor != 4, 1,0), 
-    lconflict = lag(conflict)
+    lconflict = lag(conflict), 
   ) %>%
   group_by(id, block, group) %>%
   mutate(lvalence = lvalence[1]) %>%                         # constant within 4‑trial group
-  ungroup()
+  ungroup() %>% 
+  mutate(
+    cycle_helmert = cycle2
+  )
 
 
 alt_run <- alt_run %>% #making contrasts outlined in prereg
@@ -106,12 +112,7 @@ alt_run <- alt_run %>% #making contrasts outlined in prereg
     valence_contr = case_when(valence == 1 ~ -0.5, valence == 2 ~ 0.5)
     )
 
-alt_run <- alt_run %>% 
-  mutate( valence = factor(valence), 
-    lvalence = factor(lvalence),
-    cycle2 = factor(cycle2)) %>% 
-      group_by(id) %>% 
-  mutate(conttrials = 1:n())
+
 
 #compute z-score on trial level 
 alt_run_z <- alt_run %>% 
@@ -133,29 +134,44 @@ outliers_by_id <- alt_run_z %>%
 alt_run <- alt_run_z %>%
   filter(abs(z) <= 3 | is.na(z)) 
 
+
+#last filtering then adding a continuous trials variable
 alt_run <- alt_run %>%
            filter(group != 1) %>% 
 mutate(rt_log = (log(rt)), 
        filter_correct = ifelse(error == 1 | lerror == 1, 1, 0)
        )
+alt_run <- alt_run %>% 
+  mutate( valence= factor(valence), 
+    lvalence = factor(lvalence),
+    cycle2 = factor(cycle2),
+    id = factor(id),
+  switch = factor(switch)) %>% 
+      group_by(id) %>% 
+  mutate(conttrials = 1:n())
 
 
+#for the within-sub analysis
+#create a new variable in initial data with trial numbers that continue adding person 
+#new model to take the residuals from, this needs to include block trial and sub, need to add poly function within the model (doing just conttrials instead)
 
-# # Final summary dataset
-# z_score_inspect <- alt_run %>%
-#   group_by(id, cycle2, valence, lvalence) %>%
-#   summarize( 
-#     z_score_mean = mean(z, na.rm = TRUE), 
-#     z_score_sd = sd(z, na.rm = TRUE), 
-#     response_time_mean = mean(rt, na.rm = TRUE),
-#     response_time_sd = sd(rt, na.rm = TRUE) 
-#     )
-# z_score_inspect
+polymodel <- lmer(
+  rt_log ~ poly(conttrials, 2)* (poly(conttrials, 2) | id), #poly(x,2) is specifications for linear and quadratic
+  data = alt_run %>% filter(error == 0)#filers out cur er 
+)
 
+#looking for 1 is linear 2 is quadratic
+#residuals for this new model 
 
-head(alt_run)
+tab_model(polymodel, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
+#create a new column in the dataframe using residuals() 
+alt_run$logresidual <- NA
+alt_run$logresidual[alt_run$error == 0] <- residuals(polymodel)
+
+view(alt_run)
 ```
-## Aggragation experimental level analysis
+Aggragation experimental level analysis
 
 ```{r}
 #function for CI
@@ -268,11 +284,13 @@ By Error
 
 
 erplot <- ggplot(allagg_ci,
-  aes(x = cycle2,
-      y = error_mean,
-      color = valence,
-      linetype = lvalence,
-      group = interaction(valence, lvalence))
+  aes(
+    x = cycle2,
+    y = error_mean,
+    color = valence,
+    linetype = lvalence,
+    group = interaction(valence, lvalence)
+  )
 ) +
   geom_line(position = position_dodge(width = 0.25)) +
   geom_point(position = position_dodge(width = 0.25)) +
@@ -312,8 +330,13 @@ rtplot <- ggplot(
 rtplot
 ```
 
-**Analysis On The Experimental Level:** Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
+## Experimental Level Analysis
 
+Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
+
+### by RT
+
+By valence contrasts
 ```{r}
 
 model_lmer <- lmer(
@@ -324,61 +347,92 @@ model_lmer <- lmer(
 
 summary(model_lmer)
 
-tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T)
+tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
+
+checking for conflict effects by adding it into the model
 ```{r}
 model_conflictcheck <- lmer(
-  rt_log ~ valence_contr * lvalence_contr * switch +(valence_contr + lvalence_contr + switch || id),
+  rt_log ~ valence_contr * lvalence_contr * switch +(valence_contr + lvalence_contr + switch || id), control = lmerControl(optimizer = 'bobyqa'),
   data = alt_run %>% filter(filter_correct == 0, conflict == 0, lconflict == 0)
 )
 
 summary(model_conflictcheck)
 
-tab_model(model_conflictcheck, show.est = T, auto.label = F, show.stat = T) #this does change the significance of two way interactions with switch
+tab_model(model_conflictcheck, show.est = T, auto.label = F, show.stat = T , df.method = 'satterthwaite') #this does change the significance of two way interactions with switch
 ```
-
+by rt log with valence contrasts
 
 ```{r}
-model_lmer_log <- lmer(
+model_lmer_log_c <- lmer(
   rt_log ~ valence_contr * lvalence_contr * switch +
-    (valence_contr + lvalence_contr + switch || id), #double bar bc does not converge with single, is less complex w double
+    (valence_contr + lvalence_contr + switch || id), #double bar bc does not converge with single, is less complex w double 
+  control = lmerControl(optimizer = 'bobyqa'),
   data = alt_run %>% filter(filter_correct == 0)
 )
 
-summary(model_lmer_log)
+summary(model_lmer_log_c)
 
 
-tab_model(model_lmer_log, show.est = T, auto.label = F, show.stat = T)
+tab_model(model_lmer_log_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
  
 ```
 
+rt log by valence not coded as a contrast
+
+```{r}
+model_lmer <- lmer(
+  rt_log ~ valence * lvalence * switch +
+    (valence + lvalence + switch 
+     | id),
+  control = lmerControl(optimizer = 'bobyqa'),
+  data = alt_run %>% filter(filter_correct == 0)
+)
+
+summary(model_lmer)
+
+tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
 adding conflict as a fixed effect into the rt_log
 
 ```{r}
 model_lmer_log_conflict <- lmer(
   rt_log ~ valence_contr * lvalence_contr * conflict * lconflict *switch +
-    (valence_contr + lvalence_contr + switch + conflict + lconflict || id), #double bar bc does not converge with single, is less complex w double
+    (valence_contr + lvalence_contr + switch + conflict + lconflict | id), #double bar bc does not converge with single, is less complex w double ONLY when effects are numeric not factor
   data = alt_run %>% filter(filter_correct == 0)
 )
 
 summary(model_lmer_log_conflict)
 
 
-tab_model(model_lmer_log_conflict, show.est = T, auto.label = F, show.stat = T)
+tab_model(model_lmer_log_conflict, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 ```
+### by Error
+by error with valence contrasts
+```{r}
+model_glmer_c <- glmer(
+  error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
+)
 
+summary(model_glmer_c)
 
+tab_model(model_glmer_c, show.est = T, auto.label = F, show.stat = T)
+```
+
+by error without valence contrasts
 ```{r}
 model_glmer <- glmer(
-  error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
+  error ~ valence * lvalence*switch + (valence + lvalence + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
 
 summary(model_glmer)
 
 tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
 ```
+
+by error with conflict included
 ```{r}
 model_glmer_conflictcheck <- glmer(
   error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run %>% filter(conflict == 0, lconflict == 0)
@@ -388,7 +442,6 @@ summary(model_glmer_conflictcheck)
 
 tab_model(model_glmer_conflictcheck, show.est = T, auto.label = F, show.stat = T)
 ```
-
 
 ## ezDDM Analysis 
 ```{r}
@@ -503,6 +556,7 @@ alt_run_agg_ddm_collapsed <- alt_run_agg_ID_ddm_collapsed %>%
             Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
 
 ```
+### DDM vis
 ```{r}
 plt_ddm_a <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
   geom_line(position = position_dodge(width = 0.25))+
@@ -524,8 +578,9 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow 
 
 #ok this works but idk how to interpret
 ```
+plotting with the aggregation averaging between no-switch cycles
 ```{r}
-#plotting with the aggregation averaging between no-switch cycles
+
 plt_ddm_a <- ggplot(alt_run_agg_ddm_collapsed, aes(x = switch, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence)))+
   geom_line(position = position_dodge(width = 0.25))+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
@@ -546,28 +601,58 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow 
 ```
 ### DDM Models 
 
+with valence contrasts
+
 ```{r}
-model_a <- lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), data = alt_run_agg_ID_ddm_collapsed)
+model_a_c <- lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_a_c)
+
+tab_model(model_a_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
+
+
+```{r}
+model_v_c<- lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_v_c)
+
+tab_model(model_v_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
+
+```{r}
+model_Ter_c <- lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_Ter_c)
+
+tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
+
+without valence contrasts
+
+```{r}
+model_a <- lmer(a ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
 
 summary(model_a)
 
-tab_model(model_a, show.est = T, auto.label = F, show.stat = T)
+tab_model(model_a, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
 
 
 ```{r}
-model_v <- lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), data = alt_run_agg_ID_ddm_collapsed)
+model_v <- lmer(v ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
 
 summary(model_v)
 
-tab_model(model_v, show.est = T, auto.label = F, show.stat = T)
+tab_model(model_v, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
+
 ```{r}
-model_Ter <- lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), data = alt_run_agg_ID_ddm_collapsed)
+model_Ter <- lmer(Ter ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
 
 summary(model_Ter)
 
-tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T)
+tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
 
 ## Within subject analysis
@@ -581,39 +666,41 @@ visualization for models
 
 to fix singularity, can run a model comparisons to see what fixed effects to keep, can do this by running an ANOVA
 
+### Reverse Helmert Contrasts
+
 ```{r}
 
-#create a new variable in initial data with trial numbers that continue adding person 
-#new model to take the residuals from, this needs to include block trial and sub, need to add poly function within the model (doing just conttrials instead)
+# for reference
+# alt_run$logresidual <- NA
+# alt_run$logresidual[alt_run$filter_correct == 0] <- residuals(polymodel)
 
-polymodel <- lmer(
-  rt_log ~ poly(conttrials, 2)* (poly(conttrials, 2) | id),
-  data = alt_run %>% filter(filter_correct == 0) #filers out prev er and cur er 
-)
-#polymodel
+m <- contr.helmert(4) #this is the matrix genereated that we will place onto our cycle variable
 
-#poly(x,2) is specifications for linear and quadratic
+m[,1] <- rev(m[,1])
 
-#looking for 1 is linear 2 is quadratic
+m[,2] <- rev(m[,2])
+m[,3] <- rev(m[,3])
+#reverse helmert
+colnames(m) <- c('1vr','2vr','3vr')
 
-#summary(polymodel)
-#residuals for this new model 
+alt_run <- alt_run %>% 
+  mutate(cycle_helmert = cycle2
+           )
+contrasts(alt_run$cycle_helmert) <- m
 
-tab_model(polymodel, show.est = T, auto.label = F, show.stat = T)
-
-# converges using the bobyqua optimizer if we dont want to filter out errors
-
-#create a new column in the dataframe using residuals() 
-alt_run$logresidual <- NA
-alt_run$logresidual[alt_run$filter_correct == 0] <- residuals(polymodel)
+contrasts(alt_run$cycle_helmert) 
 
 head(alt_run)
-
-
 ```
-autocorrelations lag rt and rt
+# auto correlations lag rt and rt
+the way we are calculating residual rt's makes it so that there is little variance between subjects (I still need to understand this more)
 
 ```{r}
+alt_run <- alt_run %>%
+  group_by(id, block) %>%
+  mutate(lrt_logres = lag(logresidual, 1),
+         lrt_log = lag(rt_log, 1))
+
 alt_run <- alt_run %>%
   group_by(id, block, group) %>%
   mutate(meanlogres_noswitch = mean(logresidual[switch == 0], na.rm = TRUE)) %>%
@@ -621,14 +708,55 @@ alt_run <- alt_run %>%
   mutate(lmeanlogres_noswitch = lag(meanlogres_noswitch, 1)) %>% #we want lrt res
   group_by(id, block, group) %>%
   mutate(lmeanlogres_noswitch = lmeanlogres_noswitch[1])
+```
 
-autocor_model <- lmer(logresidual ~ valence_contr * lvalence_contr * switch * lmeanlogres_noswitch + (valence_contr + lvalence_contr + switch + lmeanlogres_noswitch||id), control = lmerControl(optimizer = "bobyqa"),
+by valence contrast
+```{r}
+autocor_model_c <- lmer(logresidual ~ valence_contr * lvalence_contr * cycle_helmert * lmeanlogres_noswitch + (valence_contr + lvalence_contr + cycle_helmert + lmeanlogres_noswitch||id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+
+summary(autocor_model_c)
+
+tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
+```
+
+no valence contrast
+this does not converge and takes forever to run
+```{r}
+autocor_model <- lmer(logresidual ~ valence * lvalence * cycle_helmert * lmeanlogres_noswitch + (valence + lvalence + cycle_helmert + lmeanlogres_noswitch|id), control = lmerControl(optimizer = "bobyqa"),
      alt_run %>% 
        filter(filter_correct == 0))
 
 summary(autocor_model)
 
-tab_model(autocor_model, show.est = T, auto.label = F, show.stat = T)
-
+tab_model(autocor_model, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
+visualize residual rt_log in slow and fast responses
+this doesnt work for me, pulled from doms code
+```{r}
+preds <- emmeans::emmeans(autocor_model, ~ valence * lvalence * switch * lmeanlogres_noswitch, type = "response",
+                          at = list(valence = factor(c(0, 1)),
+                                    lvalence = factor(c(0, 1)),
+                                    switch = factor(c(0, 1)),
+                                    lmeanlogres_noswitch = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(lmeanlogres_noswitch == min(lmeanlogres_noswitch) ~ "fast",
+                           lmeanlogres_noswitch == max(lmeanlogres_noswitch) ~ "slow") %>% factor()) 
+
+
+preds
+
+
+ggplot(preds, aes(x = switch, y = emmean, color = valence, linetype = lvalence, group = interaction(valence, lvalence)))+
+ geom_line(position = position_dodge(width = 0.25)) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+```
+
 
