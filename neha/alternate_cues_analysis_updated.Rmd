@@ -235,6 +235,19 @@ d_final <- d_final %>%
 ```
 
 
+making trial variable that does not reset with each block 
+
+```{r}
+library(dplyr)
+
+d_final <- d_final %>%
+  group_by(id) %>%
+  mutate(trial_num = row_number()) %>%
+  ungroup()
+
+```
+
+
 ```{r}
 
 # library(dplyr)
@@ -636,31 +649,1378 @@ alt_cue_agg_ID_ddm_nocycle <- d_final_analysis %>%
 
 ```{r}
 
-# library(sjPlot)
-# library(lme4)
+library(sjPlot)
+ library(lme4)
 
 
-### all these models do not converge 
+### all these models show singular 
+## can remove random effect of previous bivalance as it's effect may be very similar across subjects with less variance on rt and the ddm parameters based on previous bivalance across subjects 
+
+## Ulrich: remove the random effects and only keep intercept 
 
 
-alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch|id), 
-     alt_cue_agg_ID_ddm_nocycle)
+# 
+# alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch| id), 
+#      alt_cue_agg_ID_ddm_nocycle)
 
-#summary(alt_cue_a)
+alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (1 | id), alt_cue_agg_ID_ddm_nocycle)
+
+
+summary(alt_cue_a)
+
 tab_model(alt_cue_a)
 
-alt_cue_v <- lmer(v ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch|id), 
+alt_cue_v <- lmer(v ~  val_c_g * val_p_g * switch + (1 |id), 
      alt_cue_agg_ID_ddm_nocycle)
-#summary(alt_cue_v)
+
+summary(alt_cue_v)
+
 tab_model(alt_cue_v)
 
 
-alt_cue_Ter <- lmer(Ter ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch|id), 
+alt_cue_Ter <- lmer(Ter ~  val_c_g * val_p_g * switch + (1 |id), 
      alt_cue_agg_ID_ddm_nocycle)
-#summary(alt_cue_Ter)
+
+summary(alt_cue_Ter)
+
+tab_model(alt_cue_Ter)
+```
+
+descriptive plots 
+
+1. rt
+```{r}
+
+library(dplyr)
+library(ggplot2)
+
+rt_plot_df <- d_final_analysis %>%
+  filter(error == 0, prev_error == 0) %>%
+  group_by(valence_current_group,
+           valence_previous_group,
+           cycle) %>%
+  summarise(
+    mean_rt = mean(time, na.rm = TRUE),
+    se_rt   = sd(time, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  )
+rt_plot_df <- rt_plot_df %>%
+  mutate(
+    cycle = factor(cycle, levels = c(1,2,3)),
+    valence_current_group = factor(valence_current_group,
+                                   labels = c("Current: Univalent",
+                                              "Current: Bivalent")),
+    valence_previous_group = factor(valence_previous_group,
+                                    labels = c("Previous: Univalent",
+                                               "Previous: Bivalent"))
+  )
+
+ggplot(rt_plot_df,
+       aes(x = cycle,
+           y = mean_rt,
+           color = valence_current_group,
+           linetype = valence_previous_group,
+           group = interaction(valence_current_group,
+                               valence_previous_group))) +
+  
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin = mean_rt - se_rt,
+                    ymax = mean_rt + se_rt),
+                width = .1) +
+  
+  labs(
+    x = "Cycle",
+    y = "Mean RT (ms)",
+    color = "Current Group",
+    linetype = "Previous Group"
+  ) +
+  
+  theme_classic(base_size = 14)
+
+
+```
+
+2. error 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+err_plot_df <- d_final_analysis %>%
+  group_by(valence_current_group,
+           valence_previous_group,
+           cycle) %>%
+  summarise(
+    error_rate = mean(error, na.rm = TRUE),
+    se_error   = sd(error, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  )
+err_plot_df <- err_plot_df %>%
+  mutate(
+    cycle = factor(cycle, levels = c(1,2,3)),
+    
+    valence_current_group = factor(
+      valence_current_group,
+      labels = c("Current: Univalent",
+                 "Current: Bivalent")
+    ),
+    
+    valence_previous_group = factor(
+      valence_previous_group,
+      labels = c("Previous: Univalent",
+                 "Previous: Bivalent")
+    )
+  )
+ggplot(err_plot_df,
+       aes(x = cycle,
+           y = error_rate,
+           color = valence_current_group,
+           linetype = valence_previous_group,
+           group = interaction(valence_current_group,
+                               valence_previous_group))) +
+  
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin = error_rate - se_error,
+                    ymax = error_rate + se_error),
+                width = .1) +
+  
+  labs(
+    x = "Cycle",
+    y = "Error Rate",
+    color = "Current Group",
+    linetype = "Previous Group"
+  ) +
+  
+  theme_classic(base_size = 14)
+
+
+
+
+```
+
+
+#################################################################################################################################################
+
+Within-subjects level 
+
+Time-series analysis 
+
+1. first- should make the residuals: 
+
+model_RT_trial <- lmer(log(time) ~ poly(trial_num, 2) + (poly(trial_num, 2)|id),  # poly function is for generating a polynomial and it gives two functions: one for linear and one for polynomial 
+                       control = lmerControl(optimizer = "bobyqa"),
+                       df_models %>%  filter(error == 0 , prev_error == 0))
+
+
+trial num [1st degree]	-2.59	-4.02 – -1.17	<0.001 --> 1st degree corresponds to the linear curve and it has a negative slope 
+trial num [2nd degree]	1.16	0.16 – 2.15	0.022 --> 2nd degree corresponds to the quadratic curve and it has a positive slope (meaning it is an upward U shaped curve)
+```{r}
+
+
+##sticking to the trial level to get to the polynomial function 
+# we are NOT removing within-block trends, but we are removing overall trial trends? 
+df_models_rt <- df_models_rt %>%
+  filter(error == 0, prev_error == 0)
+
+model_RT_trial <- lmer(log(time) ~ poly(trial_num, 2) + (poly(trial_num, 2)|id),  # poly function is for generating a polynomial and it gives two functions: one for linear and one for polynomial 
+                       control = lmerControl(optimizer = "bobyqa"),
+                       df_models %>%  filter(error == 0 , prev_error == 0))
+
+
+# model_RT_trial %>%
+#   make_model_table()
+
+
+library(sjPlot)
+tab_model(model_RT_trial)
+
+summary(model_RT_trial)
+
+df_models <- df_models %>%
+  ungroup() %>%
+  mutate(time_log_pred = predict(model_RT_trial, .)) #%>%
+  
+subs <- df_models$id %>% unique() %>% head(5) ## sanity check with just 5 subjects 
+
+
+## checking for 5 subjects 
+ggplot(df_models %>% filter(id %in% subs), aes(x = trial_num, y = log(time), color = block, group = interaction(id, block)))+
+  geom_line(alpha = 0.5, lwd = 0.3)+
+  geom_smooth(se = FALSE)+
+  geom_line(aes(y = time_log_pred), color = "green")+
+  facet_grid(~id)+
+  theme_classic()+
+  theme(legend.position = "none")
+
+
+df_models$filter_correct <- as.integer(df_models$error != 0 | df_models$prev_error != 0)
+
+df_models$time_log_res <- NA
+df_models$time_log_res[df_models$filter_correct == 0] <- residuals(model_RT_trial)
+
+
+df_models <- df_models %>%
+  group_by(id, block) %>%
+  mutate(lag1_time_log_res = lag(time_log_res, 1))
+
+
+
+```
+
+
+# RT residual analysis
+
+-- now, adding the residual obtained from the previous model and will put that as an additional continuous predictor to our lmer model 
+
+```{r}
+
+library(lme4)
+
+alt_cue_rt_log_resrt <- lmer(time_log_res ~ val_c_g * val_p_g * switch * lag1_time_log_res + (val_c_g + val_p_g + switch + lag1_time_log_res ||id), control = lmerControl(optimizer = "bobyqa"),
+     df_models %>% 
+       filter(filter_correct == 0)) #warning isSignular but the model converged 
+
+
+library(sjPlot)
+
+tab_model(alt_cue_rt_log_resrt)
+
+summary(alt_cue_rt_log_resrt)
+
+# preds <- emmeans::emmeans(time, ~ val_c_g * val_p_g * switch * lag1_time_log_res, type = "response",
+#                  at = list(val_c_g = c(-0.5, 0.5),
+#                            val_p_g = c(-0.5, 0.5),
+#                            switch = c(0, 1),
+#                            lag1_time_log_res = c(6.5, 10.5))) %>% ## choosing random two values to denote a fast rt and a slow rt (can also use quantile function here to get it for three or more quantiles of)
+  
+library(tidyverse)
+
+  preds <- emmeans::emmeans(alt_cue_rt_log_resrt, ~ val_c_g * val_p_g * switch * lag1_time_log_res, type = "response",
+                 at = list(val_c_g = c(-0.5, 0.5),
+                           val_p_g = c(-0.5, 0.5),
+                           switch = c(0, 1),
+                           lag1_time_log_res = c(-1.5, 1.5))) %>% ## choosing random two values to denote a fast rt and a slow rt (can also use quantile function here to get it for three or more quantiles of)
+  
+  
+  as.data.frame() %>%
+  mutate(prev_bivalent = case_when(val_p_g == -0.5 ~ 0, 
+                                   val_p_g ==  0.5 ~ 1) %>% factor(),
+         is_bivalent = case_when(val_c_g == -0.5 ~ 0,
+                                   val_c_g ==  0.5 ~ 1) %>% factor(),
+         switch = factor(switch),
+         speed = case_when(lag1_time_log_res == min(lag1_time_log_res) ~ "fast",
+                           lag1_time_log_res == max(lag1_time_log_res) ~ "slow") %>% factor()) 
+  
+  summary(preds)
+
+names(preds)
+
+ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+```
+################ Changes to coding
+
+position factor as helmert coding (position of trial in previous group) 
+
+cycle: 1--> coded as -2/3
+if cycle variable is greater or equal to 2 -> coded as 1/3 ?
+
+
+
+1. step 1: Throw out lag error for current trial but not to compute lag RTs- residual rt should be based on only trials that are currently not an error-- so do not exclude lag 1 rt 
+
+Time-series analysis 
+
+1. first- should make the residuals: 
+
+model_RT_trial <- lmer(log(time) ~ poly(trial_num, 2) + (poly(trial_num, 2)|id),  # poly function is for generating a polynomial and it gives two functions: one for linear and one for polynomial 
+                       control = lmerControl(optimizer = "bobyqa"),
+                       df_models %>%  filter(error == 0 , prev_error == 0))
+
+
+trial num [1st degree]	-2.59	-4.02 – -1.17	<0.001 --> 1st degree corresponds to the linear curve and it has a negative slope 
+trial num [2nd degree]	1.16	0.16 – 2.15	0.022 --> 2nd degree corresponds to the quadratic curve and it has a positive slope (meaning it is an upward U shaped curve)
+```{r}
+library(tidyverse)
+
+##sticking to the trial level to get to the polynomial function 
+# we are NOT removing within-block trends, but we are removing overall trial trends? 
+df_models_rt <- df_models_rt %>%
+  filter(error == 0) ## not filtering by prev_error == 0 
+
+library(lme4)
+model_RT_trial <- lmer(log(time) ~ poly(trial_num, 2) + (poly(trial_num, 2)|id),  # poly function is for generating a polynomial and it gives two functions: one for linear and one for polynomial 
+                       control = lmerControl(optimizer = "bobyqa"),
+                       df_models %>%  filter(error == 0)) ## not filtering by prev_error == 0 
+
+
+# model_RT_trial %>%
+#   make_model_table()
+
+
+library(sjPlot)
+tab_model(model_RT_trial)
+
+summary(model_RT_trial)
+
+df_models <- df_models %>%
+  ungroup() %>%
+  mutate(time_log_pred = predict(model_RT_trial, .)) #%>%
+  
+subs <- df_models$id %>% unique() %>% head(5) ## sanity check with just 5 subjects 
+
+
+## checking for 5 subjects 
+ggplot(df_models %>% filter(id %in% subs), aes(x = trial_num, y = log(time), color = block, group = interaction(id, block)))+
+  geom_line(alpha = 0.5, lwd = 0.3)+
+  geom_smooth(se = FALSE)+
+  geom_line(aes(y = time_log_pred), color = "green")+
+  facet_grid(~id)+
+  theme_classic()+
+  theme(legend.position = "none")
+
+
+df_models$filter_correct <- as.integer(df_models$error != 0 | df_models$prev_error != 0)
+
+df_models$time_log_res <- NA
+df_models$time_log_res[df_models$error == 0] <- residuals(model_RT_trial)
+
+
+df_models <- df_models %>%
+  group_by(id, block) %>%
+  mutate(lag1_time_log_res = lag(time_log_res, 1))
+
+
+
+```
+## step 2: helmert contrast 
+
+a. create a new cycle variable (duplicate of cycle but with different name) and assign the coding of that version of the cycle variable 
+
+```{r}
+
+df_models <- df_models %>% 
+  mutate(cycle_helmert = cycle)
+
+names(df_models)
+
+
+```
+b. 
+
+```{r}
+m <- contr.helmert(3) # 3 because cycle has 3 levels 
+
+m[,1] <- rev(m[,1])
+m[,2] <- rev(m[,2])
+
+m
+
+#m: 
+#[,1] [,2]
+#1    0    2
+#2    1   -1
+#3   -1   -1
+```
+
+
+
+
+c. naming the contrast levels: 
+
+```{r}
+
+colnames(m) <- c("cycle_2_v_3" , "cycle_1_v_23")
+
+m
+```
+
+d. 
+
+```{r}
+contrasts(df_models$cycle_helmert) <- m  
+
+df_models$cycle_helmert
+```
+e. RT residual analysis
+
+-- now, adding the residual obtained from the previous model and will put that as an additional continuous predictor to our lmer model 
+
+```{r}
+
+library(lme4)
+
+alt_cue_rt_log_resrt <- lmer(time_log_res ~ val_c_g * val_p_g * cycle_helmert * lag1_time_log_res + (val_c_g + val_p_g + cycle_helmert + lag1_time_log_res ||id), control = lmerControl(optimizer = "bobyqa"),
+     df_models %>% 
+       filter(filter_correct == 0)) #warning isSignular but the model converged 
+
+
+library(sjPlot)
+
+tab_model(alt_cue_rt_log_resrt)
+
+summary(alt_cue_rt_log_resrt)
+
+# preds <- emmeans::emmeans(time, ~ val_c_g * val_p_g * switch * lag1_time_log_res, type = "response",
+#                  at = list(val_c_g = c(-0.5, 0.5),
+#                            val_p_g = c(-0.5, 0.5),
+#                            switch = c(0, 1),
+#                            lag1_time_log_res = c(6.5, 10.5))) %>% ## choosing random two values to denote a fast rt and a slow rt (can also use quantile function here to get it for three or more quantiles of)
+  
+library(tidyverse)
+
+  preds <- emmeans::emmeans(alt_cue_rt_log_resrt, ~ val_c_g * val_p_g * cycle_helmert * lag1_time_log_res, type = "response",
+                 at = list(val_c_g = c(-0.5, 0.5),
+                           val_p_g = c(-0.5, 0.5),
+                           switch = c(0, 1),
+                           lag1_time_log_res = c(-1.5, 1.5))) %>% ## choosing random two values to denote a fast rt and a slow rt (can also use quantile function here to get it for three or more quantiles of)
+  
+  
+  as.data.frame() %>%
+  mutate(prev_bivalent = case_when(val_p_g == -0.5 ~ 0, 
+                                   val_p_g ==  0.5 ~ 1) %>% factor(),
+         is_bivalent = case_when(val_c_g == -0.5 ~ 0,
+                                   val_c_g ==  0.5 ~ 1) %>% factor(),
+         switch = factor(cycle_helmert),
+         speed = case_when(lag1_time_log_res == min(lag1_time_log_res) ~ "fast",
+                           lag1_time_log_res == max(lag1_time_log_res) ~ "slow") %>% factor()) 
+  
+  summary(preds)
+
+names(preds)
+
+ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  #scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+```
+
+
+#######################################################################################################################
+############################ now, coding valence and current and previous group as 0 and 1 instead of -0.5 and +0.5 and re-running the level 1 and within-subject analysis ####################################################
+
+A. level 1
+
+
+
+a. checking 
+
+1. lmer model
+
+-For the RT models, error trials, and trials before errors should also be removed
+Q: should it be block wise? or across all trials? 
+
+remove  error == 0 and prev_error == 0 for the d_final_analysis inside lmer model filter()
+
+```{r}
+
+library(lme4)
+
+df_models_rt <- df_models 
+
+library(tidyverse)
+
+df_models_rt <- df_models_rt %>%
+  filter(error == 0, prev_error == 0)
+  
+levels(df_models_rt$val_c_g_new) ## the valence should not be a factor if it is -0.5 and +0.5 sonce the model wil treat it as -0.5 is level 0 and 0.5 and level 1 and NOT the average of -0.5 as 0? but it shouldn't matter if it is a factor or not when it is coded as 0 and 1
+
+## but switch is numeric for now and the model converged -- Dominik's model did NOT converge when switch was also  factor 
+## but when all the three are factors AND I added bobyquoa optimizer- the model converged. without bobyqua it seemed to be using another optimizer or multiple?? and it showed convergence OK for one optimizer but then at the last sentence, it also showed that the model failed to converge 
+
+## but when i re-ram the model with all of them as numeric, it converges, and does not give issingular warning 
+
+df_models_rt$switch <- as.factor(df_models_rt$switch)
+
+levels(df_models_rt$val_c_g_new)
+levels(df_models_rt$val_p_g_new)
+levels(df_models_rt$switch)
+
+df_models_rt$val_c_g_new <- as.factor(df_models_rt$val_c_g_new)
+df_models_rt$val_p_g_new <- as.factor(df_models_rt$val_p_g_new)
+df_models_rt$switch <- as.factor(df_models_rt$switch)
+
+  m_rt_new<- lme4::lmer(log(time) ~  val_c_g_new * val_p_g_new* switch + (val_c_g_new + val_p_g_new + switch ||  id),
+                 data = df_models_rt,
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt_new)
+ 
+ 
+#library(sjPlot)
+ tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T) # tab_model uses another way of specifying (Wald's test) degrees of freedom
+  tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") ## when i use this when using lme4, the model not not converge anymore as the degress of freedom is being calculated using a different method 
+ 
+ names(df_models)
+ 
+
+ 
+```
+
+```{r}
+library(lmerTest) #lmerTest seems to give wrong warning that the model did not converge, even though it did converge? because the same model that was run using lme4 gave convergence 0 is OK? 
+## but lmerTest lmer moel is giving both a warning of failed convergence AND convergence 0 is OK-- THAT is why the warning of failed convergence is a bug??
+
+#### BUT-- lme4's lmer runs models, but checks convergence lineantly (does not check convergnece well). and then lmertest coems in and checks the convergence striclty-- so, we should rely on lmertest?? that is why the output for lme4 showed convergence 0 is OK at the bottom of the summary() output and then at the top of the summary output- the warning about the failed convergence is from the lmertest 
+
+levels(df_models_rt$val_c_g_new)
+levels(df_models_rt$val_p_g_new)
+levels(df_models_rt$switch)
+
+df_models_rt$val_c_g_new <- as.factor(df_models_rt$val_c_g_new)
+df_models_rt$val_p_g_new <- as.factor(df_models_rt$val_p_g_new)
+df_models_rt$switch <- as.factor(df_models_rt$switch)
+
+
+df_models_rt$val_c_g_new <- as.numeric(as.character(df_models_rt$val_c_g_new))
+df_models_rt$val_p_g_new <- as.numeric(as.character(df_models_rt$val_p_g_new))
+df_models_rt$switch <-  as.numeric(as.character(df_models_rt$switch))
+
+
+levels(df_models_rt$val_c_g_new)
+levels(df_models_rt$val_p_g_new)
+levels(df_models_rt$switch)
+
+
+#### use this version!!!! 
+
+ m_rt_new<- lmerTest::lmer(log(time) ~  val_c_g_new * val_p_g_new* switch + (val_c_g_new + val_p_g_new + switch ||  id),
+                 data = df_models_rt,
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt_new)
+ 
+ 
+#library(sjPlot)
+# tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
+ tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") ## lmertest uses Satterthwaite's method by default 
+ 
+ 
+ 
+```
+Note: if you convrrt a numeric (valeus of 0 and 1)  to factor- it will assign levls of 1 and 2
+but when conveting factor back to numeric, you should first convert factor to as.character so that it reassigns the 0 and 1 levels and then convert it to numeric 
+
+
+
+2. glmer model
+
+```{r}
+
+
+df_models$error <- as.factor(df_models$error)
+
+df_models$val_c_g_new <- as.factor(df_models$val_c_g_new)
+df_models$val_p_g_new <- as.factor(df_models$val_p_g_new)
+df_models$switch <- as.factor(df_models$switch)
+
+
+df_models$val_c_g_new <- as.numeric(as.character(df_models$val_c_g_new))
+df_models$val_p_g_new <- as.numeric(as.character(df_models$val_p_g_new))
+df_models$switch <-  as.numeric(as.character(df_models$switch))
+
+
+levels(df_models$val_c_g_new)
+levels(df_models$val_p_g_new)
+levels(df_models$switch)
+
+levels(df_models$error)
+
+  m_error_new<- lmerTest::glmer(error ~  val_c_g_new * val_p_g_new * switch + ( val_c_g_new +  val_p_g_new + switch| id),
+                 data = df_models, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+ 
+ summary(m_error_new)
+ 
+ tab_model(m_error_new,show.est=T,auto.label=F,show.stat=T)
+```
+
+b. running the lmer and glmer models with constrast coding of valence (0 and 1 levels) and treating everything as a factor 
+
+1. lmer
+
+```{r}
+######## use this 
+library(lmerTest)
+df_models_rt <- df_models 
+
+library(tidyverse)
+
+df_models_rt <- df_models_rt %>%
+  filter(error == 0, prev_error == 0)
+  
+df_models_rt$val_c_g_new <- as.factor(df_models_rt$val_c_g_new)
+df_models_rt$val_p_g_new <- as.factor(df_models_rt$val_p_g_new)
+df_models_rt$switch <- as.factor(df_models_rt$switch)
+
+levels(df_models_rt$val_c_g_new)
+levels(df_models_rt$val_p_g_new)
+levels(df_models_rt$switch)
+
+ m_rt_contrast<- lmer(log(time) ~  val_c_g_new * val_p_g_new* switch + (val_c_g_new + switch |  id),
+                 data = df_models_rt,
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt_contrast)
+ 
+ 
+library(sjPlot)
+# tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
+ tab_model(m_rt_contrast,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") ## lmertest uses Satterthwaite's method by default 
+
+
+
+
+```
+
+
+
+2. glmer 
+
+```{r}
+
+#### use this 
+
+df_models$error <- as.factor(df_models$error)
+
+m_error_contrast<- glmer(error ~  val_c_g_new * val_p_g_new * switch + ( val_c_g_new + switch| id),
+                 data = df_models, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+ 
+ summary(m_error_contrast)
+ 
+ tab_model(m_error_contrast,show.est=T,auto.label=F,show.stat=T)
+
+
+```
+
+3. DDM analysis using contrast coding of val_c_g and val_p_g 
+
+
+#| include: false
+#first putting in some pre-made functions that will go into the ezDDM analysis: 
+
+```{r}
+
+normWS <- function(d ,s, dv, between = NULL) { #within subject normalization
+  eval(substitute(d %>%
+                    dplyr::group_by(s) %>%
+                    dplyr::mutate(sAV = mean(dv, na.rm = TRUE)) %>%
+                    dplyr::group_by_at(between) %>% #this is grouping by between subjects variables
+                    dplyr::mutate(gAV = mean(dv, na.rm = TRUE)) %>%
+                    dplyr::mutate(DV_n = dv - sAV + gAV), list(s = as.name(s), dv = as.name(dv))))
+}
+
+
+get_ci <- function(var, mean){
+  sd <- sd(var, na.rm = TRUE)
+  n <- length(var)
+  se <- sd/sqrt(n)
+  ci <- abs(qt(0.025, n-1, lower.tail = FALSE))*se
+  return(c(mean + ci, mean - ci, sd, se, n))
+}
+
+convert_extremes <- function(value){
+  
+  if(value == 1){
+    
+    value = value - 1e-5
+    
+  } else if (value == 0 ){
+    
+    value = value + 1e-5
+    
+  }
+  
+  return(value)
+  
+}#making sure error is either .99 or .001
+```
+
+
+## Aggregation and data processing
+
+--hausekeep 
+
+install.packages("cli")
+packageVersion("cli") -- should show ≥ 3.6.5-- it is 3.6.5 
+install.packages("devtools")
+devtools::install_github("hauselin/hausekeep")
+library(hausekeep)
+
+```{r}
+# library(devtools)
+# library(rio)
+# library(hausekeep)
+# 
+# 
+# library(tidyverse)
+alt_cue_agg_ID_ddm <- d_final_analysis %>%
+  mutate(RT_s = time/1000) %>%
+  group_by(id, val_c_g_new, val_p_g_new, switch, cycle) %>%
+  summarize(RT_s_m = mean(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            RT_s_var = var(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            Error = mean(error, na.rm = TRUE),
+            N_trials = n()) %>%
+  rowwise() %>%
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
+                            nTrials = N_trials))) %>%
+  
+  unnest(ezddm)
+
+
+
+alt_cue_agg_ddm <- alt_cue_agg_ID_ddm %>%
+  group_by(id, val_c_g_new, val_p_g_new, switch, cycle) %>%
+  normWS(s = "id", dv = "a") %>%
+  mutate(a = DV_n) %>%
+  normWS(s = "id", dv = "v") %>%
+  mutate(v = DV_n) %>%
+  normWS(s = "id", dv = "Ter") %>%
+  mutate(Ter = DV_n) %>%
+  group_by(val_c_g_new, val_p_g_new, switch, cycle) %>%
+  summarize(a_m = mean(a, na.rm = TRUE),
+            a_ci_lower = get_ci(a, a_m)[1],
+            a_ci_upper = get_ci(a, a_m)[2],
+            v_m = mean(v, na.rm = TRUE),
+            v_ci_lower = get_ci(v, v_m)[1],
+            v_ci_upper = get_ci(v, v_m)[2],
+            Ter_m = mean(Ter, na.rm = TRUE),
+            Ter_ci_lower = get_ci(Ter, Ter_m)[1],
+            Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
+
+#make a separate object that is averaging across the no-switch 2,3 and 4 average within those and then average within those variances
+alt_cue_agg_ID_ddm_collapsed <- alt_cue_agg_ID_ddm %>% 
+  filter(switch == 0, cycle %in% c(2, 3)) %>%
+  group_by(id, val_c_g_new, val_p_g_new) %>% 
+  summarize( # average the DDM parameters across cycles 2&3 
+    a = mean(a, na.rm = TRUE), 
+    v = mean(v, na.rm = TRUE), #average within those 
+    Ter = mean(Ter, na.rm = TRUE), 
+    a_var = mean(a^2, na.rm = TRUE), #average within those variances
+    v_var = mean(v^2, na.rm = TRUE), 
+    Ter_var = mean(Ter^2, na.rm = TRUE), 
+    .groups = "drop" )
+
+alt_cue_agg_ID_ddm_collapsed
+
+alt_cue_agg_ID_ddm %>% filter(switch == 0, cycle %in% c(2,3)) %>% count(id, val_c_g_new, val_p_g_new)
+```
+
+
+## Statistical Models
+
+### First prep data so that it's ignoring cycle
+
+```{r}
+# alt_cue_agg_ID_ddm_nocycle <- d_final_analysis %>%
+#   mutate(RT_s = time/1000) %>%
+#   group_by(id, valence_current_group, valence_previous_group, val_c_g_new, val_p_g_new, switch) %>%
+#   summarize(RT_s_m = mean(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+#             RT_s_var = var(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+#             Error = mean(error, na.rm = TRUE),
+#             N_trials = n()) %>%
+#   rowwise() %>%
+#   mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
+#                             rtCorrectVariance_seconds = RT_s_var, 
+#                             rtCorrectMean_seconds = RT_s_m, 
+#                             nTrials = N_trials))) %>%
+#   unnest(ezddm)
+
+
+alt_cue_agg_ID_ddm_nocycle <- d_final_analysis %>%
+  mutate(RT_s = time/1000) %>%
+  group_by(id, val_c_g, val_c_g_new, val_p_g, val_p_g_new, switch) %>%
+  summarize(RT_s_m = mean(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            RT_s_var = var(RT_s[error == 0 & prev_error == 0], na.rm = TRUE),
+            Error = mean(error, na.rm = TRUE),
+            N_trials = n()) %>%
+  rowwise() %>%
+  mutate(ezddm = list(ezddm(propCorrect = convert_extremes(1-Error), 
+                            rtCorrectVariance_seconds = RT_s_var, 
+                            rtCorrectMean_seconds = RT_s_m, 
+                            nTrials = N_trials))) %>%
+  unnest(ezddm)
+
+
+alt_cue_agg_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
+  group_by(id, val_c_g_new, val_p_g_new, switch) %>%
+  normWS(s = "id", dv = "a") %>%
+  mutate(a = DV_n) %>%
+  normWS(s = "id", dv = "v") %>%
+  mutate(v = DV_n) %>%
+  normWS(s = "id", dv = "Ter") %>%
+  mutate(Ter = DV_n) %>%
+  group_by(val_c_g_new, val_p_g_new, switch) %>%
+  summarize(a_m = mean(a, na.rm = TRUE),
+            a_ci_lower = get_ci(a, a_m)[1],
+            a_ci_upper = get_ci(a, a_m)[2],
+            v_m = mean(v, na.rm = TRUE),
+            v_ci_lower = get_ci(v, v_m)[1],
+            v_ci_upper = get_ci(v, v_m)[2],
+            Ter_m = mean(Ter, na.rm = TRUE),
+            Ter_ci_lower = get_ci(Ter, Ter_m)[1],
+            Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
+
+```
+
+
+
+### Plots
+
+```{r}
+
+alt_cue_agg_ddm$switch <- as.factor(alt_cue_agg_ddm$switch)
+alt_cue_agg_ddm_nocycle$switch <- as.factor(alt_cue_agg_ddm_nocycle$switch)
+alt_cue_agg_ddm_nocycle$val_c_g_new <- as.factor(alt_cue_agg_ddm_nocycle$val_c_g_new)
+alt_cue_agg_ddm_nocycle$val_p_g_new <- as.factor(alt_cue_agg_ddm_nocycle$val_p_g_new)
+
+plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = val_c_g_new, linetype = val_p_g_new, group = interaction(val_c_g_new, val_p_g_new)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
+  theme_classic()
+
+plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = val_c_g_new, linetype = val_p_g_new, group = interaction(val_c_g_new, val_p_g_new)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
+  theme_classic()
+
+
+plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = val_c_g_new, linetype = val_p_g_new, group = interaction(val_c_g_new, val_p_g_new)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
+  theme_classic()
+
+#########
+plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = a_m, color = val_c_g_new , linetype = val_p_g_new, group = interaction(val_c_g_new, val_p_g_new)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+
+plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = v_m, color = val_c_g_new, linetype = val_p_g_new, group = interaction(val_c_g_new, val_p_g_new)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+
+
+plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = Ter_m, color = val_c_g_new, linetype = val_p_g_new, group = interaction(val_c_g_new, val_p_g_new)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+
+ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
+                  plt_ddm_v, plt_ddm_v_nocycle,
+                  plt_ddm_Ter, plt_ddm_Ter_nocycle, common.legend = TRUE, nrow = 3, ncol = 2)  
+
+
+```
+
+
+### Models
+
+1. effect coding (-0.5, 0.5)
+
+```{r}
+
+library(sjPlot)
+ library(lmerTest)
+
+
+### all these models show singular 
+## can remove random effect of previous bivalance as it's effect may be very similar across subjects with less variance on rt and the ddm parameters based on previous bivalance across subjects 
+
+## Ulrich: remove the random effects and only keep intercept 
+
+
+# 
+# alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch| id), 
+#      alt_cue_agg_ID_ddm_nocycle)
+
+alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + switch | id), alt_cue_agg_ID_ddm_nocycle)
+
+
+summary(alt_cue_a)
+
+tab_model(alt_cue_a)
+
+alt_cue_v <- lmer(v ~  val_c_g * val_p_g * switch + (val_c_g + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v)
+
+tab_model(alt_cue_v)
+
+
+alt_cue_Ter <- lmer(Ter ~  val_c_g * val_p_g * switch + (val_c_g + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter)
+
 tab_model(alt_cue_Ter)
 ```
 
 
 
+2. contrast coding 
+
+```{r}
+
+
+alt_cue_a_contrast <- lmerTest::lmer(a ~ val_c_g_new * val_p_g_new * switch + (val_c_g_new + switch | id), alt_cue_agg_ID_ddm_nocycle)
+
+
+summary(alt_cue_a_contrast)
+
+tab_model(alt_cue_a_contrast, df.method = "satterthwaite" )
+
+alt_cue_v_contrast <- lmer(v ~  val_c_g_new * val_p_g_new * switch + (val_c_g_new + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v_contrast)
+
+tab_model(alt_cue_v_contrast, df.method = "satterthwaite")
+
+
+alt_cue_Ter_contrast <- lmer(Ter ~  val_c_g_new * val_p_g_new * switch + (val_c_g_new + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter_contrast)
+
+tab_model(alt_cue_Ter_contrast, df.method = "satterthwaite")
+```
+
+descriptive plots 
+
+1. rt
+```{r}
+
+library(dplyr)
+library(ggplot2)
+
+rt_plot_df <- d_final_analysis %>%
+  filter(error == 0, prev_error == 0) %>%
+  group_by(valence_current_group,
+           valence_previous_group,
+           cycle) %>%
+  summarise(
+    mean_rt = mean(time, na.rm = TRUE),
+    se_rt   = sd(time, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  )
+rt_plot_df <- rt_plot_df %>%
+  mutate(
+    cycle = factor(cycle, levels = c(1,2,3)),
+    valence_current_group = factor(valence_current_group,
+                                   labels = c("Current: Univalent",
+                                              "Current: Bivalent")),
+    valence_previous_group = factor(valence_previous_group,
+                                    labels = c("Previous: Univalent",
+                                               "Previous: Bivalent"))
+  )
+
+ggplot(rt_plot_df,
+       aes(x = cycle,
+           y = mean_rt,
+           color = valence_current_group,
+           linetype = valence_previous_group,
+           group = interaction(valence_current_group,
+                               valence_previous_group))) +
+  
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin = mean_rt - se_rt,
+                    ymax = mean_rt + se_rt),
+                width = .1) +
+  
+  labs(
+    x = "Cycle",
+    y = "Mean RT (ms)",
+    color = "Current Group",
+    linetype = "Previous Group"
+  ) +
+  
+  theme_classic(base_size = 14)
+
+
+```
+
+2. error 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+err_plot_df <- d_final_analysis %>%
+  group_by(valence_current_group,
+           valence_previous_group,
+           cycle) %>%
+  summarise(
+    error_rate = mean(error, na.rm = TRUE),
+    se_error   = sd(error, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  )
+err_plot_df <- err_plot_df %>%
+  mutate(
+    cycle = factor(cycle, levels = c(1,2,3)),
+    
+    valence_current_group = factor(
+      valence_current_group,
+      labels = c("Current: Univalent",
+                 "Current: Bivalent")
+    ),
+    
+    valence_previous_group = factor(
+      valence_previous_group,
+      labels = c("Previous: Univalent",
+                 "Previous: Bivalent")
+    )
+  )
+ggplot(err_plot_df,
+       aes(x = cycle,
+           y = error_rate,
+           color = valence_current_group,
+           linetype = valence_previous_group,
+           group = interaction(valence_current_group,
+                               valence_previous_group))) +
+  
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin = error_rate - se_error,
+                    ymax = error_rate + se_error),
+                width = .1) +
+  
+  labs(
+    x = "Cycle",
+    y = "Error Rate",
+    color = "Current Group",
+    linetype = "Previous Group"
+  ) +
+  
+  theme_classic(base_size = 14)
+
+
+
+
+```
+
+
+
+###########################################
+B. within-subject analysis with val_c_g_new and val_p_g_new 
+
+
+```{r}
+
+
+df_models$val_c_g_new <- ifelse(df_models$valence_current_group == 1, 0,
+                     ifelse(d_final_analysis$valence_current_group == 2,  1, NA))
+
+df_models$val_p_g_new <- ifelse(df_models$valence_previous_group == 1, 0,
+                     ifelse(d_final_analysis$valence_previous_group == 2,  1, NA))
+```
+
+```{r}
+
+library(lmerTest)
+
+model_RT_trial <- lmer(log(time) ~ poly(trial_num, 2) + (poly(trial_num, 2)|id),  # poly function is for generating a polynomial and it gives two functions: one for linear and one for polynomial 
+                       control = lmerControl(optimizer = "bobyqa"),
+                       df_models %>%  filter(error == 0)) ## not filtering by prev_error == 0 
+
+
+# model_RT_trial %>%
+#   make_model_table()
+
+
+library(sjPlot)
+tab_model(model_RT_trial)
+
+summary(model_RT_trial)
+
+df_models <- df_models %>%
+  ungroup() %>%
+  mutate(time_log_pred = predict(model_RT_trial, .)) #%>%
+  
+subs <- df_models$id %>% unique() %>% head(5) ## sanity check with just 5 subjects 
+
+
+## checking for 5 subjects 
+ggplot(df_models %>% filter(id %in% subs), aes(x = trial_num, y = log(time), color = block, group = interaction(id, block)))+
+  geom_line(alpha = 0.5, lwd = 0.3)+
+  geom_smooth(se = FALSE)+
+  geom_line(aes(y = time_log_pred), color = "green")+
+  facet_grid(~id)+
+  theme_classic()+
+  theme(legend.position = "none")
+
+
+df_models$filter_correct <- as.integer(df_models$error != 0 | df_models$prev_error != 0)
+
+df_models$time_log_res <- NA
+df_models$time_log_res[df_models$error == 0] <- residuals(model_RT_trial)
+
+
+df_models <- df_models %>%
+  group_by(id, block) %>%
+  mutate(lag1_time_log_res = lag(time_log_res, 1))
+
+
+
+```
+## step 2: helmert contrast 
+
+a. create a new cycle variable (duplicate of cycle but with different name) and assign the coding of that version of the cycle variable 
+
+```{r}
+
+df_models <- df_models %>% 
+  mutate(cycle_helmert = cycle)
+
+names(df_models)
+
+df_models <- df_models %>%
+  mutate(cycle_helmert = factor(cycle))
+
+str(df_models$cycle_helmert)
+
+
+```
+
+
+b. 
+
+```{r}
+m <- contr.helmert(3) # 3 because cycle has 3 levels 
+
+m[,1] <- rev(m[,1])
+m[,2] <- rev(m[,2])
+
+m
+
+#m: 
+#[,1] [,2]
+#1    0    2
+#2    1   -1
+#3   -1   -1
+```
+
+
+c. naming the contrast levels: 
+
+```{r}
+
+colnames(m) <- c("cycle_2_v_3" , "cycle_1_v_23")
+
+m
+```
+
+d. 
+
+d. 
+
+```{r}
+contrasts(df_models$cycle_helmert) <- m  
+
+df_models$cycle_helmert
+```
+e. RT residual analysis
+
+-- now, adding the residual obtained from the previous model and will put that as an additional continuous predictor to our lmer model 
+
+```{r}
+
+
+# 
+# df_models$val_c_g_new <- as.factor(df_models$val_c_g_new)
+# df_models$val_p_g_new <- as.factor(df_models$val_p_g_new)
+# df_models$cycle_helmert <- as.factor(df_models$cycle_helmert)
+
+
+alt_cue_rt_log_resrt <- lmer(time_log_res ~ val_c_g_new * val_p_g_new * cycle_helmert * lag1_time_log_res + (val_c_g_new + val_p_g_new + cycle_helmert + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
+     df_models %>% 
+       filter(filter_correct == 0)) #warning isSignular but the model converged 
+
+
+#library(sjPlot)
+
+tab_model(alt_cue_rt_log_resrt)
+
+summary(alt_cue_rt_log_resrt)
+
+# preds <- emmeans::emmeans(time, ~ val_c_g * val_p_g * switch * lag1_time_log_res, type = "response",
+#                  at = list(val_c_g = c(-0.5, 0.5),
+#                            val_p_g = c(-0.5, 0.5),
+#                            switch = c(0, 1),
+#                            lag1_time_log_res = c(6.5, 10.5))) %>% ## choosing random two values to denote a fast rt and a slow rt (can also use quantile function here to get it for three or more quantiles of)
+  
+library(tidyverse)
+
+
+
+  preds <- emmeans::emmeans(alt_cue_rt_log_resrt, ~ val_c_g_new * val_p_g_new * cycle_helmert * lag1_time_log_res, type = "response",
+                 at = list(val_c_g_new = c(0, 1),
+                           val_p_g_new = c(0, 1),
+                          # switch = c(0, 1),
+                          cycle_helmert = factor(c(1,2,3)),
+                           lag1_time_log_res = c(-1.5, 1.5))) %>% ## choosing random two values to denote a fast rt and a slow rt (can also use quantile function here to get it for three or more quantiles of)
+  
+  
+  as.data.frame() %>%
+  mutate(prev_bivalent = case_when(val_p_g_new == 0 ~ 0, 
+                                   val_p_g_new ==  1 ~ 1) %>% factor(),
+         is_bivalent = case_when(val_c_g_new == 0 ~ 0,
+                                   val_c_g_new ==  1 ~ 1) %>% factor(),
+         switch = factor(cycle_helmert),
+         speed = case_when(lag1_time_log_res == min(lag1_time_log_res) ~ "fast",
+                           lag1_time_log_res == max(lag1_time_log_res) ~ "slow") %>% factor()) 
+  
+  summary(preds)
+
+names(preds)
+
+ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  #scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+```
+######### Lag RT based on previous trial group
+
+One concern Dominik has with the analysis above is that the lag1 residual log RT is problematic for no-switch trials. In trial 2 of a trialgroup for instance, lag1 RT corresponds to the switch RT trial (trial 1 in a trialgroup). However, for trials 3 and 4 of a trialgroup, lag 1 RT corresponds to a no-switch trial. Therefore, in the graph above, the 0 switch is hard to interpret. This is especially problematic for the Alternate Runs experiment, because there are three no switch trials, one of which has the problematic lag 1 RT corresponding to the switch trial. In the Alternate Cues experiment, at least the no switch trials are averaged (trials 2 and 3, one of which is biased, so it's a balanced average). 
+
+Therefore, here, instead of a lag 1 RT, a new variable which calculates the mean of the *previous group RTs of no switch trials*. So again, not previous trial, but previous group averaged no switch trial RTs. That might be a better indicated for previous group stability.
+
+## Effect coded valence (-0.5, 0.5)
+
+```{r}
+
+
+df_models <- df_models %>%
+  group_by(id, block, trialgroup) %>%
+  mutate(avg_ns_rt_res_log = mean(time_log_res[switch == 0], na.rm = TRUE)) %>%
+  group_by(id, block) %>%
+  mutate(prev_avg_ns_rt_res_log = lag(avg_ns_rt_res_log, 1),
+         cycle = as.numeric(as.character(cycle))) %>%
+  group_by(id, block, trialgroup) %>%
+  mutate(prev_avg_ns_rt_res_log = prev_avg_ns_rt_res_log[1]) 
+
+
+
+
+alt_cue_rt_log_resrt_prev_eff <- lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_avg_ns_rt_res_log + (is_bivalent_eff + prev_bivalent_eff + switch_contr + prev_avg_ns_rt_res_log|id), control = lmerControl(optimizer = "bobyqa"),
+                                  alt_cue %>% 
+                                    filter(filter_correct == 0))
+
+make_model_table(alt_cue_rt_log_resrt_prev_eff)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev_eff, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_avg_ns_rt_res_log, type = "response",
+                          at = list(is_bivalent_eff = factor(c(0, 1)),
+                                    prev_bivalent_eff = factor(c(0, 1)),
+                                    switch_contr = factor(c(0, 1)),
+                                    prev_avg_ns_rt_res_log = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(prev_avg_ns_rt_res_log == min(prev_avg_ns_rt_res_log) ~ "fast",
+                           prev_avg_ns_rt_res_log == max(prev_avg_ns_rt_res_log) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff, group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+
+```
+
+
+
+## Contrast coded (0, 1)
+
+```{r}
+
+
+
+
+alt_cue_rt_log_resrt_prev_contr <- lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log + (is_bivalent_contr + prev_bivalent_contr + switch_contr + prev_avg_ns_rt_res_log|id), control = lmerControl(optimizer = "bobyqa"),
+                                  alt_cue %>% 
+                                    filter(filter_correct == 0))
+
+make_model_table(alt_cue_rt_log_resrt_prev_contr)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev_contr, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log, type = "response",
+                          at = list(is_bivalent_contr = factor(c(0, 1)),
+                                    prev_bivalent_contr = factor(c(0, 1)),
+                                    switch_contr = factor(c(0, 1)),
+                                    prev_avg_ns_rt_res_log = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(prev_avg_ns_rt_res_log == min(prev_avg_ns_rt_res_log) ~ "fast",
+                           prev_avg_ns_rt_res_log == max(prev_avg_ns_rt_res_log) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+
+```
 
