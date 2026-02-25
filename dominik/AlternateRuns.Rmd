@@ -118,8 +118,9 @@ contrasts(alt_run$cycle_helmert) <- helmert
 
 
 ```{r}
-
+set.seed(123)
 model_RT_trial <- lmer(time_log ~ poly(trial_cont, 2) + (poly(trial_cont, 2)|id), 
+                       control = lmerControl(optimizer = "bobyqa"),
                        alt_run %>% 
                          filter(error == 0))
 
@@ -587,6 +588,9 @@ alt_run_rt_log_resrt_contr <- lmer(time_log_res ~ is_bivalent_contr * prev_bival
                                    alt_run %>% 
                                      filter(filter_correct == 0))
 
+saveRDS(alt_run_rt_log_resrt_contr, file = "dominik/models/alt_run_rt_log_resrt_contr.RDS")
+alt_run_rt_log_resrt_contr <- readRDS("dominik/models/alt_run_rt_log_resrt_contr.RDS")
+
 make_model_table(alt_run_rt_log_resrt_contr)
 
 preds <- emmeans::emmeans(alt_run_rt_log_resrt_contr, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res, type = "response",
@@ -622,7 +626,8 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 alt_run_rt_log_resrt_prev_helmert_eff <- lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * lag1_time_log_res * cycle_helmert + (is_bivalent_eff + prev_bivalent_eff + lag1_time_log_res + cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),
                                           alt_run %>% 
                                             filter(filter_correct == 0))
-
+saveRDS(alt_run_rt_log_resrt_prev_helmert_eff, file = "dominik/models/alt_run_rt_log_resrt_prev_helmert_eff.RDS")
+alt_run_rt_log_resrt_prev_helmert_eff <- readRDS("dominik/models/alt_run_rt_log_resrt_prev_helmert_eff.RDS")
 
 make_model_table(alt_run_rt_log_resrt_prev_helmert_eff)
 
@@ -660,6 +665,8 @@ alt_run_rt_log_resrt_prev_helmert_contr <- lmer(time_log_res ~ is_bivalent_contr
                                                 alt_run %>% 
                                                   filter(filter_correct == 0))
 
+saveRDS(alt_run_rt_log_resrt_prev_helmert_contr, file = "dominik/models/alt_run_rt_log_resrt_prev_helmert_contr.RDS")
+alt_run_rt_log_resrt_prev_helmert_contr <- readRDS("dominik/models/alt_run_rt_log_resrt_prev_helmert_contr.RDS")
 
 make_model_table(alt_run_rt_log_resrt_prev_helmert_contr)
 
@@ -718,6 +725,9 @@ alt_run_rt_log_resrt_prev_eff <- lmer(time_log_res ~ is_bivalent_eff * prev_biva
                                   alt_run %>% 
                                     filter(filter_correct == 0))
 
+saveRDS(alt_run_rt_log_resrt_prev_eff, file = "dominik/models/alt_run_rt_log_resrt_prev_eff.RDS")
+alt_run_rt_log_resrt_prev_eff <- readRDS("dominik/models/alt_run_rt_log_resrt_prev_eff.RDS")
+
 make_model_table(alt_run_rt_log_resrt_prev_eff)
 
 preds <- emmeans::emmeans(alt_run_rt_log_resrt_prev_eff, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_avg_ns_rt_res_log, type = "response",
@@ -756,6 +766,9 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
 alt_run_rt_log_resrt_prev_contr <- lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log + (is_bivalent_contr + prev_bivalent_contr + switch_contr + prev_avg_ns_rt_res_log|id), control = lmerControl(optimizer = "bobyqa"),
                                   alt_run %>% 
                                     filter(filter_correct == 0))
+
+saveRDS(alt_run_rt_log_resrt_prev_contr, file = "dominik/models/alt_run_rt_log_resrt_prev_contr.RDS")
+alt_run_rt_log_resrt_prev_contr <- readRDS("dominik/models/alt_run_rt_log_resrt_prev_contr.RDS")
 
 make_model_table(alt_run_rt_log_resrt_prev_contr)
 
