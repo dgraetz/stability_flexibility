@@ -115,7 +115,7 @@ alt_run <- alt_run %>% #making contrasts outlined in prereg
 
 
 #compute z-score on trial level 
-alt_run_z <- alt_run %>% 
+alt_run <- alt_run %>% 
   group_by(id, cycle2, valence, lvalence) %>% #cycle or cycle2
   mutate(
     z = (rt - mean(rt[error == 0 & lerror == 0])) / sd(rt[error == 0 & lerror == 0])) %>% 
@@ -130,9 +130,7 @@ outliers_by_id <- alt_run_z %>%
   summarize(n_outliers = sum(abs(z) > 3, na.rm = TRUE))
 #outliers_by_id
 
-#Remove z‑score outliers
-alt_run <- alt_run_z %>%
-  filter(abs(z) <= 3 | is.na(z)) 
+
 
 
 #last filtering then adding a continuous trials variable
@@ -149,17 +147,20 @@ alt_run <- alt_run %>%
   switch = factor(switch)) %>% 
       group_by(id) %>% 
   mutate(conttrials = 1:n())
-
-
+alt_run
+#Remove z‑score outliers
+alt_run <- alt_run %>%
+  filter(abs(z) <= 3 | is.na(z)) 
+alt_run
 #for the within-sub analysis
 #create a new variable in initial data with trial numbers that continue adding person 
 #new model to take the residuals from, this needs to include block trial and sub, need to add poly function within the model (doing just conttrials instead)
-
+set.seed(123)
 polymodel <- lmer(
-  rt_log ~ poly(conttrials, 2)* (poly(conttrials, 2) | id), #poly(x,2) is specifications for linear and quadratic
+  rt_log ~ poly(conttrials, 2)* (poly(conttrials, 2) | id), control = lmerControl(optimizer = 'bobyqa'),#poly(x,2) is specifications for linear and quadratic
   data = alt_run %>% filter(error == 0)#filers out cur er 
 )
-
+summary(polymodel)
 #looking for 1 is linear 2 is quadratic
 #residuals for this new model 
 
@@ -170,6 +171,14 @@ alt_run$logresidual <- NA
 alt_run$logresidual[alt_run$error == 0] <- residuals(polymodel)
 
 view(alt_run)
+
+alt_run %>% 
+  ungroup() %>% 
+  summarise(m= mean(conttrials, na.rm = F), sd = sd(conttrials, na.rm = F))
+
+alt_run %>% 
+  ungroup() %>% 
+  summarise(m= mean(rt_log, na.rm = F), sd = sd(rt_log, na.rm = F))
 ```
 Aggragation experimental level analysis
 
@@ -681,7 +690,7 @@ m[,1] <- rev(m[,1])
 m[,2] <- rev(m[,2])
 m[,3] <- rev(m[,3])
 #reverse helmert
-colnames(m) <- c('1vr','2vr','3vr')
+colnames(m) <- c('3vr','2vr','1vr')
 
 alt_run <- alt_run %>% 
   mutate(cycle_helmert = cycle2
@@ -701,13 +710,6 @@ alt_run <- alt_run %>%
   mutate(lrt_logres = lag(logresidual, 1),
          lrt_log = lag(rt_log, 1))
 
-alt_run <- alt_run %>%
-  group_by(id, block, group) %>%
-  mutate(meanlogres_noswitch = mean(logresidual[switch == 0], na.rm = TRUE)) %>%
-  group_by(id, block) %>%
-  mutate(lmeanlogres_noswitch = lag(meanlogres_noswitch, 1)) %>% #we want lrt res
-  group_by(id, block, group) %>%
-  mutate(lmeanlogres_noswitch = lmeanlogres_noswitch[1])
 ```
 
 by valence contrast
@@ -724,7 +726,7 @@ tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.metho
 no valence contrast
 this does not converge and takes forever to run
 ```{r}
-autocor_model <- lmer(logresidual ~ valence * lvalence * cycle_helmert * lmeanlogres_noswitch + (valence + lvalence + cycle_helmert + lmeanlogres_noswitch|id), control = lmerControl(optimizer = "bobyqa"),
+autocor_model <- lmer(logresidual ~ valence * lvalence * cycle_helmert * lrt_logres + (valence + lvalence + cycle_helmert + lrt_logres|id), control = lmerControl(optimizer = "bobyqa"),
      alt_run %>% 
        filter(filter_correct == 0))
 
