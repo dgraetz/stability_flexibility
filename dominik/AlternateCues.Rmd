@@ -115,10 +115,10 @@ model_RT_trial <- lmer(time_log ~ poly(trial_cont, 2) + (poly(trial_cont, 2)|id)
                        alt_cue %>% 
                          filter(error == 0))
 
+summary(model_RT_trial)
 
 model_RT_trial %>%
   make_model_table()
-
 
 alt_cue <- alt_cue %>%
   ungroup() %>%
@@ -128,9 +128,19 @@ alt_cue <- alt_cue %>%
 alt_cue$time_log_res <- NA
 alt_cue$time_log_res[alt_cue$error == 0] <- residuals(model_RT_trial)
 
+#here i'm getting subject intercepts
+model_RT_trial_ranef <- coefficients(model_RT_trial)$id %>% 
+  as.data.frame() %>% 
+  rownames_to_column("id") %>%
+  select(id, "(Intercept)") %>%
+  rename(poly_m_s_int = "(Intercept)")
+
 alt_cue <- alt_cue %>%
+  left_join(model_RT_trial_ranef) %>% #adding subject intercepts to the dataset to later add this
   group_by(id, block) %>%
-  mutate(lag1_time_log_res = lag(time_log_res, 1),
+  mutate(time_log_res_w_s_int = time_log_res + poly_m_s_int,
+         lag1_time_log_res_w_s_int = lag(time_log_res_w_s_int, 1),
+         lag1_time_log_res = lag(time_log_res, 1),
          lag1_time_log = lag(time_log, 1))
 
 subs <- alt_cue$id %>% unique() %>% head(5)
@@ -156,7 +166,25 @@ plt_rt_residuals <- ggplot(alt_cue %>% filter(id %in% subs), aes(x = trial_cont,
 
 ggpubr::ggarrange(plt_rt_w_model, plt_rt_residuals, nrow = 2)
 
+alt_cue %>%
+  group_by(id) %>%
+  mutate(M_time_log_res = mean(time_log_res, na.rm = TRUE)) %>%
+  ggplot()+
+  geom_violin(aes(x = id, y = time_log_res))+
+  geom_point(aes(x = id, y = M_time_log_res), size = 0.1)+
+  theme_classic() +
+  labs(x = "Subject ID",
+       y = "Residual log(RT), without subject intecepts")
 
+alt_cue %>%
+  group_by(id) %>%
+  mutate(M_time_log_res_w_s_int = mean(time_log_res_w_s_int, na.rm = TRUE)) %>%
+  ggplot()+
+  geom_violin(aes(x = id, y = time_log_res_w_s_int))+
+  geom_point(aes(x = id, y = M_time_log_res_w_s_int), size = 0.1)+
+  theme_classic() +
+  labs(x = "Subject ID",
+       y = "Residual log(RT), *with* subject intecepts")
 
 ```
 
@@ -213,6 +241,7 @@ alt_cue_contr_agg <- alt_cue_agg_ID %>%
             Error_ci_lower = get_ci(Error, Error_m)[1],
             Error_ci_upper = get_ci(Error, Error_m)[2]
   )
+
 
 
 ```
@@ -370,7 +399,8 @@ make_model_table(alt_cue_error_contr)
 alt_cue_agg_ID_ddm <- alt_cue %>%
   mutate(RT_s = time/1000) %>%
   group_by(id, is_bivalent_contr, prev_bivalent_contr, switch_contr, cycle) %>%
-  summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
+  summarize(RT_log =  mean(time_log[filter_correct == 0], na.rm = TRUE),
+            RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
@@ -413,7 +443,8 @@ alt_cue_agg_ddm <- alt_cue_agg_ID_ddm %>%
 alt_cue_agg_ID_ddm_nocycle <- alt_cue %>%
   mutate(RT_s = time/1000) %>%
   group_by(id, is_bivalent_eff, is_bivalent_contr, prev_bivalent_eff, prev_bivalent_contr, switch_eff, switch_contr) %>%
-  summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
+  summarize(RT_log =  mean(time_log[filter_correct == 0], na.rm = TRUE),
+            RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             Error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
@@ -541,9 +572,11 @@ make_model_table(alt_cue_Ter_contr)
 
 ## Effect coded valence (-0.5, 0.5)
 
+### Removed subject intercepts
+
 ```{r}
 
-alt_cue_rt_log_resrt_eff <- lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res + (is_bivalent_eff + prev_bivalent_eff + switch_contr + lag1_time_log_res | id), 
+alt_cue_rt_log_resrt_eff <- lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res + (is_bivalent_eff + switch_contr + lag1_time_log_res | id), 
                              control = lmerControl(optimizer = "bobyqa"),
                              alt_cue %>% 
                                filter(filter_correct == 0))
@@ -578,7 +611,55 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
 ```
 
 
+### Added subject intercepts
+
+```{r}
+
+#For these analyses, we need to center the RTs:
+
+alt_cue <- alt_cue %>%
+  ungroup() %>%
+  mutate(time_log_res_w_s_int_c = time_log_res_w_s_int - mean(time_log_res_w_s_int, na.rm = TRUE),
+         lag1_time_log_res_w_s_int_c = lag1_time_log_res_w_s_int - mean(lag1_time_log_res_w_s_int, na.rm = TRUE))
+
+alt_cue_rt_log_resrt_eff_w_s_int <- lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_eff + switch_contr + lag1_time_log_res_w_s_int_c | id), 
+                                         #control = lmerControl(optimizer = "bobyqa"),
+                                         alt_cue %>% 
+                                           filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_eff_w_s_int)
+saveRDS(alt_cue_rt_log_resrt_eff_w_s_int, file = "dominik/models/alt_cue_rt_log_resrt_eff_w_s_int.RDS")
+alt_cue_rt_log_resrt_eff_w_s_int <- readRDS("dominik/models/alt_cue_rt_log_resrt_eff_w_s_int.RDS")
+
+make_model_table(alt_cue_rt_log_resrt_eff_w_s_int)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_eff_w_s_int, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
+                          at = list(is_bivalent_eff = factor(c(0, 1)),
+                                    prev_bivalent_eff = factor(c(0, 1)),
+                                    switch_contr = factor(c(0, 1)),
+                                    lag1_time_log_res_w_s_int_c = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(lag1_time_log_res_w_s_int_c == min(lag1_time_log_res_w_s_int_c) ~ "fast",
+                           lag1_time_log_res_w_s_int_c == max(lag1_time_log_res_w_s_int_c) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff, group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+```
+
+
 ## Contrast coded (0, 1)
+
+### Removed subject intercepts
 
 ```{r}
 
@@ -614,10 +695,51 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 
 ```
 
+### Added subject intercepts
+
+```{r}
+
+alt_cue_rt_log_resrt_contr_w_s_int <- lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_contr + switch_contr + lag1_time_log_res_w_s_int_c | id), 
+                                         #control = lmerControl(optimizer = "bobyqa"),
+                                         alt_cue %>% 
+                                           filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_contr_w_s_int)
+saveRDS(alt_cue_rt_log_resrt_contr_w_s_int, file = "dominik/models/alt_cue_rt_log_resrt_contr_w_s_int.RDS")
+alt_cue_rt_log_resrt_contr_w_s_int <- readRDS("dominik/models/alt_cue_rt_log_resrt_contr_w_s_int.RDS")
+
+make_model_table(alt_cue_rt_log_resrt_contr_w_s_int)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_contr_w_s_int, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
+                          at = list(is_bivalent_contr = factor(c(0, 1)),
+                                    prev_bivalent_contr = factor(c(0, 1)),
+                                    switch_contr = factor(c(0, 1)),
+                                    lag1_time_log_res_w_s_int_c = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(lag1_time_log_res_w_s_int_c == min(lag1_time_log_res_w_s_int_c) ~ "fast",
+                           lag1_time_log_res_w_s_int_c == max(lag1_time_log_res_w_s_int_c) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+```
+
+
 
 ## Helmert-coded cycle variable
 
 ### Effect coded valence (-0.5, 0.5)
+
+#### Removed subject intercepts
 
 ```{r}
 
@@ -656,7 +778,49 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_eff, linety
 ```
 
 
+#### Added subject intercepts
+
+
+```{r}
+
+alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int <- lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * lag1_time_log_res_w_s_int_c * cycle_helmert + (is_bivalent_eff + prev_bivalent_eff + lag1_time_log_res_w_s_int_c + cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),
+                                          alt_cue %>% 
+                                            filter(filter_correct == 0))
+
+saveRDS(alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int, file = "dominik/models/alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int.RDS")
+alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int <- readRDS("dominik/models/alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int.RDS")
+
+make_model_table(alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int)
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev_helmert_eff_w_s_int, ~ is_bivalent_eff * prev_bivalent_eff * lag1_time_log_res_w_s_int_c * cycle_helmert, type = "response",
+                          at = list(is_bivalent_eff = factor(c(0, 1)),
+                                    prev_bivalent_eff = factor(c(0, 1)),
+                                    cycle_helmert = factor(c(1, 2, 3)),
+                                    lag1_time_log_res_w_s_int_c = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(lag1_time_log_res_w_s_int_c == min(lag1_time_log_res_w_s_int_c) ~ "fast",
+                           lag1_time_log_res_w_s_int_c == max(lag1_time_log_res_w_s_int_c) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff, group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  #scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+
+
+```
+
+
 ### contrast coded valence (0/1)
+
+#### Removed subject intercepts
 
 ```{r}
 
@@ -668,6 +832,7 @@ saveRDS(alt_cue_rt_log_resrt_prev_helmert_contr, file = "dominik/models/alt_cue_
 alt_cue_rt_log_resrt_prev_helmert_contr <- readRDS("dominik/models/alt_cue_rt_log_resrt_prev_helmert_contr.RDS")
 
 make_model_table(alt_cue_rt_log_resrt_prev_helmert_contr)
+
 
 
 preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev_helmert_contr, ~ is_bivalent_contr * prev_bivalent_contr * cycle_helmert * lag1_time_log_res, type = "response",
@@ -695,6 +860,46 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_contr, line
 
 ```
 
+
+#### Added subject intercepts
+
+```{r}
+
+alt_cue_rt_log_resrt_prev_helmert_contr_w_s_int <- lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * lag1_time_log_res_w_s_int_c * cycle_helmert + (is_bivalent_contr + prev_bivalent_contr + lag1_time_log_res_w_s_int_c + cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),
+                                                alt_cue %>% 
+                                                  filter(filter_correct == 0))
+
+saveRDS(alt_cue_rt_log_resrt_prev_helmert_contr_w_s_int, file = "dominik/models/alt_cue_rt_log_resrt_prev_helmert_contr_w_s_int.RDS")
+alt_cue_rt_log_resrt_prev_helmert_contr <- readRDS("dominik/models/alt_cue_rt_log_resrt_prev_helmert_contr_w_s_int.RDS")
+
+make_model_table(alt_cue_rt_log_resrt_prev_helmert_contr_w_s_int)
+
+
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_prev_helmert_contr_w_s_int, ~ is_bivalent_contr * prev_bivalent_contr * cycle_helmert * lag1_time_log_res_w_s_int_c, type = "response",
+                          at = list(is_bivalent_contr = factor(c(0, 1)),
+                                    prev_bivalent_contr = factor(c(0, 1)),
+                                    cycle_helmert = factor(c(1, 2, 3)),
+                                    lag1_time_log_res = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(lag1_time_log_res_w_s_int_c == min(lag1_time_log_res_w_s_int_c) ~ "fast",
+                           lag1_time_log_res_w_s_int_c == max(lag1_time_log_res_w_s_int_c) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  #scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+
+
+```
 
 
 
@@ -795,3 +1000,35 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 
 
 ```
+
+
+# Individual differences analysis
+
+
+```{r}
+
+alt_cue_indiv <- alt_cue_agg_ID_ddm_nocycle %>% 
+  pivot_wider(id_cols = id, names_from = c(is_bivalent_contr, prev_bivalent_contr, switch_contr), 
+              values_from = c(v, a, Ter, RT_log), 
+              names_glue = "{.value}_s{switch_contr}_cbiv{is_bivalent_contr}_lbiv{prev_bivalent_contr}") %>% ungroup() %>% slice(1:10)
+
+
+ggplot(alt_cue_indiv, aes(x = RT_log_s1_cbiv1_lbiv1, y = RT_log_s0_cbiv0_lbiv0))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_classic()
+
+
+lm(RT_log_s1_cbiv1_lbiv1 ~ 
+     RT_log_s0_cbiv0_lbiv0 + 
+     RT_log_s0_cbiv1_lbiv0 +
+     RT_log_s0_cbiv0_lbiv1 +
+     RT_log_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+
+
+
+
+```
+
+
