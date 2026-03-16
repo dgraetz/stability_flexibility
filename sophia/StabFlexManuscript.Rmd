@@ -276,7 +276,7 @@ These authors pointed toward a possible anti-tradeoff pattern, implying that cog
 
 - set up proceeding paragraghs about the two views with stab/flex. highlight more that this may arise due to differences in the levels of analysis stab/flex mechanisms are studied. 
 
-***Attractor Landscape Prediction Model.*** The prediction of a tradeoff relationship arises from connectionist models of cognitive control. The behavior of these models can be described within an “attractor landscape” [@brown_2007_a; @geddert_2022_no] illustrated in Fig. 1A. In this framework, different task representations form basins in a state space, and the depth of a basin reflects how strongly a task is currently activated. A deeper basin corresponds to a more stable task state, but it also requires more “energy” to move out of, making task switching more difficult.
+The prediction of a tradeoff relationship arises from connectionist models of cognitive control. The behavior of these models can be described within an “attractor landscape” [@brown_2007_a; @geddert_2022_no] illustrated in Fig. 1A. In this framework, different task representations form basins in a state space, and the depth of a basin reflects how strongly a task is currently activated. A deeper basin corresponds to a more stable task state, but it also requires more “energy” to move out of, making task switching more difficult.
 
 One data pattern that is consistent with this tradeoff prediction arises when examining task-switch costs as a function of previous-trial conflict. High conflict on the previous trial is assumed to strengthen the currently active task representation, effectively deepening its basin. This increased stability should then make switching on the next trial harder, producing larger switch costs.  Indeed, much of the dominant narrative in cognitive control has been built around this tradeoff pattern [@goschke_2000_intentional]. Yet, there are also several recent results that call the generalizability of this finding into question [@geddert_2022_no; @brown_2007_a; @mayr_2014_longterm].
 
@@ -284,7 +284,6 @@ One data pattern that is consistent with this tradeoff prediction arises when ex
 
 ***Cognitive Map Prediction Model.*** Contrary to predictions from the attractor model, there are recent hints suggesting the possibility of an anti-tradeoff pattern, where flexibility and stability appear to co-occur [@mayr_2014_longterm; @morales_2022_age]. In response to these results, Mayr and Graetz have suggested replacing the attractor-landscape perspective with a cognitive map conceptualization (Fig. 1B). Here, different tasks are locations within a task space that can be represented with varying degrees of resolution. The higher the resolution, the more stable tasks are encoded, but also the easier they are to find when switching, resulting in an anti-tradeoff pattern [@mayr_2024_does]. Despite some evidence for such anti-tradeoff patterns [@morales_2022_age], this prediction has not been rigorously tested.
 
-![Opposing Prediction Models.](predmodels.png)
 
 ***The Current Study.*** We investigate where differences in the stability-flexibility dilemma arise through a multi-level approach to analysis. Previous work in cognitive control has not performed a rigorous test of experimental effects, within-subject effects, and individual differences on the same dataset. 
 

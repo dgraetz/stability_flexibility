@@ -5,7 +5,7 @@ format: html
 editor: visual
 ---
 
-## Multilevel Test of Stability-Flexibility
+# Multilevel Test of Stability-Flexibility
 
 This script cleans and analyses the AlternateRuns Dataset.
 
@@ -274,7 +274,7 @@ allagg_ci <- allagg %>% #group level CIs
 
 ```
 
-## Visualizations
+### Visualizations
 also make figures with averages of no-switch by cycle
 
 By logged RT
@@ -508,7 +508,7 @@ convert_extremes <- function(value){
 }#making sure error is either .99 or .001
 ```
 
-### DDM aggregation
+DDM aggregation
 ```{r}
 
 alt_run_agg_ID_ddm <- alt_run %>%
@@ -550,7 +550,8 @@ alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
 alt_run_agg_ID_ddm_collapsed <- alt_run  %>% #doing this a different way, if we groupby everything but cycle, the switch v no-switch will auto treat 2,3,4 as averaged i think
   mutate(RT_s = rt/1000) %>% #convert rt to seconds
   group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch) %>%
-  summarize(RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
+  summarize(rt_log =  mean(rt_log[filter_correct == 0], na.rm = TRUE),
+            RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
             error = mean(error, na.rm = TRUE),
             N_trials = n()) %>%
@@ -579,6 +580,8 @@ alt_run_agg_ddm_collapsed <- alt_run_agg_ID_ddm_collapsed %>%
             Ter_m = mean(Ter, na.rm = TRUE),
             Ter_ci_lower = get_ci(Ter, Ter_m)[1],
             Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
+
+
 
 ```
 ### DDM vis
@@ -692,7 +695,7 @@ visualization for models
 to fix singularity, can run a model comparisons to see what fixed effects to keep, can do this by running an ANOVA
 
 
-# auto correlations lag rt_log and rt_log
+auto correlations lag rt_log and rt_log
 
 by valence contrast
 ```{r}
@@ -702,6 +705,11 @@ autocor_model_c <- lmer(logresidual ~ valence_contr * lvalence_contr * cycle_hel
 summary(autocor_model_c)
 
 tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
+#need to use function coeficents(autocor_model_c) to get the averages from the model and put it back into the dataframe to get indivusual subject averages back into the data. need to create a new dataframe with this information left_join into dataframe 
+
+
+
 
 ```
 
@@ -718,4 +726,259 @@ tab_model(autocor_model, show.est = T, auto.label = F, show.stat = T, df.method 
 ```
 
 
+## psychometric differences
+
+```{r}
+#first from the long format calculate the drift rate then when you pivot wider add in drift rate did this earlier 
+
+#reorg using pivot wider, each subject is a row and have a column for every possible combination of valence
+indif <- alt_run_agg_ID_ddm_collapsed %>% 
+  pivot_wider(id_cols = id, names_from = c(valence, lvalence, switch), 
+              values_from = c(v, a, Ter, rt_log), 
+              names_glue = "{.value}_s{switch}_cbiv{valence}_lbiv{lvalence}") %>% 
+  ungroup() %>% 
+  slice(1:10)
+indif
+```
+
+### by drift rate
+```{r}
+#first from the long format calculate the drift rate then when you pivot wider add in drift rate
+
+#building up model 1 
+lm(v_s1_cbiv1_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1,
+      data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv1_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1,
+      data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv1_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2,
+      data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv1_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2 +
+     v_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+
+```{r}
+#model 2
+lm(v_s1_cbiv2_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1,
+      data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv2_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1,
+      data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv2_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2,
+      data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv2_lbiv1 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2 +
+     v_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+
+
+```
+```{r}
+#model 3 
+lm(v_s1_cbiv1_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1,
+ data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv1_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1,
+ data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv1_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv1_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2 +
+     v_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+```{r}
+#model 4
+lm(v_s1_cbiv2_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1,
+   data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv2_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1,
+   data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv2_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2,
+   data = indif ) %>% 
+  summary()
+
+lm(v_s1_cbiv2_lbiv2 ~ 
+     v_s0_cbiv1_lbiv1 + 
+     v_s0_cbiv2_lbiv1 +
+     v_s0_cbiv1_lbiv2 +
+     v_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+### by rt log
+```{r}
+#model 1
+lm(rt_log_s1_cbiv1_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv1_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv1_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv1_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2 +
+     rt_log_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+
+```
+```{r}
+#model 2
+
+lm(rt_log_s1_cbiv2_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv2_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv2_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv2_lbiv1 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2 +
+     rt_log_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+```{r}
+#model 3
+
+lm(rt_log_s1_cbiv1_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv1_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv1_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv1_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2 +
+     rt_log_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+```{r}
+#model 4
+
+lm(rt_log_s2_cbiv1_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv2_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv2_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(rt_log_s1_cbiv2_lbiv2 ~ 
+     rt_log_s0_cbiv1_lbiv1 + 
+     rt_log_s0_cbiv2_lbiv1 +
+     rt_log_s0_cbiv1_lbiv2 +
+     rt_log_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
 
