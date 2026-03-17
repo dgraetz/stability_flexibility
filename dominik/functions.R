@@ -195,3 +195,10 @@ export_flextable_to_word <- function(flextable_obj, filepath, title = NULL, subt
   
   print(doc, target = filepath)
 }
+
+
+compare_models <- function(model_list, dv){
+  
+  do.call(anova, unname(model_list[grepl(dv, names(model_list))]))
+  
+}
