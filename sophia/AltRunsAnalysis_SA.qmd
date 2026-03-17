@@ -734,10 +734,9 @@ tab_model(autocor_model, show.est = T, auto.label = F, show.stat = T, df.method 
 #reorg using pivot wider, each subject is a row and have a column for every possible combination of valence
 indif <- alt_run_agg_ID_ddm_collapsed %>% 
   pivot_wider(id_cols = id, names_from = c(valence, lvalence, switch), 
-              values_from = c(v, a, Ter, rt_log), 
+              values_from = c(v, a, Ter, rt_log, error), 
               names_glue = "{.value}_s{switch}_cbiv{valence}_lbiv{lvalence}") %>% 
-  ungroup() %>% 
-  slice(1:10)
+  ungroup()
 indif
 ```
 
@@ -978,6 +977,123 @@ lm(rt_log_s1_cbiv2_lbiv2 ~
      rt_log_s0_cbiv2_lbiv1 +
      rt_log_s0_cbiv1_lbiv2 +
      rt_log_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+### by error
+```{r}
+#model 1
+lm(error_s1_cbiv1_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv1_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv1_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv1_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2 +
+     error_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+```{r}
+#model 2 
+lm(error_s1_cbiv2_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv2_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv2_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv2_lbiv1 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2 +
+     error_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+```{r}
+# model 3
+lm(error_s1_cbiv1_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv1_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv1_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv1_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2 +
+     error_s0_cbiv2_lbiv2,
+   data = indif ) %>% 
+  summary()
+```
+
+```{r}
+#model 4
+lm(error_s1_cbiv2_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv2_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1,
+    data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv2_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2,
+ data = indif ) %>% 
+  summary()
+
+lm(error_s1_cbiv2_lbiv2 ~ 
+     error_s0_cbiv1_lbiv1 + 
+     error_s0_cbiv2_lbiv1 +
+     error_s0_cbiv1_lbiv2 +
+     error_s0_cbiv2_lbiv2,
    data = indif ) %>% 
   summary()
 ```
