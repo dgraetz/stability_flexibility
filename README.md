@@ -7,3 +7,5 @@ This project is interested in conducting a multilevel test of stability-flexibil
 - **Individual differences level:** Here we test whether individual differences in measures of “stability/efficiency” and in measures of flexibility are consistent with the tradeoff model.  
 
 To access the preregistration of this project [click here!](https://osf.io/9bsf5/overview)
+
+to look at rendered htmls, use [this link](https://html-preview.github.io/) to view
