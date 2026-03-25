@@ -311,7 +311,8 @@ alt_cue_rt_log_eff <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * swit
 
 make_model_table(alt_cue_rt_log_eff)
 
-
+contrasts(alt_cue$is_bivalent_eff)
+contrasts(alt_cue$prev_bivalent_eff)
 
 
 alt_cue_rt_eff <- lmer(time ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
@@ -356,6 +357,9 @@ alt_cue_rt_contr <- lmer(time ~ is_bivalent_contr * prev_bivalent_contr * switch
 make_model_table(alt_cue_rt_contr)
 
 ```
+
+
+
 
 ## Errors
 
@@ -1164,7 +1168,8 @@ alt_cue_RT_model_summary <- lapply(alt_cue_indiv_diff_models$RT, function(x){
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label))
+         r_adj_label = gsub("^0.", ".", r_adj_label), 
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb"))) 
 
 
 ggplot(alt_cue_RT_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1176,10 +1181,10 @@ ggplot(alt_cue_RT_model_summary, aes(x = coefficient, y = estimate, group = mode
   geom_point(data = alt_cue_RT_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
   geom_hline(yintercept = 0, linetype = "dotted")+
   theme_classic()+
-  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
-                                                       "ub" = "uni-bi",
-                                                       "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")))+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "univalent-univalent",
+                                                       "ub" = "univalent-bivalent",
+                                                       "bu" = "bivalent-univalent",
+                                                       "bb" = "bivalent-bivalent")))+
   scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
@@ -1239,7 +1244,8 @@ alt_cue_Error_model_summary <- lapply(alt_cue_indiv_diff_models$Error, function(
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label))
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")))
 
 
 ggplot(alt_cue_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1251,10 +1257,10 @@ ggplot(alt_cue_Error_model_summary, aes(x = coefficient, y = estimate, group = m
   geom_point(data = alt_cue_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
   geom_hline(yintercept = 0, linetype = "dotted")+
   theme_classic()+
-  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
-                                                       "ub" = "uni-bi",
-                                                       "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")))+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "univalent-univalent",
+                                                       "ub" = "univalent-bivalent",
+                                                       "bu" = "bivalent-univalent",
+                                                       "bb" = "bivalent-bivalent")))+
   scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
@@ -1430,4 +1436,7 @@ ggplot(alt_cue_v_NA_model_summary, aes(x = coefficient, y = estimate, group = mo
 
 ```
 
+```{r}
+
+```
 

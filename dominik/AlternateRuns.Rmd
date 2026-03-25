@@ -1326,7 +1326,8 @@ alt_run_v_model_summary <- lapply(alt_run_indiv_diff_models$v, function(x){
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label))
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")))
 
 
 ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1407,7 +1408,8 @@ alt_run_v_NA_model_summary <- lapply(alt_run_indiv_diff_models$v_NA, function(x)
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label))
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")))
 
 
 ggplot(alt_run_v_NA_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1436,6 +1438,10 @@ ggplot(alt_run_v_NA_model_summary, aes(x = coefficient, y = estimate, group = mo
 # compare_models(alt_run_indiv_diff_models$v_NA, "ub")
 # compare_models(alt_run_indiv_diff_models$v_NA, "bu")
 # compare_models(alt_run_indiv_diff_models$v_NA, "bb")
+
+```
+
+```{r}
 
 ```
 
