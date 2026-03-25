@@ -49,6 +49,7 @@ AlternateRuns <- read_csv("AlternateRuns.csv")
 #view(AlternateRuns) 
 
 #make lmer models lmertests
+rerun_all <- 0
 ```
 
 ## Data Cleaning
@@ -171,9 +172,19 @@ polymodel <- lmer(
 alt_run$logresidual <- NA
 alt_run$logresidual[alt_run$error == 0] <- residuals(polymodel)
 
-alt_run <- alt_run %>%
+#adding back in the subject intercepts into the residual variable. better for modeling 
+residualintercept <- coefficients(polymodel)$id %>% 
+  as.data.frame() %>% 
+  rownames_to_column("id") %>%
+  select(id, "(Intercept)") %>%
+  rename(polymodel_int = "(Intercept)")
+
+alt_run <- alt_run %>% #leftjoining togther to add back in the intercepts to altrun. will use in residual within-subject modeling (second level)
+  left_join(residualintercept) %>% 
   group_by(id, block) %>%
-  mutate(lrt_logres = lag(logresidual, 1),
+  mutate(rt_log_res_w_s_int = logresidual + polymodel_int,
+         lrt_log_res_w_s_int = lag(rt_log_res_w_s_int, 1),
+         lrt_logres = lag(logresidual, 1),
          lrt_log = lag(rt_log, 1))
 
 ### Reverse Helmert Contrasts
@@ -389,17 +400,18 @@ checking for conflict effects by adding it into the model
 by rt log with valence contrasts
 
 ```{r}
-model_lmer_log_c <- lmer(
-  rt_log ~ valence_contr * lvalence_contr * cycle_helmert +
-    (valence_contr + lvalence_contr + cycle_helmert || id), #double bar bc does not converge with single, is less complex w double 
+model_lmer_log_c <- xfun::cache_rds({
+  lmer(rt_log ~ valence_contr * lvalence_contr * switch +
+    (valence_contr + lvalence_contr + switch || id), #double bar bc does not converge with single, is less complex w double 
   control = lmerControl(optimizer = 'bobyqa'),
   data = alt_run %>% filter(filter_correct == 0)
 )
-
+}, dir = "sophia/output/", file = "model_lmer_log_c.rds", rerun = rerun_all)
 summary(model_lmer_log_c)
 
 
 tab_model(model_lmer_log_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
 
  
 ```
@@ -407,17 +419,19 @@ tab_model(model_lmer_log_c, show.est = T, auto.label = F, show.stat = T, df.meth
 rt log by valence not coded as a contrast
 
 ```{r}
-model_lmer <- lmer(
-  rt_log ~ valence * lvalence * cycle_helmert +
-    (valence + lvalence + cycle_helmert 
+model_lmer <- xfun::cache_rds({
+  lmer(
+  rt_log ~ valence * lvalence * switch +
+    (valence + lvalence + switch 
      | id),
   control = lmerControl(optimizer = 'bobyqa'),
   data = alt_run %>% filter(filter_correct == 0)
 )
-
+}, dir = "sophia/output/", file = "model_lmer.rds", rerun = rerun_all)
 summary(model_lmer)
 
 tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
 ```
 adding conflict as a fixed effect into the rt_log
 
@@ -437,24 +451,28 @@ adding conflict as a fixed effect into the rt_log
 ### by Error
 by error with valence contrasts
 ```{r}
-model_glmer_c <- glmer(
-  error ~ valence_contr * lvalence_contr*cycle_helmert + (valence_contr + lvalence_contr + cycle_helmert|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
+model_glmer_c <- xfun::cache_rds({
+  glmer(
+  error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
-
+}, dir = "sophia/output/", file = "model_glmer_c.rds", rerun = rerun_all)
 summary(model_glmer_c)
 
 tab_model(model_glmer_c, show.est = T, auto.label = F, show.stat = T)
+
 ```
 
 by error without valence contrasts
 ```{r}
-model_glmer <- glmer(
-  error ~ valence * lvalence*cycle_helmert+ (valence + lvalence + cycle_helmert|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
+model_glmer <- xfun::cache_rds({
+  glmer(
+  error ~ valence * lvalence*switch+ (valence + lvalence + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
-
+}, dir = "sophia/output/", file = "model_glmer.rds", rerun = rerun_all)
 summary(model_glmer)
 
 tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
+
 ```
 
 by error with conflict included
@@ -632,8 +650,9 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow 
 with valence contrasts
 
 ```{r}
-model_a_c <- lmer(a ~ valence_contr * lvalence_contr *cycle_helmert + (valence_contr+lvalence_contr+cycle_helmert || id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
-
+model_a_c <- xfun::cache_rds({
+  lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_a_c.rds", rerun = rerun_all)
 summary(model_a_c)
 
 tab_model(model_a_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
@@ -641,16 +660,18 @@ tab_model(model_a_c, show.est = T, auto.label = F, show.stat = T, df.method = 's
 
 
 ```{r}
-model_v_c<- lmer(v ~ valence_contr * lvalence_contr *cycle_helmert + (valence_contr+lvalence_contr+cycle_helmert || id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
-
+model_v_c<- xfun::cache_rds({
+  lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_v_c.rds", rerun = rerun_all)
 summary(model_v_c)
 
 tab_model(model_v_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
 
 ```{r}
-model_Ter_c <- lmer(Ter ~ valence_contr * lvalence_contr *cycle_helmert + (valence_contr+lvalence_contr+cycle_helmert || id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
-
+model_Ter_c <- xfun::cache_rds({
+  lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch || id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_Ter_c.rds", rerun = rerun_all)
 summary(model_Ter_c)
 
 tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
@@ -658,9 +679,10 @@ tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 
 
 without valence contrasts
 
-```{r}
-model_a <- lmer(a ~ valence * lvalence *cycle_helmert + (valence+lvalence+cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
-
+```{r} 
+model_a <-xfun::cache_rds({
+  lmer(a ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_a.rds", rerun = rerun_all)
 summary(model_a)
 
 tab_model(model_a, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
@@ -668,16 +690,18 @@ tab_model(model_a, show.est = T, auto.label = F, show.stat = T, df.method = 'sat
 
 
 ```{r}
-model_v <- lmer(v ~ valence * lvalence *cycle_helmert + (valence+lvalence+cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
-
+model_v <- xfun::cache_rds({
+  lmer(v ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_v.rds", rerun = rerun_all)
 summary(model_v)
 
 tab_model(model_v, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
 
 ```{r}
-model_Ter <- lmer(Ter ~ valence * lvalence *cycle_helmert + (valence+lvalence+cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
-
+model_Ter <- xfun::cache_rds({
+  lmer(Ter ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_Ter.rds", rerun = rerun_all)
 summary(model_Ter)
 
 tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
@@ -697,14 +721,27 @@ to fix singularity, can run a model comparisons to see what fixed effects to kee
 
 auto correlations lag rt_log and rt_log
 
-by valence contrast
+These models using the residual are both run with subject intercepts added back in, this is done at the datacleaning stage at the beginning 
+
+
 ```{r}
-autocor_model_c <- lmer(logresidual ~ valence_contr * lvalence_contr * cycle_helmert * lmeanlogres_noswitch + (valence_contr + lvalence_contr + cycle_helmert + lmeanlogres_noswitch||id), control = lmerControl(optimizer = "bobyqa"),
+#c here means centered not contrast
+alt_run <- alt_run %>%
+  ungroup() %>%
+  mutate(rt_log_res_w_s_int_c = rt_log_res_w_s_int - mean(rt_log_res_w_s_int, na.rm = TRUE),
+         lrt_log_res_w_s_int_c = lrt_log_res_w_s_int - mean(lrt_log_res_w_s_int, na.rm = TRUE))
+```
+
+by valence contrast with cycle helmert
+```{r}
+autocor_model_c_helmert <- xfun::cache_rds({
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * cycle_helmert * lrt_log_res_w_s_int_c + (valence_contr + lvalence_contr + cycle_helmert + lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
      alt_run %>% filter(filter_correct==0))
+}, dir = "sophia/output/", file = "autocor_model_c_helmert.rds", rerun = rerun_all)
+summary(autocor_model_c_helmert)
 
-summary(autocor_model_c)
-
-tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+tab_model(autocor_model_c_helmert, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 #need to use function coeficents(autocor_model_c) to get the averages from the model and put it back into the dataframe to get indivusual subject averages back into the data. need to create a new dataframe with this information left_join into dataframe 
 
@@ -713,18 +750,42 @@ tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.metho
 
 ```
 
-no valence contrast
-this does not converge and takes forever to run
+no valence contrast with cycle helmert
+
 ```{r}
-autocor_model <- lmer(logresidual ~ valence * lvalence * cycle_helmert * lrt_logres + (valence + lvalence + cycle_helmert + lrt_logres|id), control = lmerControl(optimizer = "bobyqa"),
+# autocor_model_helmert <- xfun::cache_rds({
+#   lmer(rt_log_res_w_s_int_c  ~ valence * lvalence * cycle_helmert * lrt_log_res_w_s_int_c + (valence + lvalence + cycle_helmert + lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
+#      alt_run %>% 
+#        filter(filter_correct == 0))
+# }, dir = "sophia/output/", file = "autocor_model_helmert.rds", rerun = rerun_all)
+# summary(autocor_model_helmert)
+# 
+# tab_model(autocor_model_helmert, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
+
+valence contrast with switch
+```{r}
+autocor_model_c <- xfun::cache_rds({
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (valence_contr + lvalence_contr + switch + lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+}, dir = "sophia/output/", file = "autocor_model_c.rds", rerun = rerun_all)
+summary(autocor_model_c)
+
+tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
+
+no valence contrast with switch 
+```{r}
+autocor_model <- xfun::cache_rds({
+  lmer(rt_log_res_w_s_int_c  ~ valence * lvalence * switch * lrt_log_res_w_s_int_c + (valence + lvalence + switch + lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
      alt_run %>% 
        filter(filter_correct == 0))
-
+}, dir = "sophia/output/", file = "autocor_model.rds", rerun = rerun_all)
 summary(autocor_model)
 
 tab_model(autocor_model, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
-
 
 ## psychometric differences
 
@@ -954,7 +1015,7 @@ lm(rt_log_s1_cbiv1_lbiv2 ~
 ```{r}
 #model 4
 
-lm(rt_log_s2_cbiv1_lbiv2 ~ 
+lm(rt_log_s1_cbiv1_lbiv2 ~ 
      rt_log_s0_cbiv1_lbiv1,
     data = indif ) %>% 
   summary()
