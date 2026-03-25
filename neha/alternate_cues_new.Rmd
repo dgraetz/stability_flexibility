@@ -444,7 +444,7 @@ levels(d_analysis$switch)
  summary(m_rt_contrast)
  
  
-library(sjPlot)
+#library(sjPlot)
 # tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
  tab_model(m_rt_contrast,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") ## lmertest uses Satterthwaite's method by default 
 
@@ -710,11 +710,12 @@ plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = Ter_m
   scale_x_discrete(limits = c("1", "0"))+
   theme_classic()
 
-ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
+ezddm_effect_plot<- ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
                   plt_ddm_v, plt_ddm_v_nocycle,
                   plt_ddm_Ter, plt_ddm_Ter_nocycle, common.legend = TRUE, nrow = 3, ncol = 2)  
 
-
+#ggsave("RT_descriptive_plot.svg", RT_descriptive_plot, width = 10, height = 6)
+ggsave("ezddm_effect_plot.svg", ezddm_effect_plot, width = 10, height = 6)
 ```
 
 B. contrast coding 
@@ -883,14 +884,19 @@ plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = Ter_m
   scale_x_discrete(limits = c("1", "0"))+
   theme_classic()
 
-ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
+ezddm_contrast_plot <- ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
                   plt_ddm_v, plt_ddm_v_nocycle,
                   plt_ddm_Ter, plt_ddm_Ter_nocycle, common.legend = TRUE, nrow = 3, ncol = 2)  
 
-
+ggsave("ezddm_contrast_plot.svg", ezddm_contrast_plot, width = 10, height = 6)
 ```
+
 ### lmer models on ezDDM parameters for both effect and contrast coding  
+
 ```{r}
+
+## note: look into why you cannot estimate Residual R^2 very well for lmer models 
+
 alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + switch | id), alt_cue_agg_ID_ddm_nocycle)
 
 
@@ -972,7 +978,7 @@ rt_plot_df <- rt_plot_df %>%
                                                "Previous: Bivalent"))
   )
 
-ggplot(rt_plot_df,
+rt_explevel_plot <- ggplot(rt_plot_df,
        aes(x = cycle,
            y = mean_rt,
            color = valence_current_group,
@@ -996,14 +1002,67 @@ ggplot(rt_plot_df,
   
   theme_classic(base_size = 14)
 
+ggsave("rt_explevel_plot.svg", rt_explevel_plot, width = 10, height = 6)
 
 ```
 
+1b. log rt 
+```{r}
+
+
+log_rt_plot_df <- d_analysis %>%
+  filter(filter_correct == 0 ) %>%
+  group_by(valence_current_group,
+           valence_previous_group,
+           cycle) %>%
+  summarise(
+    mean_rt = mean(log(time), na.rm = TRUE),
+    se_rt   = sd(log(time), na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  )
+log_rt_plot_df <- log_rt_plot_df %>%
+  mutate(
+    cycle = factor(cycle, levels = c(1,2,3)),
+    valence_current_group = factor(valence_current_group,
+                                   labels = c("Current: Univalent",
+                                              "Current: Bivalent")),
+    valence_previous_group = factor(valence_previous_group,
+                                    labels = c("Previous: Univalent",
+                                               "Previous: Bivalent"))
+  )
+
+logrt_explevel_plot<- ggplot(log_rt_plot_df,
+       aes(x = cycle,
+           y = mean_rt,
+           color = valence_current_group,
+           linetype = valence_previous_group,
+           group = interaction(valence_current_group,
+                               valence_previous_group))) +
+  
+  geom_line(size = 1) +
+  geom_point(size = 3) +
+  
+  geom_errorbar(aes(ymin = mean_rt - se_rt,
+                    ymax = mean_rt + se_rt),
+                width = .1) +
+  
+  labs(
+    x = "Cycle",
+    y = "Mean log RT (ms)",
+    color = "Current Group",
+    linetype = "Previous Group"
+  ) +
+  
+  theme_classic(base_size = 14)
+
+ggsave("logrt_explevel_plot.svg", logrt_explevel_plot, width = 10, height = 6)
+
+```
 2. error 
 
 ```{r}
-library(dplyr)
-library(ggplot2)
+# library(dplyr)
+# library(ggplot2)
 
 err_plot_df <- d_analysis %>%
   group_by(valence_current_group,
@@ -1030,7 +1089,8 @@ err_plot_df <- err_plot_df %>%
                  "Previous: Bivalent")
     )
   )
-ggplot(err_plot_df,
+
+error_explevel_plot <- ggplot(err_plot_df,
        aes(x = cycle,
            y = error_rate,
            color = valence_current_group,
@@ -1054,7 +1114,7 @@ ggplot(err_plot_df,
   
   theme_classic(base_size = 14)
 
-
+ggsave("error_explevel_plot.svg", error_explevel_plot, width = 10, height = 6)  
 
 
 ```
@@ -1234,7 +1294,7 @@ summary(alt_cue_rt_log_resrt_check)
 
 names(preds)
 
-ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+logrt_pred_cycle_helmert<- ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
   #scale_x_discrete(limits = c("1", "0"))+
@@ -1243,6 +1303,8 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent, linetype =
   labs(title = "Model predictions for log RTs",
        y = "log(RT) prediction")+
   theme_classic()
+
+ggsave("logrt_pred_cycle_helmert.svg", logrt_pred_cycle_helmert, width = 10, height = 6)
 
 ```
 #################################################################################################################
@@ -1257,7 +1319,7 @@ model_RT_trial <- lmer(log(time) ~ poly(trial_num, 2) + (poly(trial_num, 2)|id),
 
 coefficients(model_RT_trial)
 
-
+summary(model_RT_trial)
 
 coefficents <- coefficients(model_RT_trial)
 coefficents$id
@@ -1288,12 +1350,12 @@ names(d_arrange)
 
 
 d_arrange <- d_arrange %>%
-  group_by(id, block) %>%
+  #group_by(id, block) %>%
   mutate(lag1_time_log_res_inter = lag1_time_log_res + Intercept)
 
 
 d_arrange <- d_arrange %>%
-  group_by(id, block) %>%
+  #group_by(id, block) %>%
   mutate(time_log_res_inter = time_log_res + Intercept)
 
 
@@ -1331,18 +1393,826 @@ d_arrange$val_c_g_contrast <- as.factor(d_arrange$val_c_g_contrast)
 
 
 
-alt_cue_rt_log_resrt <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * cycle_helmert * lag1_time_log_res_c + (val_c_g_contrast + val_p_g_contrast + cycle_helmert + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt_2 <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * cycle_helmert * lag1_time_log_res_c + (val_c_g_contrast + val_p_g_contrast + cycle_helmert + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
      d_arrange %>% 
        filter(filter_correct == 0)) #warning isSignular but the model converged 
 
 
-summary(alt_cue_rt_log_resrt)
-tab_model(alt_cue_rt_log_resrt, df.method = "satterthwaite")
+summary(alt_cue_rt_log_resrt_2)
+tab_model(alt_cue_rt_log_resrt_2, df.method = "satterthwaite")
 
 
 ```
+
 ```{r}
 
 levels(d_arrange$switch)
 ```
 
+by switch 
+
+```{r}
+
+alt_cue_rt_log_resrt_s <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res + (val_c_g_contrast + val_p_g_contrast + switch + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_s)
+
+tab_model(alt_cue_rt_log_resrt_s, df.method = "satterthwaite")
+
+
+alt_cue_rt_log_resrt_s_2 <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res_c + (val_c_g_contrast + val_p_g_contrast + switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_s_2)
+
+tab_model(alt_cue_rt_log_resrt_s_2, df.method = "satterthwaite")
+```
+```{r}
+logrt_pred_switch <- ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  #scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()
+
+ggsave("logrt_pred_switch.svg", logrt_pred_switch, width = 10, height = 6)
+```
+
+
+
+######################################################################################################
+
+
+
+
+# Individual differences analysis
+
+1. creating df compatible with indiv differences with pivot wider 
+
+## checking for the number of non-decision times in the data 
+
+```{r}
+
+alt_cue_agg_ID_ddm_nocycle
+any(alt_cue_agg_ID_ddm_nocycle$Ter < 0, na.rm = TRUE) # gives TRUE
+
+sum(alt_cue_agg_ID_ddm_nocycle$Ter < 0, na.rm = TRUE) # 44 
+
+alt_cue_agg_ID_ddm_nocycle %>%
+  filter(Ter < 0) 
+
+alt_cue_agg_ID_ddm_nocycle %>%
+  filter(Ter < 0) %>%
+  distinct(id) 
+
+
+hist(alt_cue_agg_ID_ddm_nocycle$Ter)
+
+alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle %>%
+  mutate(Ter = if_else(Ter < 0, NA_real_, Ter))
+```
+
+
+```{r}
+# 
+# 
+# view(alt_cue_agg_ID_ddm_nocycle)
+# view(d_analysis)
+# 
+# 
+# rt_df <- d_analysis %>%
+#   group_by(id, valence_current_group, val_c_g,
+#            valence_previous_group, val_p_g, switch) %>%
+#   summarise(
+#     RT = mean(time[error == 0 & prev_error == 0], na.rm = TRUE),
+#     RT_log = mean(log(time[error == 0 & prev_error == 0]), na.rm = TRUE),
+#     .groups = "drop"
+#   )
+# 
+# alt_cue_agg_ID_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
+#   left_join(rt_df,
+#             by = c("id",
+#               
+#                    "val_c_g",
+#            
+#                    "val_p_g",
+#                    "switch"))
+# 
+# 
+# alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
+#   left_join(rt_df,
+#             by = c("id",
+#               
+#                    "val_c_g",
+#            
+#                    "val_p_g",
+#                    "switch"))
+#  
+# 
+# names(alt_cue_agg_ID_ddm_nocycle_NA)
+# 
+# alt_cue_agg_ID_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
+#   select(-valence_current_group.y,
+#          -valence_previous_group.y,
+#          -RT.y) %>%
+#   rename(
+#     valence_current_group = valence_current_group.x,
+#     valence_previous_group = valence_previous_group.x,
+#     RT = RT.x
+#   )
+# 
+# alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
+#   select(-valence_current_group.y,
+#          -valence_previous_group.y,
+#          -RT.y) %>%
+#   rename(
+#     valence_current_group = valence_current_group.x,
+#     valence_previous_group = valence_previous_group.x,
+#     RT = RT.x
+#   )
+# 
+# names(alt_cue_agg_ID_ddm_nocycle_NA)
+# 
+# alt_cue_indiv <- alt_cue_agg_ID_ddm_nocycle %>% 
+#   pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch), 
+#               values_from = c(v, a, Ter, RT_log), 
+#               names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% ungroup() 
+# 
+# # cbiv: current bivlent ; lbiv : lag bivalent 
+# 
+# alt_cue_indiv
+# 
+# 
+# ggplot(alt_cue_indiv, aes(x = RT_log_s1_cbiv1_lbiv1, y = RT_log_s0_cbiv0_lbiv0))+
+#   geom_point()+
+#   geom_smooth(method = "lm")+
+#   theme_classic()
+# 
+# alt_cue_indiv_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>% 
+#   pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch), 
+#               values_from = c(v, a, Ter, RT_log), 
+#               names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% ungroup() 
+```
+
+
+```{r}
+alt_cue_indiv <- alt_cue_agg_ID_ddm_nocycle %>% 
+  pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch), 
+              values_from = c(v, a, Ter, RT_log, Error), 
+              names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% 
+  ungroup() %>%
+  mutate(v_s0_cbiv0_lbiv0_NA = ifelse(Ter_s0_cbiv0_lbiv0 < 0, NA, v_s0_cbiv0_lbiv0),
+         v_s0_cbiv0_lbiv1_NA = ifelse(Ter_s0_cbiv0_lbiv1 < 0, NA, v_s0_cbiv0_lbiv1),
+         v_s0_cbiv1_lbiv0_NA = ifelse(Ter_s0_cbiv1_lbiv0 < 0, NA, v_s0_cbiv1_lbiv0),
+         v_s0_cbiv1_lbiv1_NA = ifelse(Ter_s0_cbiv1_lbiv1 < 0, NA, v_s0_cbiv1_lbiv1),
+         v_s1_cbiv0_lbiv0_NA = ifelse(Ter_s1_cbiv0_lbiv0 < 0, NA, v_s1_cbiv0_lbiv0),
+         v_s1_cbiv0_lbiv1_NA = ifelse(Ter_s1_cbiv0_lbiv1 < 0, NA, v_s1_cbiv0_lbiv1),
+         v_s1_cbiv1_lbiv0_NA = ifelse(Ter_s1_cbiv1_lbiv0 < 0, NA, v_s1_cbiv1_lbiv0),
+         v_s1_cbiv1_lbiv1_NA = ifelse(Ter_s1_cbiv1_lbiv1 < 0, NA, v_s1_cbiv1_lbiv1))
+
+
+
+
+# alt_cue_agg_ID_ddm_nocycle %>%
+#   ggplot(aes(x = Ter))+
+#   geom_histogram()+
+#   geom_vline(xintercept = 0)+
+#   theme_classic()
+# 
+# alt_cue_agg_ID_ddm_nocycle %>%
+#   ungroup() %>%
+#   summarize(N = n(),
+#             neg_ter = sum(Ter < 0),
+#             p_neg_Ter = neg_ter/N,
+#             subjects_w_any_neg_Ter = length(unique(id[Ter < 0])))
+```
+
+
+2. linear regression models 
+
+Model 1A: lm(S[UU] ~ NS[UU]) 
+
+Model 1B: lm(S[UU] ~ NS[UU]+ NS[BU]*) 
+
+Model 1C: lm(S[UU] ~ NS[[UU]+ NS[BU] + NS[UB]*) 
+
+Model 1D: lm(S[UU] ~ NS[UU]+ NS[BU] + NS[UB] + NS[BB]*) 
+
+ 
+
+Model 2A: lm(S[BU] ~ NS[UU]) 
+
+Model 2B: lm(S[BU] ~ NS[UU]+ NS[BU]*) 
+
+Model 2C: lm(S[BU] ~ NS[[UU]+ NS[BU] + NS[UB]*) 
+
+Model 2D: lm(S[BU] ~ NS[UU]+ NS[BU] + NS[UB] + NS[BB]*) 
+
+ 
+
+Model 3A: lm(S[UB] ~ NS[UU]) 
+
+Model 3B: lm(S[UB] ~ NS[UU]+ NS[BU]*) 
+
+Model 3C: lm(S[UB] ~ NS[[UU]+ NS[BU] + NS[UB]*) 
+
+Model 3D: lm(S[UB] ~ NS[UU]+ NS[BU] + NS[UB] + NS[BB]*) 
+
+ 
+
+Model 4A: lm(S[BB] ~ NS[UU]) 
+
+Model 4B: lm(S[BB] ~ NS[UU]+ NS[BU]*) 
+
+Model 4C: lm(S[BB] ~ NS[[UU]+ NS[BU] + NS[UB]*) 
+
+Model 4D: lm(S[BB] ~ NS[UU]+ NS[BU] + NS[UB] + NS[BB]*) 
+
+ 
+(i) log RT
+
+a. model 1 series 
+
+```{r}
+
+lm_1_a <- lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0,alt_cue_indiv_NA )  %>% summary()
+lm_1_a
+
+lm_1_b <- lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1,alt_cue_indiv_NA)  %>% summary()
+lm_1_b
+
+
+lm_1_c <- lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0,alt_cue_indiv_NA )  %>% summary()
+lm_1_c
+
+
+lm_1_d <- lm(RT_log_s1_cbiv0_lbiv0 ~ 
+     RT_log_s0_cbiv0_lbiv0 + 
+     RT_log_s0_cbiv0_lbiv1 +
+     RT_log_s0_cbiv1_lbiv0 +
+     RT_log_s0_cbiv1_lbiv1, 
+   alt_cue_indiv_NA) %>% summary()
+lm_1_d 
+
+### no negative coefficients for model 1 
+```
+
+b. model 2 series
+
+```{r}
+
+lm_2_a <- lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv_NA )  %>% summary()
+lm_2_a
+
+lm_2_b <- lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv_NA)  %>% summary()
+lm_2_b
+
+
+lm_2_c <- lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv_NA )  %>% summary()
+lm_2_c
+
+
+lm_2_d <- lm(RT_log_s1_cbiv0_lbiv1 ~ 
+     RT_log_s0_cbiv0_lbiv0 + 
+     RT_log_s0_cbiv0_lbiv1 +
+     RT_log_s0_cbiv1_lbiv0 +
+     RT_log_s0_cbiv1_lbiv1, 
+   alt_cue_indiv_NA) %>% summary()
+lm_2_d 
+
+## no negative coefficients for model 2 
+
+```
+
+c. model 3 series 
+
+```{r}
+
+lm_3_a <- lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv_NA )  %>% summary()
+lm_3_a
+
+lm_3_b <- lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv_NA)  %>% summary()
+lm_3_b
+
+
+lm_3_c <- lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv_NA )  %>% summary()
+lm_3_c
+
+
+lm_3_d <- lm(RT_log_s1_cbiv1_lbiv0 ~ 
+     RT_log_s0_cbiv0_lbiv0 + 
+     RT_log_s0_cbiv0_lbiv1 +
+     RT_log_s0_cbiv1_lbiv0 +
+     RT_log_s0_cbiv1_lbiv1, 
+   alt_cue_indiv_NA) %>% summary()
+lm_3_d 
+
+## no negative coefficients for model 3
+
+```
+
+d. model 4 series 
+
+```{r}
+lm_4_a <- lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0,alt_cue_indiv_NA )  %>% summary()
+lm_4_a
+
+lm_4_b <- lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1,alt_cue_indiv_NA)  %>% summary()
+lm_4_b
+
+
+lm_4_c <- lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0,alt_cue_indiv_NA )  %>% summary()
+lm_4_c
+
+
+lm_4_d <- lm(RT_log_s1_cbiv1_lbiv1 ~ 
+     RT_log_s0_cbiv0_lbiv0 + 
+     RT_log_s0_cbiv0_lbiv1 +
+     RT_log_s0_cbiv1_lbiv0 +
+     RT_log_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_4_d 
+
+lm_4_d_na <- lm(RT_log_s1_cbiv1_lbiv1 ~ 
+     RT_log_s0_cbiv0_lbiv0 + 
+     RT_log_s0_cbiv0_lbiv1 +
+     RT_log_s0_cbiv1_lbiv0 +
+     RT_log_s0_cbiv1_lbiv1, 
+   alt_cue_indiv_NA) %>% summary()
+lm_4_d_na
+
+## no negative coefficients for model 4 
+```
+
+
+(ii) drift rate (v) 
+
+a. model 1 series 
+
+```{r}
+
+lm_1_a <- lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0,alt_cue_indiv )  %>% summary()
+lm_1_a
+
+lm_1_b <- lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1,alt_cue_indiv)  %>% summary()
+lm_1_b
+
+
+lm_1_c <- lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0,alt_cue_indiv )  %>% summary()
+lm_1_c
+
+
+lm_1_d <- lm(v_s1_cbiv0_lbiv0 ~ 
+     v_s0_cbiv0_lbiv0 + 
+     v_s0_cbiv0_lbiv1 +
+     v_s0_cbiv1_lbiv0 +
+     v_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_1_d 
+
+### no negative coefficients for model 1 
+```
+
+b. model 2 series
+
+```{r}
+
+lm_2_a <- lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv )  %>% summary()
+lm_2_a
+
+lm_2_b <- lm(v_s1_cbiv0_lbiv1 ~v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv)  %>% summary()
+lm_2_b
+
+
+lm_2_c <- lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv )  %>% summary()
+lm_2_c
+
+
+lm_2_d <- lm(v_s1_cbiv0_lbiv1 ~ 
+     v_s0_cbiv0_lbiv0 + 
+     v_s0_cbiv0_lbiv1 +
+     v_s0_cbiv1_lbiv0 +
+    v_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_2_d 
+
+## no negative coefficients for model 2 
+
+```
+
+c. model 3 series 
+
+```{r}
+
+lm_3_a <- lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv )  %>% summary()
+lm_3_a
+
+lm_3_b <- lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv)  %>% summary()
+lm_3_b
+
+
+lm_3_c <- lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv )  %>% summary()
+lm_3_c
+
+
+lm_3_d <- lm(v_s1_cbiv1_lbiv0 ~ 
+     v_s0_cbiv0_lbiv0 + 
+     v_s0_cbiv0_lbiv1 +
+     v_s0_cbiv1_lbiv0 +
+     v_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_3_d 
+
+## no negative coefficients for model 3
+
+```
+
+d. model 4 series 
+
+```{r}
+lm_4_a <- lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0,alt_cue_indiv )  %>% summary()
+lm_4_a
+
+lm_4_b <- lm(v_s1_cbiv1_lbiv1 ~v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1,alt_cue_indiv)  %>% summary()
+lm_4_b
+
+
+lm_4_c <- lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0,alt_cue_indiv )  %>% summary()
+lm_4_c
+
+
+lm_4_d <- lm(v_s1_cbiv1_lbiv1 ~ 
+     v_s0_cbiv0_lbiv0 + 
+     v_s0_cbiv0_lbiv1 +
+     v_s0_cbiv1_lbiv0 +
+     v_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_4_d
+
+lm_4_d_na <- lm(v_s1_cbiv1_lbiv1 ~ 
+     v_s0_cbiv0_lbiv0 + 
+     v_s0_cbiv0_lbiv1 +
+     v_s0_cbiv1_lbiv0 +
+     v_s0_cbiv1_lbiv1, 
+   alt_cue_indiv_NA) %>% summary()
+lm_4_d_na
+
+
+## no negative coefficients for model 4 
+```
+
+(iii) Error 
+
+
+a. model 1 series 
+
+```{r}
+
+lm_1_a <- lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0,alt_cue_indiv )  %>% summary()
+lm_1_a
+
+lm_1_b <- lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1,alt_cue_indiv)  %>% summary()
+lm_1_b
+
+
+lm_1_c <- lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0,alt_cue_indiv )  %>% summary()
+lm_1_c
+
+
+lm_1_d <- lm(Error_s1_cbiv0_lbiv0 ~ 
+     Error_s0_cbiv0_lbiv0 + 
+     Error_s0_cbiv0_lbiv1 +
+     Error_s0_cbiv1_lbiv0 +
+     Error_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_1_d 
+
+### no negative coefficients for model 1 
+```
+
+b. model 2 series
+
+```{r}
+
+lm_2_a <- lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv )  %>% summary()
+lm_2_a
+
+lm_2_b <- lm(Error_s1_cbiv0_lbiv1 ~Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv)  %>% summary()
+lm_2_b
+
+
+lm_2_c <- lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv )  %>% summary()
+lm_2_c
+
+
+lm_2_d <- lm(Error_s1_cbiv0_lbiv1 ~ 
+     Error_s0_cbiv0_lbiv0 + 
+     Error_s0_cbiv0_lbiv1 +
+     Error_s0_cbiv1_lbiv0 +
+    Error_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_2_d 
+
+## no negative coefficients for model 2 
+
+```
+
+c. model 3 series 
+
+```{r}
+
+lm_3_a <- lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv )  %>% summary()
+lm_3_a
+
+lm_3_b <- lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv)  %>% summary()
+lm_3_b
+
+
+lm_3_c <- lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv )  %>% summary()
+lm_3_c
+
+
+lm_3_d <- lm(Error_s1_cbiv1_lbiv0 ~ 
+     Error_s0_cbiv0_lbiv0 + 
+     Error_s0_cbiv0_lbiv1 +
+     Error_s0_cbiv1_lbiv0 +
+     Error_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_3_d 
+
+## no negative coefficients for model 3
+
+```
+
+d. model 4 series 
+
+```{r}
+lm_4_a <- lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0,alt_cue_indiv )  %>% summary()
+lm_4_a
+
+lm_4_b <- lm(Error_s1_cbiv1_lbiv1 ~Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1,alt_cue_indiv)  %>% summary()
+lm_4_b
+
+
+lm_4_c <- lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0,alt_cue_indiv )  %>% summary()
+lm_4_c
+
+
+lm_4_d <- lm(Error_s1_cbiv1_lbiv1 ~ 
+     Error_s0_cbiv0_lbiv0 + 
+     Error_s0_cbiv0_lbiv1 +
+     Error_s0_cbiv1_lbiv0 +
+     Error_s0_cbiv1_lbiv1, 
+   alt_cue_indiv) %>% summary()
+lm_4_d
+
+
+
+## no negative coefficients for model 4 
+```
+
+
+(iv) drift rate NA (v - NA) 
+
+a. model 1 series 
+
+```{r}
+
+lm_1_a <- lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv )  %>% summary()
+lm_1_a
+
+lm_1_b <- lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA ,alt_cue_indiv)  %>% summary()
+lm_1_b
+
+
+lm_1_c <- lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA,alt_cue_indiv )  %>% summary()
+lm_1_c
+
+
+lm_1_d <- lm(v_s1_cbiv0_lbiv0_NA ~ 
+     v_s0_cbiv0_lbiv0_NA + 
+     v_s0_cbiv0_lbiv1_NA +
+     v_s0_cbiv1_lbiv0_NA +
+     v_s0_cbiv1_lbiv1_NA, 
+   alt_cue_indiv) %>% summary()
+lm_1_d 
+
+### no negative coefficients for model 1 
+```
+
+b. model 2 series
+
+```{r}
+
+lm_2_a <- lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv )  %>% summary()
+lm_2_a
+
+lm_2_b <- lm(v_s1_cbiv0_lbiv1_NA ~v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv)  %>% summary()
+lm_2_b
+
+
+lm_2_c <- lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv )  %>% summary()
+lm_2_c
+
+
+lm_2_d <- lm(v_s1_cbiv0_lbiv1_NA ~ 
+     v_s0_cbiv0_lbiv0_NA + 
+     v_s0_cbiv0_lbiv1_NA +
+     v_s0_cbiv1_lbiv0_NA +
+    v_s0_cbiv1_lbiv1_NA, 
+   alt_cue_indiv) %>% summary()
+lm_2_d 
+
+## no negative coefficients for model 2 
+
+```
+
+c. model 3 series 
+
+```{r}
+
+lm_3_a <- lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv )  %>% summary()
+lm_3_a
+
+lm_3_b <- lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv)  %>% summary()
+lm_3_b
+
+
+lm_3_c <- lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv )  %>% summary()
+lm_3_c
+
+
+lm_3_d <- lm(v_s1_cbiv1_lbiv0_NA ~ 
+     v_s0_cbiv0_lbiv0_NA + 
+     v_s0_cbiv0_lbiv1_NA +
+     v_s0_cbiv1_lbiv0_NA +
+     v_s0_cbiv1_lbiv1_NA, 
+   alt_cue_indiv) %>% summary()
+lm_3_d 
+
+## no negative coefficients for model 3
+
+```
+
+d. model 4 series 
+
+```{r}
+lm_4_a <- lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA,alt_cue_indiv )  %>% summary()
+lm_4_a
+
+lm_4_b <- lm(v_s1_cbiv1_lbiv1_NA ~v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA,alt_cue_indiv)  %>% summary()
+lm_4_b
+
+
+lm_4_c <- lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA,alt_cue_indiv )  %>% summary()
+lm_4_c
+
+
+lm_4_d <- lm(v_s1_cbiv1_lbiv1_NA ~ 
+     v_s0_cbiv0_lbiv0_NA + 
+     v_s0_cbiv0_lbiv1_NA +
+     v_s0_cbiv1_lbiv0_NA +
+     v_s0_cbiv1_lbiv1_NA, 
+   alt_cue_indiv) %>% summary()
+lm_4_d
+
+
+
+## no negative coefficients for model 4 
+```
+
+### Model comp: univalent - univalent
+
+## Models
+
+```{r}
+alt_cue_indiv_diff_models <- list(
+  RT = list(uu1 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+            uu2 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+            uu3 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+            uu4 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv),
+            
+            bu1 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+            bu2 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+            bu3 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+            bu4 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv),
+            
+            ub1 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+            ub2 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+            ub3 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+            ub4 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv),
+            
+            bb1 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+            bb2 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+            bb3 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+            bb4 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv)
+  ),
+  
+   Error = list(uu1 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+                uu2 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+                uu3 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+                uu4 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
+                
+              bu1 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+               bu2 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+               bu3 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+               bu4 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
+               
+            ub1 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+                ub2 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+                ub3 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+                ub4 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
+                
+               bb1 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+               bb2 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+                bb3 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+                bb4 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv)
+   ),
+   
+  v = list(uu1 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+           uu2 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+           uu3 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+           uu4 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
+           
+           bu1 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+           bu2 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+           bu3 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+           bu4 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
+           
+           ub1 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+           ub2 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+           ub3 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+           ub4 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
+           
+           bb1 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+           bb2 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+           bb3 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+           bb4 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv)
+  ),
+  
+   v_NA = list(uu1 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+               uu2 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+               uu3 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+               uu4 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv),
+              
+              bu1 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+              bu2 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+              bu3 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+               bu4 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv),
+              
+              ub1 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+               ub2 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+               ub3 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+               ub4 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv),
+               
+               bb1 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+               bb2 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+               bb3 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+               bb4 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv)
+  )
+ )
+
+
+```
+
+
+
+```{r}
+compare_models <- function(model_list, dv){
+  
+  do.call(anova, unname(model_list[grepl(dv, names(model_list))]))
+}
+```
+
+### Model comp: univalent - univalent
+
+```{r}
+compare_models(alt_cue_indiv_diff_models$v, "uu")
+```
+### Model comp: univalent - bivalent
+```{r}
+compare_models(alt_cue_indiv_diff_models$v, "ub")
+```
+
+### Model comp: bivalent - univalent
+
+```{r}
+compare_models(alt_cue_indiv_diff_models$v, "bu")
+```
+
+### Model comp: bivalent - bivalent
+
+
+```{r}
+compare_models(alt_cue_indiv_diff_models$v, "bb")
+```
+
+
+## the biggest positive effect actually occurs in bivalent bivalent, where you would expect the strongest tradeoff effect
+standardize the betas for model comparisons 
