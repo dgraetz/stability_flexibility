@@ -23,6 +23,8 @@ library(ggplot2)
 ```
 
 
+
+
 ```{r}
 AlternateCues <- read_csv("AlternateCues.csv")
 View(AlternateCues)
@@ -381,8 +383,11 @@ d_analysis$val_p_g_contrast <- ifelse(d_analysis$valence_previous_group == 1, 0,
 c. Models 
 
 ```{r}
-d_analysis$filter_correct <- as.integer(d_arrange$error != 0 | d_arrange$prev_error != 0)
+#d_analysis$filter_correct <- as.integer(d_arrange$error != 0 | d_arrange$prev_error != 0)
+
+d_analysis$filter_correct <- as.integer(d_analysis$error != 0 | d_analysis$prev_error != 0)
 ```
+
 
 1. lmer
 
@@ -391,7 +396,6 @@ a. effect coding
 ```{r}
 ######## use this 
 
-  
 d_analysis$val_c_g <- as.factor(d_analysis$val_c_g)
 d_analysis$val_p_g <- as.factor(d_analysis$val_p_g)
 d_analysis$switch <- as.factor(d_analysis$switch)
@@ -399,6 +403,27 @@ d_analysis$switch <- as.factor(d_analysis$switch)
 levels(d_analysis$val_c_g)
 levels(d_analysis$val_p_g)
 levels(d_analysis$switch)
+
+contrasts(d_analysis$val_c_g) <- c(-0.5,0.5)
+contrasts(d_analysis$val_c_g)
+
+contrasts(d_analysis$val_p_g) <- c(-0.5,0.5)
+contrasts(d_analysis$val_p_g)
+
+levels(d_analysis$val_c_g)
+levels(d_analysis$val_p_g)
+levels(d_analysis$switch)
+
+```
+
+
+
+```{r}
+saveRDS(d_analysis, "d_analysis.rds")
+```
+
+
+```{r}
 
  m_rt_effect<- lmer(log(time) ~  val_c_g * val_p_g * switch + (val_c_g + switch |  id),
                  data = d_analysis %>% filter(filter_correct == 0),
@@ -411,12 +436,53 @@ levels(d_analysis$switch)
  summary(m_rt_effect)
  
  
-library(sjPlot)
+#library(sjPlot)
 # tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
  tab_model(m_rt_effect,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") ## lmertest uses Satterthwaite's method by default 
 
 
 
+  m_rt_effect_try<- lmer(log(time) ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g+ switch |  id),
+                 data = d_analysis %>% filter(filter_correct == 0),
+                 # na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt_effect_try)
+ 
+ 
+#library(sjPlot)
+# tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
+ tab_model(m_rt_effect_try,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite")
+ 
+
+
+```
+
+```{r}
+
+
+d_rt_analysis <- d_analysis %>%
+  filter(filter_correct == 0) %>%
+  mutate(log_time = log(time)) 
+
+m_rt_effect_use<- lmer(log_time ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g+ switch |  id),
+                 data = d_rt_analysis %>% filter(filter_correct == 0),
+                 # na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+
+ 
+ summary(m_rt_effect_use)
+ 
+ 
+#library(sjPlot)
+# tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
+ tab_model(m_rt_effect_use,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite")
+ 
 
 ```
 
@@ -425,16 +491,16 @@ b. contrast coding
 ```{r}
 
 
-d_analysis$val_c_g_contrast <- as.factor(d_analysis$val_c_g_contrast)
-d_analysis$val_p_g_contrast <- as.factor(d_analysis$val_p_g_contrast)
-d_analysis$switch <- as.factor(d_analysis$switch)
+d_rt_analysis$val_c_g_contrast <- as.factor(d_rt_analysis$val_c_g_contrast)
+d_rt_analysis$val_p_g_contrast <- as.factor(d_rt_analysis$val_p_g_contrast)
+d_rt_analysis$switch <- as.factor(d_rt_analysis$switch)
 
-levels(d_analysis$val_c_g_contrast)
-levels(d_analysis$val_p_g_contrast)
-levels(d_analysis$switch)
+levels(d_rt_analysis$val_c_g_contrast)
+levels(d_rt_analysis$val_p_g_contrast)
+levels(d_rt_analysis$switch)
 
  m_rt_contrast<- lmer(log(time) ~  val_c_g_contrast * val_p_g_contrast * switch + (val_c_g_contrast + switch |  id),
-                 data = d_analysis %>% filter(filter_correct == 0),
+                 data = d_rt_analysis %>% filter(filter_correct == 0),
                   na.action = na.exclude,
               
                control = lmerControl(optimizer = "bobyqa"))
@@ -458,8 +524,9 @@ a. effect coding
 ```{r}
 
 d_analysis$error <- as.factor(d_analysis$error)
+levels(d_analysis$error)
 
-m_error_effect<- glmer(error ~  val_c_g * val_p_g * switch + ( val_c_g + switch| id),
+m_error_effect<- glmer(error ~  val_c_g * val_p_g * switch + ( val_c_g + val_p_g + switch| id),
                  data = d_analysis, 
                  family = "binomial",
                   na.action = na.exclude, 
@@ -843,6 +910,8 @@ alt_cue_agg_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
 
 ```{r}
 
+alt_cue_agg_ddm$val_p_g_contrast <- as.factor(alt_cue_agg_ddm$val_p_g_contrast)
+alt_cue_agg_ddm$val_c_g_contrast <- as.factor(alt_cue_agg_ddm$val_c_g_contrast)
 alt_cue_agg_ddm$switch <- as.factor(alt_cue_agg_ddm$switch)
 alt_cue_agg_ddm_nocycle$switch <- as.factor(alt_cue_agg_ddm_nocycle$switch)
 alt_cue_agg_ddm_nocycle$val_c_g_contrast <- as.factor(alt_cue_agg_ddm_nocycle$val_c_g_contrast)
@@ -918,6 +987,9 @@ alt_cue_Ter <- lmer(Ter ~  val_c_g * val_p_g * switch + (val_c_g + switch |id),
 summary(alt_cue_Ter)
 
 tab_model(alt_cue_Ter)
+
+#contrasts(alt_cue_agg_ID_ddm_nocycle$val_c_g)
+#contrasts(alt_cue_agg_ID_ddm_nocycle$val_p_g)
 ```
 
 
@@ -1247,7 +1319,7 @@ e. RT residual analysis
 
 
 
-alt_cue_rt_log_resrt <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * cycle_helmert * lag1_time_log_res + (val_c_g_contrast + val_p_g_contrast + cycle_helmert + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * cycle_helmert * lag1_time_log_res + (val_c_g_contrast  + val_p_g_contrast + cycle_helmert + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
      d_arrange %>% 
        filter(filter_correct == 0)) #warning isSignular but the model converged 
 
@@ -1413,7 +1485,7 @@ by switch
 
 ```{r}
 
-alt_cue_rt_log_resrt_s <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res + (val_c_g_contrast + val_p_g_contrast + switch + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt_s <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res + (val_c_g_contrast  + switch + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
      d_arrange %>% 
        filter(filter_correct == 0))
 
@@ -1422,7 +1494,7 @@ summary(alt_cue_rt_log_resrt_s)
 tab_model(alt_cue_rt_log_resrt_s, df.method = "satterthwaite")
 
 
-alt_cue_rt_log_resrt_s_2 <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res_c + (val_c_g_contrast + val_p_g_contrast + switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt_s_2 <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res_c + (val_c_g_contrast  + switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
      d_arrange %>% 
        filter(filter_correct == 0))
 
@@ -1430,6 +1502,7 @@ summary(alt_cue_rt_log_resrt_s_2)
 
 tab_model(alt_cue_rt_log_resrt_s_2, df.method = "satterthwaite")
 ```
+
 ```{r}
 logrt_pred_switch <- ggplot(preds, aes(x = switch, y = emmean, color = is_bivalent, linetype = prev_bivalent, group = interaction(is_bivalent, prev_bivalent)))+
   geom_line(position = pos)+
