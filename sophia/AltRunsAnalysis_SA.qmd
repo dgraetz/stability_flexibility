@@ -145,9 +145,17 @@ alt_run <- alt_run %>%
     lvalence = factor(lvalence),
     cycle2 = factor(cycle2),
     id = factor(id),
-  switch = factor(switch)) %>% 
+  switch = factor(switch), 
+ lvalence_contr= factor(lvalence_contr),
+ valence_contr = factor(valence_contr)) %>% 
       group_by(id) %>% 
   mutate(conttrials = 1:n())
+
+contrasts(alt_run$lvalence_contr) <- c(-0.5, 0.5)
+contrasts(alt_run$valence_contr) <- c(-0.5, 0.5)
+
+contrasts(alt_run$valence_contr) #looks gouda
+contrasts(alt_run$lvalence_contr)
 
 #Remove z‑score outliers
 alt_run <- alt_run %>%
@@ -402,7 +410,7 @@ by rt log with valence contrasts
 ```{r}
 model_lmer_log_c <- xfun::cache_rds({
   lmer(rt_log ~ valence_contr * lvalence_contr * switch +
-    (valence_contr + lvalence_contr + switch || id), #double bar bc does not converge with single, is less complex w double 
+    (valence_contr + lvalence_contr + switch | id), #double bar bc does not converge with single, is less complex w double 
   control = lmerControl(optimizer = 'bobyqa'),
   data = alt_run %>% filter(filter_correct == 0)
 )
@@ -832,6 +840,7 @@ lm(v_s1_cbiv1_lbiv1 ~
    data = indif ) %>% 
   summary()
 ```
+
 
 
 ```{r}
