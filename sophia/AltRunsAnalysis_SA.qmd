@@ -215,8 +215,9 @@ contrasts(alt_run$cycle_helmert)
 
 view(alt_run)
 ```
+
 Aggregation experimental level analysis
- 
+
 ```{r}
 #function for CI
 
@@ -294,9 +295,11 @@ allagg_ci <- allagg %>% #group level CIs
 ```
 
 ### Visualizations
+
 also make figures with averages of no-switch by cycle
 
 By logged RT
+
 ```{r}
 
 rtlogplot <- ggplot(
@@ -323,7 +326,9 @@ rtlogplot
 
 
 ```
+
 By Error
+
 ```{r}
 
 
@@ -348,7 +353,9 @@ erplot <- ggplot(allagg_ci,
 
 erplot
 ```
+
 by reg rt
+
 ```{r}
 
 rtplot <- ggplot(
@@ -381,6 +388,7 @@ Here we test whether experimental manipulations of previous and current trial co
 ### by RT
 
 By valence contrasts
+
 ```{r}
 # 
 # model_lmer <- lmer(
@@ -395,6 +403,7 @@ By valence contrasts
 ```
 
 checking for conflict effects by adding it into the model
+
 ```{r}
 # model_conflictcheck <- lmer(
 #   rt_log ~ valence_contr * lvalence_contr * cycle_helmert +(valence_contr + lvalence_contr + cycle_helmert || id), control = lmerControl(optimizer = 'bobyqa'),
@@ -405,6 +414,7 @@ checking for conflict effects by adding it into the model
 # 
 # tab_model(model_conflictcheck, show.est = T, auto.label = F, show.stat = T , df.method = 'satterthwaite') #this does change the significance of two way interactions with switch
 ```
+
 by rt log with valence contrasts
 
 ```{r}
@@ -441,6 +451,7 @@ summary(model_lmer)
 tab_model(model_lmer, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 ```
+
 adding conflict as a fixed effect into the rt_log
 
 ```{r}
@@ -456,8 +467,11 @@ adding conflict as a fixed effect into the rt_log
 # tab_model(model_lmer_log_conflict, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 ```
+
 ### by Error
+
 by error with valence contrasts
+
 ```{r}
 model_glmer_c <- xfun::cache_rds({
   glmer(
@@ -471,6 +485,7 @@ tab_model(model_glmer_c, show.est = T, auto.label = F, show.stat = T)
 ```
 
 by error without valence contrasts
+
 ```{r}
 model_glmer <- xfun::cache_rds({
   glmer(
@@ -484,6 +499,7 @@ tab_model(model_glmer, show.est = T, auto.label = F, show.stat = T)
 ```
 
 by error with conflict included
+
 ```{r}
 # model_glmer_conflictcheck <- glmer(
 #   error ~ valence_contr * lvalence_contr*cycle_helmert + (valence_contr + lvalence_contr + cycle_helmert|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run %>% filter(conflict == 0, lconflict == 0)
@@ -494,7 +510,8 @@ by error with conflict included
 # tab_model(model_glmer_conflictcheck, show.est = T, auto.label = F, show.stat = T)
 ```
 
-## ezDDM Analysis 
+## ezDDM Analysis
+
 ```{r}
 #| include: false
 #first putting in some pre-made functions that will go into the ezDDM analysis: 
@@ -535,6 +552,7 @@ convert_extremes <- function(value){
 ```
 
 DDM aggregation
+
 ```{r}
 
 alt_run_agg_ID_ddm <- alt_run %>%
@@ -610,7 +628,9 @@ alt_run_agg_ddm_collapsed <- alt_run_agg_ID_ddm_collapsed %>%
 
 
 ```
+
 ### DDM vis
+
 ```{r}
 plt_ddm_a <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
   geom_line(position = position_dodge(width = 0.25))+
@@ -632,7 +652,9 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow 
 
 #ok this works but idk how to interpret
 ```
+
 plotting with the aggregation averaging between no-switch cycles
+
 ```{r}
 
 plt_ddm_a <- ggplot(alt_run_agg_ddm_collapsed, aes(x = switch, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence)))+
@@ -653,7 +675,8 @@ plt_ddm_Ter <- ggplot(alt_run_agg_ddm_collapsed, aes(x = switch, y = Ter_m, colo
 
 ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow = 1) 
 ```
-### DDM Models 
+
+### DDM Models
 
 with valence contrasts
 
@@ -665,7 +688,6 @@ summary(model_a_c)
 
 tab_model(model_a_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
-
 
 ```{r}
 model_v_c<- xfun::cache_rds({
@@ -687,7 +709,7 @@ tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 
 
 without valence contrasts
 
-```{r} 
+```{r}
 model_a <-xfun::cache_rds({
   lmer(a ~ valence * lvalence *switch + (valence+lvalence+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
 }, dir = "sophia/output/", file = "model_a.rds", rerun = rerun_all)
@@ -695,7 +717,6 @@ summary(model_a)
 
 tab_model(model_a, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
-
 
 ```{r}
 model_v <- xfun::cache_rds({
@@ -716,21 +737,20 @@ tab_model(model_Ter, show.est = T, auto.label = F, show.stat = T, df.method = 's
 ```
 
 ## Within subject analysis
+
 (although altruns does show a speed accuracy relationship)
 
-not only residualize the general trends but by task (bc task is assymetric) 
+not only residualize the general trends but by task (bc task is assymetric)
 
-add in helmert contrast (3 for runs, 2 for cues) 
+add in helmert contrast (3 for runs, 2 for cues)
 
-visualization for models 
+visualization for models
 
 to fix singularity, can run a model comparisons to see what fixed effects to keep, can do this by running an ANOVA
 
-
 auto correlations lag rt_log and rt_log
 
-These models using the residual are both run with subject intercepts added back in, this is done at the datacleaning stage at the beginning 
-
+These models using the residual are both run with subject intercepts added back in, this is done at the datacleaning stage at the beginning
 
 ```{r}
 #c here means centered not contrast
@@ -741,6 +761,7 @@ alt_run <- alt_run %>%
 ```
 
 by valence contrast with cycle helmert
+
 ```{r}
 autocor_model_c_helmert <- xfun::cache_rds({
   
@@ -772,6 +793,7 @@ no valence contrast with cycle helmert
 ```
 
 valence contrast with switch
+
 ```{r}
 autocor_model_c <- xfun::cache_rds({
   
@@ -783,7 +805,8 @@ summary(autocor_model_c)
 tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
 
-no valence contrast with switch 
+no valence contrast with switch
+
 ```{r}
 autocor_model <- xfun::cache_rds({
   lmer(rt_log_res_w_s_int_c  ~ valence * lvalence * switch * lrt_log_res_w_s_int_c + (valence + lvalence + switch + lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
@@ -810,6 +833,7 @@ indif
 ```
 
 ### by drift rate
+
 ```{r}
 #first from the long format calculate the drift rate then when you pivot wider add in drift rate
 
@@ -841,8 +865,6 @@ lm(v_s1_cbiv1_lbiv1 ~
   summary()
 ```
 
-
-
 ```{r}
 #model 2
 lm(v_s1_cbiv2_lbiv1 ~ 
@@ -873,6 +895,7 @@ lm(v_s1_cbiv2_lbiv1 ~
 
 
 ```
+
 ```{r}
 #model 3 
 lm(v_s1_cbiv1_lbiv2 ~ 
@@ -932,6 +955,7 @@ lm(v_s1_cbiv2_lbiv2 ~
 ```
 
 ### by rt log
+
 ```{r}
 #model 1
 lm(rt_log_s1_cbiv1_lbiv1 ~ 
@@ -961,6 +985,7 @@ lm(rt_log_s1_cbiv1_lbiv1 ~
   summary()
 
 ```
+
 ```{r}
 #model 2
 
@@ -1052,6 +1077,7 @@ lm(rt_log_s1_cbiv2_lbiv2 ~
 ```
 
 ### by error
+
 ```{r}
 #model 1
 lm(error_s1_cbiv1_lbiv1 ~ 
@@ -1167,4 +1193,3 @@ lm(error_s1_cbiv2_lbiv2 ~
    data = indif ) %>% 
   summary()
 ```
-
