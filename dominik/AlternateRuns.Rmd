@@ -312,24 +312,13 @@ ggpubr::ggarrange(plt_error_cycle, plt_error_switch)
 ### Effect coded valence (-0.5, 0.5)
 
 ```{r}
+
 alt_run_rt_log_eff <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
                            alt_run %>% 
-                             filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
+                             filter(filter_correct == 0), 
+                           control = lmerControl(optimizer = "bobyqa"))
 
 make_model_table(alt_run_rt_log_eff)
-
-
-
-
-alt_run_rt_eff <- lmer(time ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
-                       alt_run %>% 
-                         filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
-
-#summary(alt_run_rt)
-
-make_model_table(alt_run_rt_eff)
-
-
 
 ```
 
@@ -347,20 +336,13 @@ https://stats.stackexchange.com/questions/530804/sjplots-tab-model-and-summary-f
 https://stackoverflow.com/a/77664683
 
 ```{r}
-alt_run_rt_log_contr <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id), 
+alt_run_rt_log_contr <- lmer(time_log ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id), 
                              alt_run %>% 
                                filter(filter_correct == 0), 
                              control = lmerControl(optimizer = "bobyqa"))
 
 make_model_table(alt_run_rt_log_contr)
 
-
-alt_run_rt_contr <- lmer(time ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id), 
-                         alt_run %>% 
-                           filter(filter_correct == 0))
-
-
-make_model_table(alt_run_rt_contr)
 
 ```
 
@@ -374,9 +356,9 @@ make_model_table(alt_run_rt_contr)
 alt_run_error_eff <- xfun::cache_rds({
   
   glmer(error ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id),
-                           family = "binomial",
-                           control = glmerControl(optimizer = "bobyqa"),
-                           alt_run)
+        family = "binomial",
+        control = glmerControl(optimizer = "bobyqa"),
+        alt_run)
 }, dir = "dominik/models/", file = "alt_run_errors.RDS", rerun = rerun_all)
 
 make_model_table(alt_run_error_eff)
@@ -389,18 +371,17 @@ make_model_table(alt_run_error_eff)
 
 ```{r}
 alt_run_error_contr <- xfun::cache_rds({
-  glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id),
-                             family = "binomial",
-                             control = glmerControl(optimizer = "bobyqa"),
-                             alt_run)
-
+  glmer(error ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + prev_bivalent_contr + switch_contr|id),
+        family = "binomial",
+        control = glmerControl(optimizer = "bobyqa"),
+        alt_run)
+  
 }, dir = "dominik/models/", file = "alt_run_error_contr.RDS", rerun = rerun_all)
 
 make_model_table(alt_run_error_contr)
 
 
 ```
-
 
 # DDM analysis
 
@@ -540,60 +521,288 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
 
 #### Effect coded valence (-0.5, 0.5)
 
+##### a
+
+Only model that converges and is not singular is the intercept model.
+
 ```{r}
-alt_run_a_eff <- lmer(a ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + switch_contr|id),
+alt_run_a_eff <- lmer(a ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (prev_bivalent_eff + is_bivalent_eff + switch_contr|id),
+                      control = lmerControl(optimizer = "bobyqa"),
                       alt_run_agg_ID_ddm_nocycle)
 
 #summary(alt_run_a)
 make_model_table(alt_run_a_eff)
+```
 
-alt_run_v_eff <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + switch_contr|id), 
+This model is singular. Only the intercept only model is not singular.
+```{r}
+alt_run_a_eff_baseline <- lmer(a ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (1|id),
+                               control = lmerControl(optimizer = "bobyqa"),
+                               alt_run_agg_ID_ddm_nocycle)
+
+
+
+alt_run_a_eff_prev_bivalent <- lmer(a ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (prev_bivalent_eff|id),
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+
+
+alt_run_a_eff_is_bivalent <- lmer(a ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff|id),
+                                  control = lmerControl(optimizer = "bobyqa"),
+                                  alt_run_agg_ID_ddm_nocycle)
+
+
+
+alt_run_a_eff_switch <- lmer(a ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (switch_contr|id),
+                             control = lmerControl(optimizer = "bobyqa"),
+                             alt_run_agg_ID_ddm_nocycle)
+```
+
+Final model:
+
+```{r}
+#final model
+alt_run_a_eff_final <- alt_run_a_eff_baseline
+make_model_table(alt_run_a_eff_final)
+```
+
+##### v
+
+```{r}
+alt_run_v_eff <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (prev_bivalent_eff + is_bivalent_eff + switch_contr|id),
+                      control = lmerControl(optimizer = "bobyqa"),
                       alt_run_agg_ID_ddm_nocycle)
 #summary(alt_run_v)
 make_model_table(alt_run_v_eff)
+```
 
+This model is singular. Let's check which random effects we can add.
 
-alt_run_Ter_eff <- lmer(Ter ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + switch_contr|id), 
+```{r}
+alt_run_v_eff_baseline <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (1|id),
+                               control = lmerControl(optimizer = "bobyqa"),
+                               alt_run_agg_ID_ddm_nocycle)
+
+alt_run_v_eff_prev_bivalent <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (prev_bivalent_eff|id),
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+
+anova(alt_run_v_eff_baseline, alt_run_v_eff_prev_bivalent)
+```
+
+Adding the previous valence status does not improve fit. But adding switch and current valence improves fit, and you can combine both factors. 
+
+```{r}
+alt_run_v_eff_is_bivalent <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff|id),
+                                  control = lmerControl(optimizer = "bobyqa"),
+                                  alt_run_agg_ID_ddm_nocycle)
+
+anova(alt_run_v_eff_baseline, alt_run_v_eff_is_bivalent)
+
+alt_run_v_eff_switch <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (switch_contr|id), 
+                             control = lmerControl(optimizer = "bobyqa"),
+                             alt_run_agg_ID_ddm_nocycle)
+
+anova(alt_run_v_eff_baseline, alt_run_v_eff_switch)
+
+alt_run_v_eff_is_bivalent_switch <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff + switch_contr|id), 
+                            control = lmerControl(optimizer = "bobyqa"),
+                            alt_run_agg_ID_ddm_nocycle)
+```
+
+Final model:
+
+```{r}
+alt_run_v_eff_final <- alt_run_v_eff_is_bivalent_switch
+
+make_model_table(alt_run_v_eff_final)
+```
+
+##### Ter
+
+```{r}
+alt_run_Ter_eff <- lmer(Ter ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (prev_bivalent_eff + is_bivalent_eff + switch_contr|id),
+                        control = lmerControl(optimizer = "bobyqa"),
                         alt_run_agg_ID_ddm_nocycle)
 
-#summary(alt_run_Ter)
+#summary(alt_run_a)
 make_model_table(alt_run_Ter_eff)
+
 ```
+
+Ter model is singular. Adding slopes individually still results in singular models, so we stick with the intercept model.
+
+```{r}
+alt_run_Ter_eff_baseline <- lmer(Ter ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (1|id),
+                                 control = lmerControl(optimizer = "bobyqa"),
+                                 alt_run_agg_ID_ddm_nocycle)
+
+alt_run_Ter_eff_is_bivalent <- lmer(Ter ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (is_bivalent_eff|id),
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+
+alt_run_Ter_eff_is_bivalent <- lmer(Ter ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (switch_contr|id),
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+
+alt_run_Ter_eff_is_bivalent <- lmer(Ter ~ is_bivalent_eff * prev_bivalent_eff * switch_contr + (prev_bivalent_eff|id),
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+```
+
+Final model: 
+
+```{r}
+alt_run_Ter_eff_final <- alt_run_Ter_eff_baseline
+
+make_model_table(alt_run_Ter_eff_baseline)
+```
+
 
 #### Contrast coded (0, 1)
 
+##### a
+
 ```{r}
-alt_run_a_contr <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id),
+alt_run_a_contr <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (prev_bivalent_contr + is_bivalent_contr + switch_contr|id),
+                        control = lmerControl(optimizer = "bobyqa"),
                         alt_run_agg_ID_ddm_nocycle)
 
 make_model_table(alt_run_a_contr)
+```
 
-alt_run_v_contr <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id), 
+Singular. Let's test which random effects structure works. All of them are singular, so the intercept model wins.
+
+```{r}
+alt_run_a_contr_baseline <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (1|id),
+                                 control = lmerControl(optimizer = "bobyqa"),
+                                 alt_run_agg_ID_ddm_nocycle)
+
+alt_run_a_contr_is_bivalent <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr|id),
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+
+alt_run_a_contr_prev_bivalent <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (prev_bivalent_contr|id),
+                                      control = lmerControl(optimizer = "bobyqa"),
+                                      alt_run_agg_ID_ddm_nocycle)
+
+alt_run_a_contr_switch <- lmer(a ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (switch_contr|id),
+                               control = lmerControl(optimizer = "bobyqa"),
+                               alt_run_agg_ID_ddm_nocycle)
+```
+
+Final model: 
+
+```{r}
+alt_run_a_contr_final <- alt_run_a_contr_baseline 
+make_model_table(alt_run_a_contr_final)
+```
+
+##### v
+
+```{r}
+alt_run_v_contr <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (prev_bivalent_contr + is_bivalent_contr + switch_contr|id), 
+                        control = lmerControl(optimizer = "bobyqa"),
                         alt_run_agg_ID_ddm_nocycle)
 make_model_table(alt_run_v_contr)
+```
 
+Singular. Let's simplify.
 
-alt_run_Ter_contr <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr + switch_contr|id), 
+```{r}
+alt_run_v_contr_baseline <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (1|id), 
+                                 control = lmerControl(optimizer = "bobyqa"),
+                                 alt_run_agg_ID_ddm_nocycle)
+
+alt_run_v_contr_is_bivalent <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr|id), 
+                                    control = lmerControl(optimizer = "bobyqa"),
+                                    alt_run_agg_ID_ddm_nocycle)
+
+anova(alt_run_v_contr_baseline, alt_run_v_contr_is_bivalent)
+
+alt_run_v_contr_prev_bivalent <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (prev_bivalent_contr|id), 
+                                      control = lmerControl(optimizer = "bobyqa"),
+                                      alt_run_agg_ID_ddm_nocycle)
+
+anova(alt_run_v_contr_baseline, alt_run_v_contr_prev_bivalent)
+
+alt_run_v_contr_switch <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (switch_contr|id), 
+                               control = lmerControl(optimizer = "bobyqa"),
+                               alt_run_agg_ID_ddm_nocycle)
+
+anova(alt_run_v_contr_baseline, alt_run_v_contr_switch)
+
+```
+
+So all random effects models are significantly better except for the previous valence status factor. Let's add switch and current bivalence.
+
+```{r}
+alt_run_v_contr_switch_isbivalent <- lmer(v ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (switch_contr + is_bivalent_contr|id), 
+                                          control = lmerControl(optimizer = "bobyqa"),
+                                          alt_run_agg_ID_ddm_nocycle)
+```
+
+Final model: 
+
+```{r}
+alt_run_v_contr_final <- alt_run_v_contr_switch_isbivalent
+make_model_table(alt_run_v_contr_final)
+```
+
+##### Ter
+
+```{r}
+alt_run_Ter_contr <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (prev_bivalent_contr + is_bivalent_contr + switch_contr|id), 
+                          control = lmerControl(optimizer = "bobyqa"),
                           alt_run_agg_ID_ddm_nocycle)
 make_model_table(alt_run_Ter_contr)
 ```
 
+Singular. Let's simplify. All random slope models are singular, so we go with the intercept model.
+
+
+```{r}
+alt_run_Ter_contr_baseline <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (1|id), 
+                                   control = lmerControl(optimizer = "bobyqa"),
+                                   alt_run_agg_ID_ddm_nocycle)
+
+
+alt_run_Ter_contr_is_bivalent <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (is_bivalent_contr|id), 
+                                      control = lmerControl(optimizer = "bobyqa"),
+                                      alt_run_agg_ID_ddm_nocycle)
+
+
+alt_run_Ter_contr_prev_bivalent <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (prev_bivalent_contr|id), 
+                                        control = lmerControl(optimizer = "bobyqa"),
+                                        alt_run_agg_ID_ddm_nocycle)
+
+alt_run_Ter_contr_switch <- lmer(Ter ~ is_bivalent_contr * prev_bivalent_contr * switch_contr + (switch_contr|id), 
+                                 control = lmerControl(optimizer = "bobyqa"),
+                                 alt_run_agg_ID_ddm_nocycle)
+```
+
+Final model:
+
+```{r}
+alt_run_Ter_contr_final <- alt_run_Ter_contr_baseline
+make_model_table(alt_run_Ter_contr_final)
+```
 
 
 # RT residual analysis
 
 ## Effect coded valence (-0.5, 0.5)
 
-### Removed subject intercepts
+### Removed subject intercepts - removed from output
 
-```{r}
+```{r eval=FALSE}
 
 alt_run_rt_log_resrt_eff <- xfun::cache_rds({
   lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res + (is_bivalent_eff + switch_contr + lag1_time_log_res | id), 
        control = lmerControl(optimizer = "bobyqa"),
        alt_run %>% 
          filter(filter_correct == 0))
-
+  
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff.RDS", rerun = rerun_all)
 
 
@@ -627,8 +836,9 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
 
 ### Added subject intercepts
 
-```{r}
+This model is singular.
 
+```{r}
 #For these analyses, we need to center the RTs:
 
 alt_run <- alt_run %>%
@@ -637,17 +847,78 @@ alt_run <- alt_run %>%
          lag1_time_log_res_w_s_int_c = lag1_time_log_res_w_s_int - mean(lag1_time_log_res_w_s_int, na.rm = TRUE))
 
 alt_run_rt_log_resrt_eff_w_s_int <- xfun::cache_rds({
-  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_eff + switch_contr + lag1_time_log_res_w_s_int_c | id), 
-                                                          #control = lmerControl(optimizer = "bobyqa"),
-                                                          alt_run %>% 
-                                                            filter(filter_correct == 0))
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_eff + switch_contr + prev_bivalent_eff + lag1_time_log_res_w_s_int_c | id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int.RDS", rerun = rerun_all)
 
-summary(alt_run_rt_log_resrt_eff_w_s_int)
-
 make_model_table(alt_run_rt_log_resrt_eff_w_s_int)
+```
 
-preds <- emmeans::emmeans(alt_run_rt_log_resrt_eff_w_s_int, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
+So let's check which random effects we can add.
+
+
+```{r}
+
+alt_run_rt_log_resrt_eff_w_s_int_baseline <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c | id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_baseline.RDS", rerun = rerun_all)
+
+alt_run_rt_log_resrt_eff_w_s_int_switch <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + switch_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_switch.RDS", rerun = rerun_all)
+
+anova(alt_run_rt_log_resrt_eff_w_s_int_baseline, alt_run_rt_log_resrt_eff_w_s_int_switch)
+
+alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + prev_bivalent_eff| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent.RDS", rerun = rerun_all)
+
+anova(alt_run_rt_log_resrt_eff_w_s_int_baseline, alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent)
+
+alt_run_rt_log_resrt_eff_w_s_int_is_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + is_bivalent_eff| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_is_bivalent.RDS", rerun = rerun_all)
+
+anova(alt_run_rt_log_resrt_eff_w_s_int_baseline, alt_run_rt_log_resrt_eff_w_s_int_is_bivalent)
+
+```
+
+Okay, so the current bivalence doesn't need to be added. Can we add previous valence AND switch? Yes, we can!
+
+```{r}
+alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent_switch <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + prev_bivalent_eff + switch_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent_switch.RDS", rerun = rerun_all)
+```
+
+Final model: 
+
+```{r}
+alt_run_rt_log_resrt_eff_w_s_int_final <- alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent_switch
+make_model_table(alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent_switch)
+```
+
+
+
+```{r}
+preds <- emmeans::emmeans(alt_run_rt_log_resrt_eff_w_s_int_prev_bivalent_switch, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
                           at = list(is_bivalent_eff = factor(c(0, 1)),
                                     prev_bivalent_eff = factor(c(0, 1)),
                                     switch_contr = factor(c(0, 1)),
@@ -673,15 +944,15 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
 
 ## Contrast coded (0, 1)
 
-### Removed subject intercepts
+### Removed subject intercepts - removed from output
 
-```{r}
+```{r eval=FALSE}
 
 
 alt_run_rt_log_resrt_contr <- xfun::cache_rds({
   lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res + (is_bivalent_contr + prev_bivalent_contr + switch_contr + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
-                                   alt_run %>% 
-                                     filter(filter_correct == 0))
+       alt_run %>% 
+         filter(filter_correct == 0))
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr.RDS", rerun = rerun_all)
 
 
@@ -713,19 +984,81 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 
 ### Added subject intercepts
 
+Convergence problems. Let's simplify!
+
 ```{r}
-
-
 alt_run_rt_log_resrt_contr_w_s_int <- xfun::cache_rds({
-  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_contr + switch_contr + lag1_time_log_res_w_s_int_c | id), 
-                                           #control = lmerControl(optimizer = "bobyqa"),
-                                           alt_run %>% 
-                                             filter(filter_correct == 0))
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_contr + switch_contr + prev_bivalent_contr + lag1_time_log_res_w_s_int_c | id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr_w_s_int.RDS", rerun = rerun_all)
 
 make_model_table(alt_run_rt_log_resrt_contr_w_s_int)
+```
 
-preds <- emmeans::emmeans(alt_run_rt_log_resrt_contr_w_s_int, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
+
+
+```{r}
+alt_run_rt_log_resrt_contr_w_s_int_baseline <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c | id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr_w_s_int_baseline.RDS", rerun = rerun_all)
+
+#this model is singular
+alt_run_rt_log_resrt_contr_w_s_int_is_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + is_bivalent_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr_w_s_int_is_bivalent.RDS", rerun = rerun_all)
+
+
+alt_run_rt_log_resrt_contr_w_s_int_prev_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + prev_bivalent_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr_w_s_int_prev_bivalent.RDS", rerun = rerun_all)
+
+anova(alt_run_rt_log_resrt_contr_w_s_int_baseline, alt_run_rt_log_resrt_contr_w_s_int_prev_bivalent)
+
+alt_run_rt_log_resrt_contr_w_s_int_switch <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + switch_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr_w_s_int_switch.RDS", rerun = rerun_all)
+
+anova(alt_run_rt_log_resrt_contr_w_s_int_baseline, alt_run_rt_log_resrt_contr_w_s_int_switch)
+
+
+```
+
+Can we add both, switch and previous bivalence into the same model? Yes!
+
+```{r}
+alt_run_rt_log_resrt_contr_w_s_int_switch_prev_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c + (lag1_time_log_res_w_s_int_c + switch_contr + prev_bivalent_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% 
+         filter(filter_correct == 0))
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_contr_w_s_int_switch_prev_bivalent.RDS", rerun = rerun_all)
+```
+
+
+Final model: 
+
+```{r}
+alt_run_rt_log_resrt_contr_w_s_int_final <- alt_run_rt_log_resrt_contr_w_s_int_switch_prev_bivalent
+make_model_table(alt_run_rt_log_resrt_contr_w_s_int_final)
+```
+
+
+```{r}
+preds <- emmeans::emmeans(alt_run_rt_log_resrt_contr_w_s_int_final, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
                           at = list(is_bivalent_contr = factor(c(0, 1)),
                                     prev_bivalent_contr = factor(c(0, 1)),
                                     switch_contr = factor(c(0, 1)),
@@ -750,13 +1083,13 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 
 
 
-## Helmert-coded cycle variable
+## Helmert-coded cycle variable (we decided to skip!)
 
 ### Effect coded valence (-0.5, 0.5)
 
 #### Removed subject intercepts
 
-```{r}
+```{r eval = FALSE}
 
 
 alt_run_rt_log_resrt_prev_helmert_eff <- xfun::cache_rds({
@@ -798,12 +1131,12 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_eff, linety
 #### Added subject intercepts
 
 
-```{r}
+```{r eval = FALSE}
 
 alt_run_rt_log_resrt_prev_helmert_eff_w_s_int <- xfun::cache_rds({
   lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * lag1_time_log_res_w_s_int_c * cycle_helmert + (is_bivalent_eff + prev_bivalent_eff + lag1_time_log_res_w_s_int_c + cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),
-                                                      alt_run %>% 
-                                                        filter(filter_correct == 0))
+       alt_run %>% 
+         filter(filter_correct == 0))
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_prev_helmert_eff_w_s_int.RDS", rerun = rerun_all)
 
 make_model_table(alt_run_rt_log_resrt_prev_helmert_eff_w_s_int)
@@ -838,13 +1171,13 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_eff, linety
 
 #### Removed subject intercepts
 
-```{r}
+```{r eval = FALSE}
 
 
 alt_run_rt_log_resrt_prev_helmert_contr <- xfun::cache_rds({
   lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * lag1_time_log_res * cycle_helmert + (is_bivalent_contr + prev_bivalent_contr + lag1_time_log_res + cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),
-                                                alt_run %>% 
-                                                  filter(filter_correct == 0))
+       alt_run %>% 
+         filter(filter_correct == 0))
   
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_prev_helmert_contr.RDS", rerun = rerun_all)
 
@@ -881,12 +1214,12 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_contr, line
 
 #### Added subject intercepts
 
-```{r}
+```{r eval = FALSE}
 
 alt_run_rt_log_resrt_prev_helmert_contr_w_s_int <- xfun::cache_rds({
   lmer(time_log_res_w_s_int_c ~ is_bivalent_contr * prev_bivalent_contr * lag1_time_log_res_w_s_int_c * cycle_helmert + (is_bivalent_contr + prev_bivalent_contr + lag1_time_log_res_w_s_int_c + cycle_helmert | id), control = lmerControl(optimizer = "bobyqa"),
-                                                        alt_run %>% 
-                                                          filter(filter_correct == 0))
+       alt_run %>% 
+         filter(filter_correct == 0))
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_prev_helmert_contr_w_s_int.RDS", rerun = rerun_all)
 
 
@@ -915,103 +1248,6 @@ ggplot(preds, aes(x = cycle_helmert, y = emmean, color = is_bivalent_contr, line
        y = "log(RT) prediction")+
   theme_classic()
 
-
-
-```
-
-
-
-# Lag RT based on previous trial group
-
-One concern I have with the analysis above (but maybe I'm wrong), is that the lag1 residual log RT is problematic for no-switch trials. In trial 2 of a trialgroup for instance, lag1 RT corresponds to the switch RT trial (trial 1 in a trialgroup). However, for trials 3 and 4 of a trialgroup, lag 1 RT corresponds to a no-switch trial. Therefore, in the graph above, the 0 switch is hard to interpret. This is especially problematic for the Alternate Runs experiment, because there are three no switch trials, one of which has the problematic lag 1 RT corresponding to the switch trial. In the Alternate Cues experiment, at least the no switch trials are averaged (trials 2 and 3, one of which is biased, so it's a balanced average). 
-
-Therefore, here, I am using, instead of a lag 1 RT, a new variable which calculates the mean of the *previous group RTs of no switch trials*. So again, not previous trial, but previous group averaged no switch trial RTs. That might be a better indicated for previous group stability.
-
-## Effect coded valence (-0.5, 0.5)
-
-```{r}
-
-
-alt_run <- alt_run %>%
-  group_by(id, block, trialgroup) %>%
-  mutate(avg_ns_rt_res_log = mean(time_log_res[switch == 0], na.rm = TRUE)) %>%
-  group_by(id, block) %>%
-  mutate(prev_avg_ns_rt_res_log = lag(avg_ns_rt_res_log, 1),
-         cycle = as.numeric(as.character(cycle))) %>%
-  group_by(id, block, trialgroup) %>%
-  mutate(prev_avg_ns_rt_res_log = prev_avg_ns_rt_res_log[1]) 
-
-
-
-alt_run_rt_log_resrt_prev_eff <- xfun::cache_rds({
-  lmer(time_log_res ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_avg_ns_rt_res_log + (is_bivalent_eff + prev_bivalent_eff + switch_contr + prev_avg_ns_rt_res_log|id), control = lmerControl(optimizer = "bobyqa"),
-                                      alt_run %>% 
-                                        filter(filter_correct == 0))
-}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_prev_eff.RDS", rerun = rerun_all)
-
-
-make_model_table(alt_run_rt_log_resrt_prev_eff)
-
-preds <- emmeans::emmeans(alt_run_rt_log_resrt_prev_eff, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_avg_ns_rt_res_log, type = "response",
-                          at = list(is_bivalent_eff = factor(c(0, 1)),
-                                    prev_bivalent_eff = factor(c(0, 1)),
-                                    switch_contr = factor(c(0, 1)),
-                                    prev_avg_ns_rt_res_log = c(-1.5, 1.5))) %>%
-  as.data.frame() %>%
-  mutate(speed = case_when(prev_avg_ns_rt_res_log == min(prev_avg_ns_rt_res_log) ~ "fast",
-                           prev_avg_ns_rt_res_log == max(prev_avg_ns_rt_res_log) ~ "slow") %>% factor()) 
-
-
-
-ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff, group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
-  scale_x_discrete(limits = c("1", "0"))+
-  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
-                                                   "fast" = "lag RT fast")))+
-  labs(title = "Model predictions for residual log RTs",
-       y = "log(RT) prediction")+
-  theme_classic()
-
-
-```
-
-
-
-## Contrast coded (0, 1)
-
-```{r}
-
-
-alt_run_rt_log_resrt_prev_contr <- xfun::cache_rds({
-  lmer(time_log_res ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log + (is_bivalent_contr + prev_bivalent_contr + switch_contr + prev_avg_ns_rt_res_log|id), control = lmerControl(optimizer = "bobyqa"),
-                                        alt_run %>% 
-                                          filter(filter_correct == 0))
-}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_prev_contr.RDS", rerun = rerun_all)
-
-
-make_model_table(alt_run_rt_log_resrt_prev_contr)
-
-preds <- emmeans::emmeans(alt_run_rt_log_resrt_prev_contr, ~ is_bivalent_contr * prev_bivalent_contr * switch_contr * prev_avg_ns_rt_res_log, type = "response",
-                          at = list(is_bivalent_contr = factor(c(0, 1)),
-                                    prev_bivalent_contr = factor(c(0, 1)),
-                                    switch_contr = factor(c(0, 1)),
-                                    prev_avg_ns_rt_res_log = c(-1.5, 1.5))) %>%
-  as.data.frame() %>%
-  mutate(speed = case_when(prev_avg_ns_rt_res_log == min(prev_avg_ns_rt_res_log) ~ "fast",
-                           prev_avg_ns_rt_res_log == max(prev_avg_ns_rt_res_log) ~ "slow") %>% factor()) 
-
-
-
-ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
-  scale_x_discrete(limits = c("1", "0"))+
-  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
-                                                   "fast" = "lag RT fast")))+
-  labs(title = "Model predictions for residual log RTs",
-       y = "log(RT) prediction")+
-  theme_classic()
 
 
 ```
@@ -1153,6 +1389,17 @@ summary(alt_run_indiv_diff_models$RT$uu4)
 ## RT
 
 ```{r}
+
+RT_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
+  
+  data.frame(model = compare_models(alt_run_indiv_diff_models$RT, x)$model_names,
+             comparison_p = compare_models(alt_run_indiv_diff_models$RT, x)$comparison$`Pr(>F)`)
+  
+}) %>%
+  bind_rows() %>%
+  mutate(comparison_sig = ifelse(comparison_p < 0.05, 1, 0))
+
+
 alt_run_RT_model_summary <- lapply(alt_run_indiv_diff_models$RT, function(x){
   m_sum <- x %>% 
     summary() 
@@ -1168,23 +1415,28 @@ alt_run_RT_model_summary <- lapply(alt_run_indiv_diff_models$RT, function(x){
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
+  left_join(RT_comparisons) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("RT_log_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
+         r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label))
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label))
+
+
 
 ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
   geom_text(data = alt_run_RT_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_RT_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  geom_hline(yintercept = 0, linetype = "dotted")+
   theme_classic()+
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
@@ -1195,6 +1447,7 @@ ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = mode
                               "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
                               "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
                               "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 ```
 
@@ -1202,32 +1455,44 @@ ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = mode
 ### Model comp: univalent - univalent
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$RT, "uu")
+compare_models(alt_run_indiv_diff_models$RT, "uu")$comparison
 ```
 
 ### Model comp: univalent - bivalent
 
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$RT, "ub")
+compare_models(alt_run_indiv_diff_models$RT, "ub")$comparison
 ```
 
 ### Model comp: bivalent - univalent
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$RT, "bu")
+compare_models(alt_run_indiv_diff_models$RT, "bu")$comparison
 ```
 
 ### Model comp: bivalent - bivalent
 
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$RT, "bb")
+compare_models(alt_run_indiv_diff_models$RT, "bb")$comparison
 ```
 
 ## Error
 
 ```{r}
+
+
+Error_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
+  
+  data.frame(model = compare_models(alt_run_indiv_diff_models$Error, x)$model_names,
+             comparison_p = compare_models(alt_run_indiv_diff_models$Error, x)$comparison$`Pr(>F)`)
+  
+}) %>%
+  bind_rows() %>%
+  mutate(comparison_sig = ifelse(comparison_p < 0.05, 1, 0))
+
+
 alt_run_Error_model_summary <- lapply(alt_run_indiv_diff_models$Error, function(x){
   m_sum <- x %>% 
     summary() 
@@ -1241,34 +1506,38 @@ alt_run_Error_model_summary <- lapply(alt_run_indiv_diff_models$Error, function(
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
+  left_join(Error_comparisons) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
-         coefficient = gsub("Error_", "", coefficient),
+         coefficient = gsub("RT_log_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
+         r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label))
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label))
 
 
 ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
   geom_text(data = alt_run_Error_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  geom_hline(yintercept = 0, linetype = "dotted")+
   theme_classic()+
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
                                                        "bu" = "bi-uni",
                                                        "bb" = "bi-bi")))+
-  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
-                              "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
-                              "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
-                              "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+  scale_x_discrete(labels = c("Error_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "Error_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "Error_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "Error_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
                               "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 
 
@@ -1278,27 +1547,27 @@ ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = m
 ### Model comp: univalent - univalent
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$Error, "uu")
+compare_models(alt_run_indiv_diff_models$Error, "uu")$comparison
 ```
 
 ### Model comp: univalent - bivalent
 
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$Error, "ub")
+compare_models(alt_run_indiv_diff_models$Error, "ub")$comparison
 ```
 
 ### Model comp: bivalent - univalent
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$Error, "bu")
+compare_models(alt_run_indiv_diff_models$Error, "bu")$comparison
 ```
 
 ### Model comp: bivalent - bivalent
 
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$Error, "bb")
+compare_models(alt_run_indiv_diff_models$Error, "bb")$comparison
 ```
 
 
@@ -1306,6 +1575,18 @@ compare_models(alt_run_indiv_diff_models$Error, "bb")
 ## v
 
 ```{r}
+
+v_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
+  
+  data.frame(model = compare_models(alt_run_indiv_diff_models$v, x)$model_names,
+             comparison_p = compare_models(alt_run_indiv_diff_models$v, x)$comparison$`Pr(>F)`)
+  
+}) %>%
+  bind_rows() %>%
+  mutate(comparison_sig = ifelse(comparison_p < 0.05, 1, 0))
+
+
+
 alt_run_v_model_summary <- lapply(alt_run_indiv_diff_models$v, function(x){
   m_sum <- x %>% 
     summary() 
@@ -1319,35 +1600,38 @@ alt_run_v_model_summary <- lapply(alt_run_indiv_diff_models$v, function(x){
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
+  left_join(v_comparisons) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
-         coefficient = gsub("v_", "", coefficient),
+         coefficient = gsub("RT_log_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
          r_label = as.character(round(r_sq, 2)),
          r_label = gsub("^0.", ".", r_label),
+         r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
          r_adj_label = gsub("^0.", ".", r_adj_label),
-         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")))
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label))
 
 
 ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
   geom_text(data = alt_run_v_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_v_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  geom_hline(yintercept = 0, linetype = "dotted")+
   theme_classic()+
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
                                                        "bu" = "bi-uni",
                                                        "bb" = "bi-bi")))+
-  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
-                              "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
-                              "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
-                              "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "v_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "v_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "v_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
                               "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 
 
@@ -1358,27 +1642,27 @@ ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model
 ### Model comp: univalent - univalent
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$v, "uu")
+compare_models(alt_run_indiv_diff_models$v, "uu")$comparison
 ```
 
 ### Model comp: univalent - bivalent
 
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$v, "ub")
+compare_models(alt_run_indiv_diff_models$v, "ub")$comparison
 ```
 
 ### Model comp: bivalent - univalent
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$v, "bu")
+compare_models(alt_run_indiv_diff_models$v, "bu")$comparison
 ```
 
 ### Model comp: bivalent - bivalent
 
 
 ```{r}
-compare_models(alt_run_indiv_diff_models$v, "bb")
+compare_models(alt_run_indiv_diff_models$v, "bb")$comparison
 ```
 
 
@@ -1386,6 +1670,8 @@ compare_models(alt_run_indiv_diff_models$v, "bb")
 ## v NA
 
 ```{r}
+
+
 alt_run_v_NA_model_summary <- lapply(alt_run_indiv_diff_models$v_NA, function(x){
   m_sum <- x %>% 
     summary() 
@@ -1413,13 +1699,13 @@ alt_run_v_NA_model_summary <- lapply(alt_run_indiv_diff_models$v_NA, function(x)
 
 
 ggplot(alt_run_v_NA_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
   geom_text(data = alt_run_v_NA_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_v_NA_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  geom_hline(yintercept = 0, linetype = "dotted")+
   theme_classic()+
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
@@ -1430,6 +1716,7 @@ ggplot(alt_run_v_NA_model_summary, aes(x = coefficient, y = estimate, group = mo
                               "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
                               "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
                               "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 
 

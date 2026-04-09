@@ -110,6 +110,17 @@ make_model_table <- function(model) {
   ft <- ft %>%
     flextable::add_header_lines(values = header_text)
   
+  # Color background light red if there are convergence or singularity issues
+  has_issues <- inherits(model, "merMod") && (
+    lme4::isSingular(model) ||
+      !is.null(model@optinfo$conv$lme4$messages)
+  )
+  
+  if (has_issues) {
+    ft <- ft %>%
+      flextable::bg(i = 1, bg = "orange", part = "header")
+  }
+  
   return(ft)
 }
 
@@ -199,6 +210,11 @@ export_flextable_to_word <- function(flextable_obj, filepath, title = NULL, subt
 
 compare_models <- function(model_list, dv){
   
-  do.call(anova, unname(model_list[grepl(dv, names(model_list))]))
+  return(
+    list(
+      comparison = do.call(anova, unname(model_list[grepl(dv, names(model_list))])),
+      model_names = names(model_list)[grepl(dv, names(model_list))]
+    )
+  )
   
 }
