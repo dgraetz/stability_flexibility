@@ -31,11 +31,11 @@ This script cleans and analyses the AlternateRuns Dataset.
 
 -   RT: or response time
 
-**Note** With most complex models (all random effects included): 
+**Note** With most complex models (all random effects included):
 
-- experimental level: everything converges, singularity issues arise across all ezDDM. using outlined preregistration contrasts (.5,-.5 val lval, 0,1 switch). 
+-   experimental level: everything converges, singularity issues arise across all ezDDM. using outlined preregistration contrasts (.5,-.5 val lval, 0,1 switch).
 
-- within-sub level: does not converge and is singular
+-   within-sub level: does not converge and is singular
 
 ```{r}
 #| include: false
@@ -694,63 +694,78 @@ summary(model_a_c)
 
 tab_model(model_a_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
+model_a_int <- 
+  lmer(a ~ valence_contr * lvalence_contr *switch + (1|id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_a_int)
+
+tab_model(model_a_int, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
 #this creates singularity issues so running model with only 1 random intercept included and then running anova to compare them together
 
  a_val<-  lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(a_val)
 
-anova(model_a_c, a_val) #sig
+anova(model_a_int, a_val) #not sig
 
  a_lval<-  lmer(a ~ valence_contr * lvalence_contr *switch + (lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(a_lval)
 
-anova(model_a_c, a_lval) #sig
+anova(model_a_int, a_lval) #sig
 
  a_switch<-  lmer(a ~ valence_contr * lvalence_contr *switch + (switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(a_switch)
 
-anova(model_a_c, a_switch) #not sig
+anova(model_a_int, a_switch) # sig
 ```
+
 Model A that converges, intercept only model
+
 ```{r}
 model_a_simple <- xfun::cache_rds({
   lmer(a ~ valence_contr * lvalence_contr *switch + (1|id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
 }, dir = "sophia/output/", file = "model_a_c.rds", rerun = rerun_all)
-summary(model_a_c)
+summary(model_a_simple)
 
 tab_model(model_a_simple, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
  
  
 ```
+
 anovas all sig but none are singular + dont converge
+
 ```{r}
 model_v_c<- xfun::cache_rds({
   lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
 }, dir = "sophia/output/", file = "model_v_c.rds", rerun = rerun_all)
-summary(model_v_c)
+#summary(model_v_c)
 
 tab_model(model_v_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
+ model_v_int<-  lmer(v ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(model_v_int)
 
  v_val<-  lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(v_val)
 
-anova(model_v_c, v_val) #sig
+anova(model_v_int, v_val) #sig
 
  v_lval<-  lmer(v ~ valence_contr * lvalence_contr *switch + (lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(v_lval)
 
-anova(model_v_c, v_lval) #sig
+anova(model_v_int, v_lval) #not sig
 
  v_switch<-  lmer(v ~ valence_contr * lvalence_contr *switch + (switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(v_switch)
 
-anova(model_v_c, v_switch) #sig
+anova(model_v_int, v_switch) #sig
 ```
 
 ```{r}
@@ -761,25 +776,32 @@ summary(model_Ter_c)
 
 tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
+model_Ter_int <-
+  lmer(Ter ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+
+summary(model_Ter_int)
+
  ter_val<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
-#summary(ter_val)
+summary(ter_val)
 
-anova(model_Ter_c, ter_val) #sig
+#anova(model_Ter_int, ter_val) #not sig
 
  ter_lval<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
-#summary(ter_lval)
+summary(ter_lval)
 
-anova(model_Ter_c, ter_lval) #sig
+#anova(model_Ter_int, ter_lval) #sig
 
  ter_switch<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
-#summary(ter_switch)
+summary(ter_switch)
 
-anova(model_Ter_c, ter_switch) #sig
+#anova(model_Ter_int, ter_switch) #sig
 ```
-ter simplest model. only one that is not singular
+
+ter simplest model int only
+
 ```{r}
 model_Ter_simple <- xfun::cache_rds({
   lmer(Ter ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
@@ -788,7 +810,6 @@ summary(model_Ter_simple)
 
 tab_model(model_Ter_simple, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
-
 
 without valence contrasts
 
