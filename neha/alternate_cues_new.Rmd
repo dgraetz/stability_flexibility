@@ -432,8 +432,33 @@ saveRDS(d_analysis, "d_analysis.rds")
                control = lmerControl(optimizer = "bobyqa"))
 
 
- 
  summary(m_rt_effect)
+ 
+ 
+ 
+ m_rt_effectBase<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1 |  id),
+                 data = d_analysis %>% filter(filter_correct == 0),
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+  summary(m_rt_effectBase)
+  
+  m_rt_effect1<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1+switch  |  id),
+                 data = d_analysis %>% filter(filter_correct == 0),
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+  summary(m_rt_effect1)
+  
+  anova(m_rt_effect1,m_rt_effectBase)
+ 
+  
+  
+ 
+ 
+ 
  
  
 #library(sjPlot)
@@ -1485,7 +1510,7 @@ by switch
 
 ```{r}
 
-alt_cue_rt_log_resrt_s <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res + (val_c_g_contrast  + switch + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt_s <- lmerTest::lmer(time_log_res ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res + (val_c_g_contrast  +  switch + lag1_time_log_res |id), control = lmerControl(optimizer = "bobyqa"),
      d_arrange %>% 
        filter(filter_correct == 0))
 
@@ -1494,7 +1519,7 @@ summary(alt_cue_rt_log_resrt_s)
 tab_model(alt_cue_rt_log_resrt_s, df.method = "satterthwaite")
 
 
-alt_cue_rt_log_resrt_s_2 <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res_c + (val_c_g_contrast  + switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+alt_cue_rt_log_resrt_s_2 <- lmerTest::lmer(time_log_res_c ~ val_c_g_contrast * val_p_g_contrast * switch * lag1_time_log_res_c + (val_c_g_contrast + switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
      d_arrange %>% 
        filter(filter_correct == 0))
 
@@ -2289,3 +2314,323 @@ compare_models(alt_cue_indiv_diff_models$v, "bb")
 
 ## the biggest positive effect actually occurs in bivalent bivalent, where you would expect the strongest tradeoff effect
 standardize the betas for model comparisons 
+
+
+#######################################################################################
+
+    Determining which model versions to use by conducting anovas 
+
+######################################################################################
+
+
+Note: only for effect coded variables 
+
+steps: first check if complete complex model with one bar converges. if not- then do the next steps 
+
+A. Experimental level 
+
+example:
+ 
+ m_rt_effectBase<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1 |  id),
+                 data = d_analysis %>% filter(filter_correct == 0),
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+  summary(m_rt_effectBase)
+  
+  m_rt_effect1<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1+ switch  |  id),
+                 data = d_analysis %>% filter(filter_correct == 0),
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+  summary(m_rt_effect1)
+  
+  anova(m_rt_effect1,m_rt_effectBase)
+ 
+ 1. lmer + glmer effect coded 
+  
+```{r}
+
+ m_rt_effect_check<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1 + val_c_g + val_p_g + switch |  id),
+                 data = d_analysis %>% filter(filter_correct == 0),
+                  na.action = na.exclude,
+              
+               control = lmerControl(optimizer = "bobyqa"))
+
+  summary(m_rt_effect_check)
+  tab_model(m_rt_effect_check,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") ### converged + no is singular warning 
+ # 
+ # m_rt_effectBase<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1 |  id),
+ #                 data = d_analysis %>% filter(filter_correct == 0),
+ #                  na.action = na.exclude,
+ #              
+ #               control = lmerControl(optimizer = "bobyqa"))
+ # 
+ #  summary(m_rt_effectBase)
+ #  
+ #  m_rt_effect1<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1+switch  |  id),
+ #                 data = d_analysis %>% filter(filter_correct == 0),
+ #                  na.action = na.exclude,
+ #              
+ #               control = lmerControl(optimizer = "bobyqa"))
+ # 
+ #  summary(m_rt_effect1)
+ #  
+ #  
+ #  
+ # anova(m_rt_effect1,m_rt_effectBase)
+ 
+ 
+ 
+#library(sjPlot)
+# tab_model(m_rt_new,show.est=T,auto.label=F,show.stat=T)
+# tab_model(m_rt_effect_try,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite")
+ 
+
+
+```
+ 
+```{r}
+
+
+d_analysis$error <- as.factor(d_analysis$error)
+levels(d_analysis$error)
+
+m_error_effect<- glmer(error ~  val_c_g * val_p_g * switch + ( val_c_g + val_p_g + switch| id),
+                 data = d_analysis, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+ 
+ summary(m_error_effect)
+ 
+ tab_model(m_error_effect,show.est=T,auto.label=F,show.stat=T)
+
+ ## converged + no is singular warning 
+
+```
+
+2. ezDDM effect coded
+
+
+```{r}
+
+## note: look into why you cannot estimate Residual R^2 very well for lmer models 
+
+alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch | id), alt_cue_agg_ID_ddm_nocycle) # converged BUT is singualr warning 
+
+## step 1: so, running baseline model 
+
+alt_cue_a_b <- lmer(a ~ val_c_g * val_p_g * switch + (1 | id), alt_cue_agg_ID_ddm_nocycle) 
+
+summary(alt_cue_a_b)
+
+tab_model(alt_cue_a_b)
+
+
+## step 2: adding one random slope to each model and conducting anovas with base model 
+
+alt_cue_a_1 <- lmer(a ~ val_c_g * val_p_g * switch + (1 + val_c_g | id), alt_cue_agg_ID_ddm_nocycle) 
+
+summary(alt_cue_a_1)
+
+tab_model(alt_cue_a_1) # converged and is singular warning 
+
+anova(alt_cue_a_b, alt_cue_a_1) ## but the anova shows that vak_c_g random slope is required 
+
+
+
+alt_cue_a_2 <- lmer(a ~ val_c_g * val_p_g * switch + (1 + val_p_g | id), alt_cue_agg_ID_ddm_nocycle) 
+
+summary(alt_cue_a_2)
+
+tab_model(alt_cue_a_2) # converged but is singular warning 
+
+anova(alt_cue_a_b, alt_cue_a_2) ## not significant 
+
+
+
+alt_cue_a_3 <- lmer(a ~ val_c_g * val_p_g * switch + (1 + switch | id), alt_cue_agg_ID_ddm_nocycle) 
+
+summary(alt_cue_a_3)
+
+tab_model(alt_cue_a_3) # converged and no is singualr warning 
+
+anova(alt_cue_a_b, alt_cue_a_3) ## significant  
+
+```
+
+```{r}
+
+alt_cue_v <- lmer(v ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v)
+
+tab_model(alt_cue_v) ## did not converge + is singular warning 
+
+alt_cue_v_b <- lmer(v ~  val_c_g * val_p_g * switch + (1 |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v_b)
+
+tab_model(alt_cue_v_b)
+
+
+alt_cue_v_1 <- lmer(v ~  val_c_g * val_p_g * switch + (1 + val_c_g |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v_1)
+
+tab_model(alt_cue_v_1) # converged but is singular warning 
+
+anova(alt_cue_v_b, alt_cue_v_1) # significant 
+
+
+alt_cue_v_2 <- lmer(v ~  val_c_g * val_p_g * switch + (1 + val_p_g |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v_2)
+
+tab_model(alt_cue_v_2) # converged but is singular warning 
+
+anova(alt_cue_v_b, alt_cue_v_2) # not significant 
+
+
+alt_cue_v_3 <- lmer(v ~  val_c_g * val_p_g * switch + (1 + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_v_3)
+
+tab_model(alt_cue_v_3) # converged and no is singular warning 
+
+anova(alt_cue_v_b, alt_cue_v_3) # significant 
+
+
+
+```
+
+```{r}
+
+
+alt_cue_Ter <- lmer(Ter ~  val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter)
+
+tab_model(alt_cue_Ter, df.method = "satterthwaite") # converged but is singular warning 
+
+
+alt_cue_Ter_b <- lmer(Ter ~  val_c_g * val_p_g * switch + (1 |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter_b)
+
+tab_model(alt_cue_Ter_b) 
+
+
+alt_cue_Ter_1 <- lmer(Ter ~  val_c_g * val_p_g * switch + (1 + val_c_g |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter_1)
+
+tab_model(alt_cue_Ter_1) # converged and NO is singular warning 
+
+anova(alt_cue_Ter_b, alt_cue_Ter_1) # significant 
+
+
+alt_cue_Ter_2 <- lmer(Ter ~  val_c_g * val_p_g * switch + (1 + val_p_g |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter_2)
+
+tab_model(alt_cue_Ter_2) # converged but is singular warning 
+
+anova(alt_cue_Ter_b, alt_cue_Ter_2) # not significant 
+
+
+alt_cue_Ter_3 <- lmer(Ter ~  val_c_g * val_p_g * switch + (1 + switch |id), 
+     alt_cue_agg_ID_ddm_nocycle)
+
+summary(alt_cue_Ter_3)
+
+tab_model(alt_cue_Ter_3) # converged but is signgular warning! 
+
+
+anova(alt_cue_Ter_b, alt_cue_Ter_3)# significant 
+
+
+
+#contrasts(alt_cue_agg_ID_ddm_nocycle$val_c_g)
+#contrasts(alt_cue_agg_ID_ddm_nocycle$val_p_g)
+```
+
+B. within-subjects level 
+
+
+```{r}
+alt_cue_rt_log_resrt <- lmer(time_log_res_c ~ val_c_g * val_p_g * switch * lag1_time_log_res_c + (val_c_g + val_p_g + switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt)
+
+tab_model(alt_cue_rt_log_resrt, df.method = "satterthwaite") ## model failed to converge 
+
+
+alt_cue_rt_log_resrt_b <- lmer(time_log_res_c ~ val_c_g * val_p_g * switch * lag1_time_log_res_c + (1+ lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_b)
+
+tab_model(alt_cue_rt_log_resrt_b, df.method = "satterthwaite")  # base model converged + no is singular warning 
+
+alt_cue_rt_log_resrt_1 <- lmer(time_log_res_c ~ val_c_g * val_p_g * switch * lag1_time_log_res_c + (val_c_g + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_1)
+
+tab_model(alt_cue_rt_log_resrt_1, df.method = "satterthwaite") # converged with no is singular warning 
+
+anova(alt_cue_rt_log_resrt_b,alt_cue_rt_log_resrt_1 ) # significant 
+
+
+alt_cue_rt_log_resrt_2 <- lmer(time_log_res_c ~ val_c_g * val_p_g * switch * lag1_time_log_res_c + (val_p_g + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_2)
+
+tab_model(alt_cue_rt_log_resrt_2, df.method = "satterthwaite") # not converged with is singular warning 
+
+anova(alt_cue_rt_log_resrt_b,alt_cue_rt_log_resrt_2 ) # not significant 
+
+alt_cue_rt_log_resrt_3 <- lmer(time_log_res_c ~ val_c_g * val_p_g * switch * lag1_time_log_res_c + (switch + lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_3)
+
+tab_model(alt_cue_rt_log_resrt_3, df.method = "satterthwaite") # converged with no is singular warning 
+
+anova(alt_cue_rt_log_resrt_b,alt_cue_rt_log_resrt_3 ) # significant 
+
+
+
+alt_cue_rt_log_resrt_use <- lmer(time_log_res_c ~ val_c_g * val_p_g * switch * lag1_time_log_res_c + (val_c_g + switch+ lag1_time_log_res_c |id), control = lmerControl(optimizer = "bobyqa"),
+     d_arrange %>% 
+       filter(filter_correct == 0))
+
+summary(alt_cue_rt_log_resrt_use)
+
+tab_model(alt_cue_rt_log_resrt_use, df.method = "satterthwaite") # converged with no is singular warning 
+
+
+```
+
+
