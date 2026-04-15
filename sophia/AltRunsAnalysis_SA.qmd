@@ -773,10 +773,12 @@ final model with val and switch random int
 model_final_v <- xfun::cache_rds({
   lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
 }, dir = "sophia/output/", file = "model_final_v.rds", rerun = rerun_all)
-
+summary(model_final_v)
 tab_model(model_final_v, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 anova(model_final_v, v_switch) #sig
+
+#evidence for an antitradeoff, the more pos here the more of an antitradeoff pattern 
 ```
 
 ```{r}
@@ -965,8 +967,9 @@ autocor_model_switch_lval <- xfun::cache_rds({
   lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+lvalence_contr+switch|id), control = lmerControl(optimizer = "bobyqa"),
      alt_run %>% filter(filter_correct==0))
 }, dir = "sophia/output/", file = "autocor_model_switch_lval.rds", rerun = rerun_all)
-summary(autocor_model_switch_lval)
 
+summary(autocor_model_switch_lval)
+print(autocor_model_switch_lval, correlation = TRUE)
 tab_model(autocor_model_switch_lval, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 ```

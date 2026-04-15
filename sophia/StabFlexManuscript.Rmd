@@ -190,7 +190,11 @@ this is a more stringent way of analyzing cog control than predominant tests (to
 this is a very sentitive test of stab/flex bc we are looking at the degree of control required pre and post switch.
 this is a more immediate test than previous tests of stab/flex.
 it is a more sensitive and direct test of stab/flex tradeoff.
+across both experiments, not a strong indication of a tradeoff pattern, not consistent between models across experiments but some models show antitradeoff relationships occuring. in mine, drift rate shows an antitradeoff (pos effect in v = antitradeoff). in within sub, we want to focus moreso on the added affects (more complex effects) becusae the predictors that are seen also in the experiemental model are not as interpretable here in the within sub model as the full predictor 
 
+drift rate on lm models are good results and consistent across RT and error 
+
+figures for experimental effects and for third level effects, prob no vis for within subject level. 
 \newpage
 
 ## Work Cited
