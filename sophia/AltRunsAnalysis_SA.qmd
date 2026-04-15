@@ -768,6 +768,17 @@ summary(v_switch)
 anova(model_v_int, v_switch) #sig
 ```
 
+final model with val and switch random int
+```{r}
+model_final_v <- xfun::cache_rds({
+  lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_final_v.rds", rerun = rerun_all)
+
+tab_model(model_final_v, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
+anova(model_final_v, v_switch) #sig
+```
+
 ```{r}
 model_Ter_c <- xfun::cache_rds({
   lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
@@ -908,6 +919,58 @@ summary(autocor_model_c)
 
 tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
+```{r}
+autocor_model_lrt <- 
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+summary(autocor_model_lrt)
+
+
+#val
+
+autocor_model_val <- 
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+valence_contr|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+summary(autocor_model_val)
+
+anova(autocor_model_lrt, autocor_model_val) #doesnt converge 
+#lval
+
+autocor_model_lval <- 
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+lvalence_contr|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+summary(autocor_model_lval)
+
+anova(autocor_model_lrt, autocor_model_lval) #sig and converges 
+#switch
+
+autocor_model_switch <- 
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+switch|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+summary(autocor_model_switch)
+
+anova(autocor_model_lrt, autocor_model_switch) #sig and converges
+```
+
+
+```{r}
+#final model, converges and is not singular anova sig
+
+autocor_model_switch_lval <- xfun::cache_rds({
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+lvalence_contr+switch|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+}, dir = "sophia/output/", file = "autocor_model_switch_lval.rds", rerun = rerun_all)
+summary(autocor_model_switch_lval)
+
+tab_model(autocor_model_switch_lval, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
+```
+
 
 no valence contrast with switch
 
