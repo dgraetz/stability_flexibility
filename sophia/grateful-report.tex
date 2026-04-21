@@ -1,0 +1,128 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage[]{natbib}
+\bibliographystyle{plainnat}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={grateful citation report},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{\texttt{grateful} citation report}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+\subsection{R packages used}\label{r-packages-used}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Package & Version & Citation \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+base & 4.5.2 & \citet{base} \\
+ggpubr & 0.6.2 & \citet{ggpubr} \\
+hausekeep & 0.0.0.9003 & \citet{hausekeep} \\
+hlmer & 0.1.0 & \citet{hlmer} \\
+janitor & 2.2.1 & \citet{janitor} \\
+knitr & 1.51 & \citet{knitr2014}; \citet{knitr2015};
+\citet{knitr2025} \\
+lmerTest & 3.2.0 & \citet{lmerTest} \\
+papaja & 0.1.4 & \citet{papaja} \\
+psych & 2.5.6 & \citet{psych} \\
+rio & 1.2.4 & \citet{rio} \\
+rmarkdown & 2.30 & \citet{rmarkdown2018}; \citet{rmarkdown2020};
+\citet{rmarkdown2025} \\
+sjPlot & 2.9.0 & \citet{sjPlot} \\
+tidyverse & 2.0.0 & \citet{tidyverse} \\
+xfun & 0.55 & \citet{xfun} \\
+\end{longtable}
+
+\textbf{You can paste this paragraph directly in your report:}
+
+We used R v. 4.5.2 \citep{base} and the following R packages: ggpubr v.
+0.6.2 \citep{ggpubr}, hausekeep v. 0.0.0.9003 \citep{hausekeep}, hlmer
+v. 0.1.0 \citep{hlmer}, janitor v. 2.2.1 \citep{janitor}, knitr v. 1.51
+\citep{knitr2014, knitr2015, knitr2025}, lmerTest v. 3.2.0
+\citep{lmerTest}, papaja v. 0.1.4 \citep{papaja}, psych v. 2.5.6
+\citep{psych}, rio v. 1.2.4 \citep{rio}, rmarkdown v. 2.30
+\citep{rmarkdown2018, rmarkdown2020, rmarkdown2025}, sjPlot v. 2.9.0
+\citep{sjPlot}, tidyverse v. 2.0.0 \citep{tidyverse}, xfun v. 0.55
+\citep{xfun}.
+
+\subsection{Package citations}\label{package-citations}
+
+\bibliography{my-packages.bib}
+
+\end{document}

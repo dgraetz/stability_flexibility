@@ -56,6 +56,14 @@ AlternateRuns <- read_csv("AlternateRuns.csv")
 
 #make lmer models lmertests
 rerun_all <- 0
+
+library(grateful)
+cite_packages(
+output = "file",          # saves a file
+out.format = "tex-document",  # LaTeX document
+out.dir = getwd(),        # directory to save files
+bib.file = "my-packages.bib"  # BibTeX file name
+)
 ```
 
 ## Data Cleaning
@@ -219,7 +227,7 @@ contrasts(alt_run$cycle_helmert) <- m
 
 contrasts(alt_run$cycle_helmert) 
 
-view(alt_run)
+#view(alt_run)
 ```
 
 Aggregation experimental level analysis
