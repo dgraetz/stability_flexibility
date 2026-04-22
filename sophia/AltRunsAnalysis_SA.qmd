@@ -702,13 +702,17 @@ summary(model_a_c)
 
 tab_model(model_a_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
+#baseline model comparisions
 model_a_int <- 
   lmer(a ~ valence_contr * lvalence_contr *switch + (1|id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
 
 summary(model_a_int)
 
 tab_model(model_a_int, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
 
+for one variable
+```{r}
 #this creates singularity issues so running model with only 1 random intercept included and then running anova to compare them together
 
  a_val<-  lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
@@ -728,6 +732,28 @@ anova(model_a_int, a_lval) #sig
 summary(a_switch)
 
 anova(model_a_int, a_switch) # sig
+
+```
+
+for two values all singular
+```{r}
+ a_val_lval<-  lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(a_val_lval)
+
+anova(model_a_int, a_val_lval) #not sig
+
+ a_lval_switch<-  lmer(a ~ valence_contr * lvalence_contr *switch + (lvalence_contr +switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(a_lval_switch)
+
+anova(model_a_int, a_lval_switch) #sig
+
+ a_switch_val<-  lmer(a ~ valence_contr * lvalence_contr *switch + (switch +valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(a_switch_val)
+
+anova(model_a_int, a_switch_val) # sig
 ```
 
 Model A that converges, intercept only model
@@ -752,8 +778,11 @@ model_v_c<- xfun::cache_rds({
 #summary(model_v_c)
 
 tab_model(model_v_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
 
- model_v_int<-  lmer(v ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+for one value
+```{r}
+model_v_int<-  lmer(v ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
 summary(model_v_int)
 
@@ -775,6 +804,30 @@ summary(v_switch)
 
 anova(model_v_int, v_switch) #sig
 ```
+two random effect
+```{r}
+ v_val_lval<-  lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(v_val_lval) #singular
+
+anova(model_v_int, v_val_lval) # sig
+
+ v_lval_switch<-  lmer(v ~ valence_contr * lvalence_contr *switch + (lvalence_contr +switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(v_lval_switch) #agood
+
+anova(model_v_int, v_lval_switch) #sig
+
+ v_switch_val<-  lmer(v ~ valence_contr * lvalence_contr *switch + (switch +valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(v_switch_val) #good 
+
+anova(model_v_int, v_switch_val) # sig
+
+AIC(v_lval_switch, v_switch_val)
+BIC(v_lval_switch, v_switch_val)
+```
+
 
 final model with val and switch random int
 ```{r}
@@ -786,6 +839,12 @@ tab_model(model_final_v, show.est = T, auto.label = F, show.stat = T, df.method 
 
 anova(model_final_v, v_switch) #sig
 
+model_final2_v <- xfun::cache_rds({
+  lmer(v ~ valence_contr * lvalence_contr *switch + (switch +valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+}, dir = "sophia/output/", file = "model_final2_v.rds", rerun = rerun_all)
+summary(v_switch_val) #good 
+tab_model(model_final2_v, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+
 #evidence for an antitradeoff, the more pos here the more of an antitradeoff pattern 
 ```
 
@@ -796,7 +855,10 @@ model_Ter_c <- xfun::cache_rds({
 summary(model_Ter_c)
 
 tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
+```
 
+for one value
+```{r}
 model_Ter_int <-
   lmer(Ter ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
 
@@ -819,6 +881,26 @@ summary(ter_lval)
 summary(ter_switch)
 
 #anova(model_Ter_int, ter_switch) #sig
+```
+for two values
+```{r}
+ ter_val_lval<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(ter_val_lval) #singular
+
+anova(model_Ter_int, ter_val_lval) # sig
+
+ ter_lval_switch<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (lvalence_contr +switch | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(ter_lval_switch) #singular
+
+anova(model_Ter_int, ter_lval_switch) #sig
+
+ ter_switch_val<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (switch +valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+ 
+summary(ter_switch_val) #singualr
+
+anova(model_Ter_int, ter_switch_val) # sig
 ```
 
 ter simplest model int only
@@ -929,6 +1011,7 @@ summary(autocor_model_c)
 
 tab_model(autocor_model_c, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 ```
+
 ```{r}
 autocor_model_lrt <- 
   
@@ -964,6 +1047,25 @@ autocor_model_switch <-
 summary(autocor_model_switch)
 
 anova(autocor_model_lrt, autocor_model_switch) #sig and converges
+```
+two values 
+```{r}
+autocor_model_val_lval <- 
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+valence_contr+lvalence_contr|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+summary(autocor_model_val_lval) #singular
+
+anova(autocor_model_lrt, autocor_model_val_lval)  
+#lval
+
+autocor_model_switch_val <- 
+  
+  lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c+switch+valence_contr|id), control = lmerControl(optimizer = "bobyqa"),
+     alt_run %>% filter(filter_correct==0))
+summary(autocor_model_switch_val) #singular
+
+anova(autocor_model_lrt, autocor_model_switch_val) #sig
 ```
 
 

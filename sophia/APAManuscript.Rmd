@@ -318,7 +318,9 @@ figures for experimental effects and for third level effects, prob no vis for wi
 # Discussion
 prelim findings: across both experiments, not a strong indication of a tradeoff pattern, not consistent between models across experiments but some models show antitradeoff relationships occuring. in mine, drift rate shows an antitradeoff (pos effect in v = antitradeoff). in within sub, we want to focus moreso on the added affects (more complex effects) becusae the predictors that are seen also in the experiemental model are not as interpretable here in the within sub model as the full predictor 
 
-drift rate on lm models are good results and consistent across RT and error 
+drift rate on lm models are good results and consistent across RT and error showing antitradeoff pattern 
+
+
 
 
 
