@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  20 APR 2026 17:23
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  21 APR 2026 16:35
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -229,6 +229,13 @@ d (jdm)
 \c@postfigure=\count297
 \efloat@postfff=\write4
 \@ef@fffopen=\count298
+) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count299
+\float@exts=\toks20
+\float@box=\box55
+\@float@everytoks=\toks21
+\@floatcapt=\box56
 )) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
 Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
 
@@ -257,7 +264,7 @@ For additional information on amsmath, use the `?' option.
 Package: amstext 2024/11/17 v2.01 AMS text
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
-\@emptytoks=\toks20
+\@emptytoks=\toks22
 \ex@=\dimen180
 )) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
@@ -266,19 +273,19 @@ LaTeX Info: Redefining \boldsymbol on input line 28.
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count299
+\inf@bad=\count300
 LaTeX Info: Redefining \frac on input line 233.
-\uproot@=\count300
-\leftroot@=\count301
+\uproot@=\count301
+\leftroot@=\count302
 LaTeX Info: Redefining \overline on input line 398.
 LaTeX Info: Redefining \colon on input line 409.
-\classnum@=\count302
-\DOTSCASE@=\count303
+\classnum@=\count303
+\DOTSCASE@=\count304
 LaTeX Info: Redefining \ldots on input line 495.
 LaTeX Info: Redefining \dots on input line 498.
 LaTeX Info: Redefining \cdots on input line 619.
-\Mathstrutbox@=\box55
-\strutbox@=\box56
+\Mathstrutbox@=\box57
+\strutbox@=\box58
 LaTeX Info: Redefining \big on input line 721.
 LaTeX Info: Redefining \Big on input line 722.
 LaTeX Info: Redefining \bigg on input line 723.
@@ -286,31 +293,31 @@ LaTeX Info: Redefining \Bigg on input line 724.
 \big@size=\dimen182
 LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
-\macc@depth=\count304
+\macc@depth=\count305
 LaTeX Info: Redefining \bmod on input line 904.
 LaTeX Info: Redefining \pmod on input line 909.
 LaTeX Info: Redefining \smash on input line 939.
 LaTeX Info: Redefining \relbar on input line 969.
 LaTeX Info: Redefining \Relbar on input line 970.
-\c@MaxMatrixCols=\count305
+\c@MaxMatrixCols=\count306
 \dotsspace@=\muskip17
-\c@parentequation=\count306
-\dspbrk@lvl=\count307
-\tag@help=\toks21
-\row@=\count308
-\column@=\count309
-\maxfields@=\count310
-\andhelp@=\toks22
+\c@parentequation=\count307
+\dspbrk@lvl=\count308
+\tag@help=\toks23
+\row@=\count309
+\column@=\count310
+\maxfields@=\count311
+\andhelp@=\toks24
 \eqnshift@=\dimen183
 \alignsep@=\dimen184
 \tagshift@=\dimen185
 \tagwidth@=\dimen186
 \totwidth@=\dimen187
 \lineht@=\dimen188
-\@envbody=\toks23
+\@envbody=\toks25
 \multlinegap=\skip79
 \multlinetaggap=\skip80
-\mathdisplay@stack=\toks24
+\mathdisplay@stack=\toks26
 LaTeX Info: Redefining \[ on input line 2950.
 LaTeX Info: Redefining \] on input line 2951.
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.st
@@ -328,8 +335,8 @@ LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty
 Package: inputenc 2024/02/08 v1.3d Input encoding file
-\inpenc@prehook=\toks25
-\inpenc@posthook=\toks26
+\inpenc@prehook=\toks27
+\inpenc@posthook=\toks28
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/base\textcomp.sty
 Package: textcomp 2024/04/24 v2.1b Standard LaTeX package
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/upquote\upquote.sty
@@ -339,18 +346,18 @@ tim
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.s
 ty
 Package: microtype 2026/03/01 v3.2d Micro-typographical refinements (RS)
-\MT@toks=\toks27
-\MT@tempbox=\box57
-\MT@count=\count311
+\MT@toks=\toks29
+\MT@tempbox=\box59
+\MT@count=\count312
 LaTeX Info: Redefining \noprotrusionifhmode on input line 1084.
 LaTeX Info: Redefining \leftprotrusion on input line 1085.
-\MT@prot@toks=\toks28
+\MT@prot@toks=\toks30
 LaTeX Info: Redefining \rightprotrusion on input line 1104.
 LaTeX Info: Redefining \textls on input line 1449.
 \MT@outer@kern=\dimen189
 LaTeX Info: Redefining \microtypecontext on input line 2053.
 LaTeX Info: Redefining \textmicrotypecontext on input line 2070.
-\MT@listname@count=\count312
+\MT@listname@count=\count313
 
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype-p
 dftex.def
@@ -370,25 +377,25 @@ LaTeX Info: Redefining \microtypesetup on input line 3065.
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/parskip\parskip.sty
 Package: parskip 2021-03-14 v2.0h non-zero parskip adjustments
 )
-\pandoc@box=\box58
+\pandoc@box=\box60
 \cslhangindent=\skip82
 \csllabelwidth=\skip83
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty
 Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
-\calc@Acount=\count313
-\calc@Bcount=\count314
+\calc@Acount=\count314
+\calc@Bcount=\count315
 \calc@Adimen=\dimen190
 \calc@Bdimen=\dimen191
 \calc@Askip=\skip84
 \calc@Bskip=\skip85
 LaTeX Info: Redefining \setlength on input line 86.
 LaTeX Info: Redefining \addtolength on input line 87.
-\calc@Ccount=\count315
+\calc@Ccount=\count316
 \calc@Cskip=\skip86
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.sty
 Package: babel 2025/12/11 v25.17 The multilingual framework for LuaLaTeX, pdfLa
 TeX and XeLaTeX
-\babel@savecnt=\count316
+\babel@savecnt=\count317
 LaTeX Encoding Info:    Redeclaring text command \ij (encoding OT1) on input li
 ne 2068.
 LaTeX Encoding Info:    Redeclaring text command \IJ (encoding OT1) on input li
@@ -407,7 +414,7 @@ on input line 2101.
 \l@unhyphenated=\language79
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/generic/babel\txtbabel.def)
 \bbl@readstream=\read2
-\bbl@dirlevel=\count317
+\bbl@dirlevel=\count318
 Package babel Info: Configuration files are deprecated, as
 (babel)             they can break document portability.
 (babel)             Reported on input line 4196.
@@ -444,25 +451,25 @@ Package: longtable 2025-10-13 v4.24 Multi-page Table package (DPC)
 \LTright=\skip88
 \LTpre=\skip89
 \LTpost=\skip90
-\LTchunksize=\count318
+\LTchunksize=\count319
 \LTcapwidth=\dimen193
-\LT@head=\box59
-\LT@firsthead=\box60
-\LT@foot=\box61
-\LT@lastfoot=\box62
-\LT@gbox=\box63
-\LT@cols=\count319
-\LT@rows=\count320
-\c@LT@tables=\count321
-\c@LT@chunks=\count322
-\LT@p@ftn=\toks29
+\LT@head=\box61
+\LT@firsthead=\box62
+\LT@foot=\box63
+\LT@lastfoot=\box64
+\LT@gbox=\box65
+\LT@cols=\count320
+\LT@rows=\count321
+\c@LT@tables=\count322
+\c@LT@chunks=\count323
+\LT@p@ftn=\toks31
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/graphics\lscape.sty
 Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
 )
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/multirow\multirow.sty
 Package: multirow 2024/11/12 v2.9 Span multiple rows of a table
 \multirow@colwidth=\skip91
-\multirow@cntb=\count323
+\multirow@cntb=\count324
 \multirow@dima=\skip92
 \bigstrutjot=\dimen194
 ) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
@@ -470,20 +477,20 @@ Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
 Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
 \col@sep=\dimen195
-\ar@mcellbox=\box64
+\ar@mcellbox=\box66
 \extrarowheight=\dimen196
-\NC@list=\toks30
+\NC@list=\toks32
 \extratabsurround=\skip93
 \backup@length=\skip94
-\ar@cellbox=\box65
+\ar@cellbox=\box67
 )
 \TX@col@width=\dimen197
 \TX@old@table=\dimen198
 \TX@old@col=\dimen199
 \TX@target=\dimen256
 \TX@delta=\dimen257
-\TX@cols=\count324
-\TX@ftn=\toks31
+\TX@cols=\count325
+\TX@ftn=\toks33
 )
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/threeparttablex\three
 parttablex.sty
@@ -505,7 +512,7 @@ Package: expl3 2025-12-24 L3 programming layer (loader)
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-p
 dftex.def
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count325
+\l__color_backend_stack_int=\count326
 ))
 Package: xpatch 2020/03/25 v0.3a Extending etoolbox patching commands
 
@@ -514,31 +521,31 @@ rse.sty
 Package: xparse 2025-10-09 L3 Experimental document command parser
 )) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lineno\lineno.sty
 Package: lineno 2026/03/08 line numbers on paragraphs v5.9
-\linenopenalty=\count326
-\output=\toks32
-\linenoprevgraf=\count327
+\linenopenalty=\count327
+\output=\toks34
+\linenoprevgraf=\count328
 \linenumbersep=\dimen258
 \linenumberwidth=\dimen259
-\c@linenumber=\count328
-\c@pagewiselinenumber=\count329
-\c@LN@truepage=\count330
-\c@internallinenumber=\count331
-\c@internallinenumbers=\count332
+\c@linenumber=\count329
+\c@pagewiselinenumber=\count330
+\c@LN@truepage=\count331
+\c@internallinenumber=\count332
+\c@internallinenumbers=\count333
 \quotelinenumbersep=\dimen260
 \bframerule=\dimen261
 \bframesep=\dimen262
-\bframebox=\box66
-\@LN@amsmath@ams@eqpen=\count333
+\bframebox=\box68
+\@LN@amsmath@ams@eqpen=\count334
 )
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/csquotes\csquotes.sty
 Package: csquotes 2024-04-04 v5.2o context-sensitive quotations (JAW)
-\csq@reset=\count334
-\csq@gtype=\count335
-\csq@glevel=\count336
-\csq@qlevel=\count337
-\csq@maxlvl=\count338
-\csq@tshold=\count339
-\csq@ltx@everypar=\toks33
+\csq@reset=\count335
+\csq@gtype=\count336
+\csq@glevel=\count337
+\csq@qlevel=\count338
+\csq@maxlvl=\count339
+\csq@tshold=\count340
+\csq@ltx@everypar=\toks35
 
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/csquotes\csquotes.def
 File: csquotes.def 2024-04-04 v5.2o csquotes generic definitions (JAW)
@@ -585,7 +592,7 @@ Package: nameref 2025-06-21 v2.57 Cross-referencing by name of section
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
 Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 )
-\c@section@level=\count340
+\c@section@level=\count341
 )
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc
 .sty
@@ -593,8 +600,8 @@ Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
 )
 )
 \@linkdim=\dimen263
-\Hy@linkcounter=\count341
-\Hy@pagecounter=\count342
+\Hy@linkcounter=\count342
+\Hy@pagecounter=\count343
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
 File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
 Now handling font encoding PD1 ...
@@ -603,7 +610,7 @@ Now handling font encoding PD1 ...
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
 Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
 )
-\Hy@SavedSpaceFactor=\count343
+\Hy@SavedSpaceFactor=\count344
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
 File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
 Now handling font encoding PU ...
@@ -617,7 +624,7 @@ Package hyperref Info: Plain pages OFF on input line 4210.
 Package hyperref Info: Backreferencing OFF on input line 4215.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
 Package hyperref Info: Bookmarks ON on input line 4462.
-\c@Hy@tempcnt=\count344
+\c@Hy@tempcnt=\count345
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
 \Urlmuskip=\muskip18
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
@@ -632,7 +639,7 @@ lc.sty
 Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
 )
 ))
-\Fld@menulength=\count345
+\Fld@menulength=\count346
 \Field@Width=\dimen265
 \Fld@charsize=\dimen266
 Package hyperref Info: Hyper figures OFF on input line 6078.
@@ -642,15 +649,15 @@ Package hyperref Info: backreferencing OFF on input line 6093.
 Package hyperref Info: Link coloring OFF on input line 6098.
 Package hyperref Info: Link coloring with OCG OFF on input line 6103.
 Package hyperref Info: PDF/A mode OFF on input line 6108.
-\Hy@abspage=\count346
-\c@Item=\count347
-\c@Hfootnote=\count348
+\Hy@abspage=\count347
+\c@Item=\count348
+\c@Hfootnote=\count349
 )
 Package hyperref Info: Driver (autodetected): hpdftex.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
 File: hpdftex.def 2025-07-12 v7.01o Hyperref driver for pdfTeX
-\Fld@listcount=\count349
-\c@bookmark@seq@number=\count350
+\Fld@listcount=\count350
+\c@bookmark@seq@number=\count351
 
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunf
 ilecheck.sty
@@ -669,7 +676,7 @@ Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 ef
 File: bkm-pdftex.def 2023-12-10 v1.31 bookmark driver for pdfTeX and luaTeX (HO
 )
-\BKM@id=\count351
+\BKM@id=\count352
 )) (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/xurl\xurl.sty
 Package: xurl 2022/01/09 v 0.10 modify URL breaks
 )
@@ -680,24 +687,24 @@ Package csquotes Info: Redefining alias 'default' -> 'english'.
 (APAManuscript.aux)
 \openout1 = `APAManuscript.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 241.
-LaTeX Font Info:    ... okay on input line 241.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 235.
+LaTeX Font Info:    ... okay on input line 235.
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -736,17 +743,17 @@ LaTeX Font Info:    ... okay on input line 241.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.
 mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count352
+\scratchcounter=\count353
 \scratchdimen=\dimen267
-\scratchbox=\box67
-\nofMPsegments=\count353
-\nofMParguments=\count354
-\everyMPshowfont=\toks34
-\MPscratchCnt=\count355
+\scratchbox=\box69
+\nofMPsegments=\count354
+\nofMParguments=\count355
+\everyMPshowfont=\toks36
+\MPscratchCnt=\count356
 \MPscratchDim=\dimen268
-\MPnumerator=\count356
-\makeMPintoPDFobject=\count357
-\everyMPtoPDFconversion=\toks35
+\MPnumerator=\count357
+\makeMPintoPDFobject=\count358
+\everyMPtoPDFconversion=\toks37
 )
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf
 -base.sty
@@ -763,6 +770,7 @@ an.txt
 File: APAamerican.txt 2012/02/23 v1.25 apa6 configuration for American English
 )
 Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: longtable package is loaded.
 
@@ -770,13 +778,13 @@ Package caption Info: longtable package is loaded.
 Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
 )
 Package caption Info: End \AtBeginDocument code.
-LaTeX Info: Redefining \microtypecontext on input line 241.
-Package microtype Info: Applying patch `item' on input line 241.
-Package microtype Info: Applying patch `toc' on input line 241.
-Package microtype Info: Applying patch `eqnum' on input line 241.
-Package microtype Info: Applying patch `footnote' on input line 241.
-Package microtype Info: Applying patch `verbatim' on input line 241.
-LaTeX Info: Redefining \microtypesetup on input line 241.
+LaTeX Info: Redefining \microtypecontext on input line 235.
+Package microtype Info: Applying patch `item' on input line 235.
+Package microtype Info: Applying patch `toc' on input line 235.
+Package microtype Info: Applying patch `eqnum' on input line 235.
+Package microtype Info: Applying patch `footnote' on input line 235.
+Package microtype Info: Applying patch `verbatim' on input line 235.
+LaTeX Info: Redefining \microtypesetup on input line 235.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using protrusion set `basicmath'.
@@ -791,39 +799,39 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-Package hyperref Info: Link coloring OFF on input line 241.
+Package hyperref Info: Link coloring OFF on input line 235.
 LaTeX Font Info:    Trying to load font information for T1+lmss on input line 2
-43.
+37.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmss.fd
 File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 2
-43.
+37.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 2
-43.
+37.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-243.
+237.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-243.
+237.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 243.
+(Font)              <12> on input line 237.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 243.
+(Font)              <8> on input line 237.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 243.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 243
+(Font)              <6> on input line 237.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 237
 .
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -831,7 +839,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 g
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 243
+LaTeX Font Info:    Trying to load font information for U+msb on input line 237
 .
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -858,24 +866,19 @@ Underfull \vbox (badness 4954) has occurred while \output is active []
 
 Underfull \vbox (badness 4954) has occurred while \output is active []
 
-[2] [3] [4]
-<sophia/predmodels.png, id=29, 185.9748pt x 120.45pt>
+[2] [3] [4] [5]
+<sophia/predmodels.png, id=34, 185.9748pt x 120.45pt>
 File: sophia/predmodels.png Graphic file (type png)
 <use sophia/predmodels.png>
-Package pdftex.def Info: sophia/predmodels.png  used on input line 258.
-(pdftex.def)             Requested size: 185.97433pt x 120.44969pt.
+Package pdftex.def Info: sophia/predmodels.png  used on input line 252.
+(pdftex.def)             Requested size: 234.8775pt x 152.12617pt.
+[6 <./sophia/predmodels.png>]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
-63.
+84.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [5{C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.e
-nc} <./sophia/predmodels.png>] [6] [7] [8] [9]
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-[10] [11]
+) [7{C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.e
+nc}] [8] [9] [10] [11]
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
 
@@ -888,11 +891,11 @@ L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 18797 strings out of 467871
- 309479 string characters out of 5417408
- 786359 words of memory out of 5000000
- 47209 multiletter control sequences out of 15000+600000
- 680637 words of font info for 130 fonts, out of 8000000 for 9000
+ 18867 strings out of 467871
+ 310747 string characters out of 5417408
+ 787960 words of memory out of 5000000
+ 47272 multiletter control sequences out of 15000+600000
+ 680766 words of font info for 131 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,11n,93p,2254b,638s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.
@@ -902,9 +905,9 @@ r12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mr8.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mri12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm
 /lmss8.pfb>
-Output written on APAManuscript.pdf (13 pages, 244281 bytes).
+Output written on APAManuscript.pdf (13 pages, 245442 bytes).
 PDF statistics:
- 210 PDF objects out of 1000 (max. 8388607)
- 48 named destinations out of 1000 (max. 500000)
+ 212 PDF objects out of 1000 (max. 8388607)
+ 49 named destinations out of 1000 (max. 500000)
  28806 words of extra memory for PDF output out of 29859 (max. 10000000)
 

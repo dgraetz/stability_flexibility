@@ -48,16 +48,15 @@ authornote: |
 abstract: |
   A dominant view in cognitive control research concerning stability and flexibility is that of a tradeoff relationship, where the more cognitively stable a task representation becomes the harder it is to flexibly switch to another task. Although widely replicated, this tradeoff account is typically supported using a single level of analysis of the experimental effects of switch cost as a degree of conflict blockwise [@goschke_2000_intentional; @rogers_1995_costs; @goschke_2000_14; @egner_2007_congruency]. A smaller body of research supports a different account of stability-flexibility, where on the level of within-subject dynamics stability and flexibility are found to co-occur [@mayr_2014_longterm]. This raises the question that the stability–flexibility tradeoff seen through experimental level effects is not a fundamental property of cognitive control but may instead reflect the analytic level at which it is measured. Moreover, individual differences work hints at substantial variability in how people balance stability and flexibility, suggesting that the relationship may not be uniform across all individuals [@mayr_2024_does].
   
-  The present study investigates where differences in the stability-flexibility dilemma arise through a multi-level analytic approach. Additionally, we take a more direct and sensitive approach to understanding cognitive control mechanisms through looking at the degree of control required pre- and post- task-switching. Across two experiments, we examined stability–flexibility dynamics at three analytic levels: experimental effects, within‑subject dynamics, and individual differences. We find that it indeed matters to what level stability-flexibility are analyzed. Evidence for the co-occurrence of tradeoff and antitradeoff relationships are found on different levels of analysis, underscoring the importance of a multi-level approach when interpreting stability-flexibility interactions. By showing that stability–flexibility dynamics vary across analytic scales, our results challenge the presumed ubiquity of the dominant tradeoff view and highlight the necessity of multi‑level approaches for understanding the mechanisms that govern cognitive control.
+  The present study investigates where differences in the stability-flexibility dilemma arise through a multi-level analytic approach. Additionally, we take a more direct and sensitive approach to understanding cognitive control mechanisms through looking at the degree of control required pre- and post- task-switching. Across two experiments, we examined stability–flexibility dynamics at three analytic levels: experimental effects, within‑subject dynamics, and individual differences. We find that it indeed matters to what level stability-flexibility mechanisms are analyzed. Evidence for the co-occurrence of tradeoff and antitradeoff relationships are found on different levels of analysis, underscoring the importance of a multi-level approach when interpreting stability-flexibility interactions. By showing that stability–flexibility dynamics vary across analytic scales, our results challenge the presumed ubiquity of the dominant tradeoff view and highlight the necessity of multi‑level approaches for understanding the mechanisms that govern cognitive control.
   
   <!-- https://tinyurl.com/ybremelq -->
   
 keywords          : "Cognitive Control, Multi-Level Analysis, Decision-making, Cognition, Task-Switching, Stability-Flexibility, Experimental Effects, Within-Subject Dynamics, Individual Differences"
-wordcount         : "X"
 
 bibliography      : "stabilityFlexibility_mlm.bib"
 
-floatsintext      : no
+floatsintext      : yes
 linenumbers       : yes
 draft             : no
 mask              : no
@@ -222,26 +221,20 @@ A dominant view in research on cognitive control holds that adjustments of contr
 
 Despite this importance, most empirical work has examined stability–flexibility dynamics using blockwise manipulations, contrasting “stable” versus “flexible” blocks, and has evaluated the tradeoff primarily at the experimental‑effects level, averaging across trials and participants [@rogers_1995_costs; @goschke_2000_14; @egner_2007_congruency]. This approach has been instrumental in establishing the classic tradeoff pattern, but it also limits what can be observed. Blockwise designs cannot capture moment‑to‑moment adjustments that occur as people move from one trial to the next, nor can they reveal whether stability and flexibility might co‑occur within individuals under certain conditions. As a result, the field may be missing critical dynamics that unfold at finer temporal scales. 
 
-To address this limitation, we take a more sensitive approach to capture switch-cost. Previous to current trial control demands offer a more detailed and sensitive account of shifts in cognitive control, determining switch-cost instead as a function of the degree of control demands on previous trial switch and post trial switch manipulated independently. Manipulating previous‑trial switch and post‑switch demands independently provides a more detailed and responsive measure of how stability and flexibility interact on a trial‑by‑trial basis. We then examine these dynamics across three complementary levels of analysis: (1) experimental level, (2) within‑subject dynamics, and (3) individual differences. This multi‑level framework allows us to test whether the stability–flexibility tradeoff emerges consistently across analytic scales or whether different levels reveal different patterns. We begin first by introducing the analytic level with the widest body of prior research: experimental effects. 
+To address this limitation, we take a more sensitive approach to capture switch-cost as a function of trial-by-trial shifts in control. Manipulating previous‑trial switch and post‑switch demands independently provides a more detailed and responsive measure of how stability and flexibility interact as opposed to only understanding stability-flexibility shifts in a blockwise manner. Across two experiments, we use a task-switching 'shape' or 'color' task with the inclusion of univalent (neutral) and bivalent (ambiguous) stimuli in order to understand stability-flexibility as a function of congruence. We examine these dynamics across three complementary levels of analysis: (1) experimental level, (2) within‑subject dynamics, and (3) individual differences. This multi‑level framework allows us to test whether the stability–flexibility tradeoff emerges consistently across analytic scales or whether different levels reveal different patterns. We begin first by introducing the analytic level with the widest body of prior research: experimental effects. 
 
 ## Stability-Flexibility Tradeoff and Experimental Effects.
 
-The prediction of a tradeoff relationship arises from connectionist models of cognitive control.
-The behavior of these models can be described within an “attractor landscape” [@brown_2007_a; @geddert_2022_no]. In this framework, different task representations form basins in a state space, and the depth of a basin reflects how strongly a task is currently activated.
-A deeper basin corresponds to a more stable task state, but it also requires more “energy” to move out of, making task switching more difficult.
+The prediction of a tradeoff relationship arises from connectionist models of cognitive control. The behavior of these models can be described within an “attractor landscape” *(Fig. 1)* [@brown_2007_a; @geddert_2022_no]. In this framework, different task representations form basins in a state space, and the depth of a basin reflects how strongly a task is currently activated. A deeper basin corresponds to a more stable task state, but it also requires more “energy” to move out of, making task switching more difficult. One data pattern that is consistent with this tradeoff prediction arises when examining task-switch costs as a function of previous-trial conflict. High conflict on the previous trial is assumed to strengthen the currently active task representation, effectively deepening its basin. This increased stability should then make switching on the next trial harder, producing larger switch costs. Although much of the dominant narrative in cognitive control has been built around this tradeoff pattern [@goschke_2000_intentional], this pattern is surprisingly inconsistent when examining cognitive control at different levels of analysis outside of experimental effects [@geddert_2022_no; @brown_2007_a; @mayr_2014_longterm].
 
-![](sophia/predmodels.png){align="center"}
 
--   I want to make this more understandable for a wider audience. attractor landscape will also have an accompanying figure so that it will be more understandable. I want to explain terms like conflict and task basins so it will be more clear when we move forward with explaining three different levels of analysis.
-
-One data pattern that is consistent with this tradeoff prediction arises when examining task-switch costs as a function of previous-trial conflict.
-High conflict on the previous trial is assumed to strengthen the currently active task representation, effectively deepening its basin.
-This increased stability should then make switching on the next trial harder, producing larger switch costs. Indeed, much of the dominant narrative in cognitive control has been built around this tradeoff pattern [@goschke_2000_intentional].
-Yet, there are also several recent results that call the generalizability of this finding into question [@geddert_2022_no; @brown_2007_a; @mayr_2014_longterm].
-
-- note: Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
+```{r predmodels, echo=FALSE, fig.cap = "The landscape attractor model. This prediction model represents the dominant view of how stability-flexibility interact, which is in a tradeoff manner. Tasks are represented as basins of varying depth along a state space. The more stable a task representation is, the deeper the corresponding basin in this attractor model. As a result for high stability, it takes more potential energy to move out of the task basin to a different task.", fig.align = "center", out.width = "50%"}
+knitr::include_graphics("sophia/predmodels.png")
+```
 
 ### Experimental Level Hypotheses
+
+Here we test whether experimental manipulations of previous and current trial control demands interact with the switch contrast in a manner that is consistent with a flexibility/stability tradeoff model.
 
  **No-switch Trials.**
 
@@ -253,9 +246,7 @@ H2: Bivalence (ambiguity) enforces stability because it introduces conflict resu
 
 H1: Previous trial-group bivalence (ambiguity) enforces stability and should therefore cause higher switch costs (longer response times, more errors). If the previous group of trials was univalent (unambiguous), previous performance required less stability and should therefore reduce switch costs (lower response times, fewer errors).   
 
-H2: Current-trial bivalence requires establishing a stronger task set and therefore further increases RT and errors. 
-
-Previous and current ambiguity should produce particularly large switch costs (e.g., an interaction between previous and current ambiguity). 
+H2: Current-trial bivalence requires establishing a stronger task set and therefore further increases RT and errors. Previous and current ambiguity should produce particularly large switch costs (e.g., an interaction between previous and current ambiguity). 
 
 ## Stability-Flexibility Anti-Tradeoff Arises When Examining Within-Subject Dynamics.
 

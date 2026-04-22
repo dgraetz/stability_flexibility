@@ -2,9 +2,9 @@
 \ifnextchar[{\eatarg}{}
 
 
-{\centering \includegraphics[width=0.5\linewidth]{sophia/predmodels}
+{\centering \includegraphics[width=0.8\linewidth]{sophia/predmodels}
 
 }
 
-\caption{ }\label{fig:unnamed-chunk-1}
+\caption{Predicted model structure.}\label{fig:predmodels}
 \end{figure*}
