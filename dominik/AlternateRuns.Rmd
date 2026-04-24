@@ -650,6 +650,21 @@ alt_run_v_eff_final <- alt_run_v_eff_switch_is_bivalent
 make_model_table(alt_run_v_eff_final)
 ```
 
+
+The baseline model and the two competing 2 RE models show the same significance and direction of effects.
+
+
+```{r}
+emmeans::emmeans(alt_run_v_eff_final, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr) %>%
+  as.data.frame() %>%
+  ggplot(aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff,
+             group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
+  geom_line()
+
+
+```
+
+
 ##### Ter
 
 ```{r}
@@ -823,7 +838,14 @@ alt_run_v_contr_is_bivalent_prev_bivalent <- lmer(v ~ is_bivalent_contr * prev_b
 
 AIC(alt_run_v_contr_switch_is_bivalent, alt_run_v_contr_switch_prev_bivalent)
 BIC(alt_run_v_contr_switch_is_bivalent, alt_run_v_contr_switch_prev_bivalent)
+
+make_model_table(alt_run_v_contr_baseline)
+make_model_table(alt_run_v_contr_switch_is_bivalent)
+make_model_table(alt_run_v_contr_switch_prev_bivalent)
 ```
+
+
+For the contrast coded version, the baseline model and the two converged/nonsingular models show different effects - the model with switch and current bivalence makes the previous bivalence X Switch interaction significant. 
 
 
 Final model: 
@@ -927,6 +949,8 @@ alt_run_rt_log_resrt_eff_w_s_int_baseline <- xfun::cache_rds({
        alt_run %>% 
          filter(filter_correct == 0))
 }, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_baseline.RDS", rerun = rerun_all)
+
+sjPlot::tab_model(alt_run_rt_log_resrt_eff_w_s_int_baseline)
 
 #MODELS WITH 1 RE
 alt_run_rt_log_resrt_eff_w_s_int_switch <- xfun::cache_rds({
@@ -1503,7 +1527,7 @@ ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = mode
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
                                                        "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), nrow = 1)+
+                                                       "bb" = "bi-bi")), ncol = 1)+
   scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
@@ -1594,7 +1618,7 @@ ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = m
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
                                                        "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), nrow = 1)+
+                                                       "bb" = "bi-bi")), ncol = 1)+
   scale_x_discrete(labels = c("Error_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "Error_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "Error_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
@@ -1689,7 +1713,7 @@ ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
                                                        "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), nrow = 1)+
+                                                       "bb" = "bi-bi")), ncol = 1)+
   scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "v_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "v_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
