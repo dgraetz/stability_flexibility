@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  25 APR 2026 16:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  25 APR 2026 16:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -878,7 +878,13 @@ LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 2
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 ) [7{C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.e
-nc}] [8] [9] [10] [11] [12] [13] [14]
+nc}] [8] [9] [10] [11] [12]
+Underfull \vbox (badness 2343) has occurred while \output is active []
+
+
+Underfull \vbox (badness 2343) has occurred while \output is active []
+
+[13] [14]
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
 
@@ -891,11 +897,11 @@ L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 18888 strings out of 467871
- 311067 string characters out of 5417408
+ 18890 strings out of 467871
+ 311089 string characters out of 5417408
  788292 words of memory out of 5000000
  47284 multiletter control sequences out of 15000+600000
- 680766 words of font info for 131 fonts, out of 8000000 for 9000
+ 680863 words of font info for 132 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,11n,93p,2254b,638s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.
@@ -905,7 +911,7 @@ r12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mr8.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mri12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm
 /lmss8.pfb>
-Output written on APAManuscript.pdf (16 pages, 255124 bytes).
+Output written on APAManuscript.pdf (16 pages, 255451 bytes).
 PDF statistics:
  249 PDF objects out of 1000 (max. 8388607)
  58 named destinations out of 1000 (max. 500000)

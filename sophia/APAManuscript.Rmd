@@ -187,27 +187,29 @@ We used `r cite_r("my-packages.bib")` for all our analyses.
 
 Our analysis plan was consistent across both experiments. However, some models we used, particularly when conducting drift-diffusion modeling and in our within-subjects modeling we ran into issues of convergence and/or singularity across both experiments. As a result, we conducted a pre-set series of model comparisons detailed below to achieve the most complex model for each experiment that did not have any convergence or singularity issues.
 
-(write more about our model comparisons decision-tree procedure and how our final models for these ended up looking)
+(write more about our model comparisons decision-tree procedure and how our final models for these ended up looking. can set up here what the procedure was then in each section we describe the ez-ddm models and what our final model looked like, how it differed across exp1 and 2 then again in the within sub section.)
 
-## Experimental Level Analysis
+### Experimental Level Analysis
 
 Analyses of the dependent variables were conducted on the trial level using multilevel modeling. Independent models for response times and error rates were fit according to the valence (univalent, bivalent) of the previous trial group, the valence of the current trial group, and the switch condition.
 
-These models were run on the data from both experiments. The outcomes of these analyses guided how subsequent analytic layers were approached. We accounted for the possibility of finding evidence for speed–accuracy trade‑offs through observation of opposing effects on reaction times and errors but they did not emerge. Consequently, drift‑diffusion modeling (EZ‑DDM) was applied not as an additional validation of the observed effects and we proceeded with analysis of within-subject dynamics. 
+(add in figure of the models we outlined in pre-reg?)
 
-For the EZ‑DDM analysis, the mean and variance of reaction times and mean error rates were calculated for each subject and for the same contrasts specified above. The resulting parameters were analyzed using linear mixed‑effects models with random intercepts for each subject to confirm the robustness of the experimental‑level findings.
+These models were run on the data from both experiments. The outcomes of these analyses guided how subsequent analytic layers were approached. We accounted for the possibility of finding evidence for speed–accuracy trade‑offs through observation of opposing effects on reaction times and errors but they did not emerge. Consequently, drift‑diffusion modeling (EZ‑DDM) was applied not as an additional validation of the observed effects and we proceeded with analysis of within-subject dynamics. For the EZ‑DDM analysis, the mean and variance of reaction times and mean error rates were calculated for each subject and for the same contrasts specified above. The resulting parameters were analyzed using linear mixed‑effects models with random intercepts for each subject to confirm the robustness of the experimental‑level findings.
 
-## Within-Subjects Level Analysis
+(add in ddm model builds with also explanation across both experiemtns what models were different and why)
+
+### Within-Subjects Level Analysis
 
 ()
 
-## Individual Differences Level Analysis
+### Individual Differences Level Analysis
 
 Individuals’ reaction time and error data were aggregated for all crossings of previous‑trial group valence (n-1 bivalent, n-1 univalent), current‑trial valence (n bivalent, n univalent), and switch condition (switch trial, no‑switch trial). Reaction times were averaged across the no‑switch trials within each trial group. Each trial group consisted of three trials for the alternate‑cues experiment and four trials for the alternate‑runs experiment.
 
-Individual‑differences analyses of the dependent variable were conducted using linear regression modeling. For each participant, drift rate was computed as a function of switch condition and previous and current group‑valence conditions (eight estimates per subject).
+Individual differences analyses of the dependent variable were conducted using linear regression modeling. For each participant, drift rate was computed as a function of switch condition and previous and current group‑valence conditions (eight estimates per subject). A stringent test was then performed to determine the presence of a trade‑off pattern by adding predictors sequentially. The first model type predicted drift rate in the least‑demanding switch condition (univalent-univalent) from the least‑demanding non‑switch condition (univalent-univalent). Predictors were subsequently added to this model in three steps (see model outline below).
 
-A stringent test was then performed to determine the presence of a trade‑off pattern by adding predictors sequentially. The first model type predicted drift rate in the least‑demanding switch condition (univalent-univalent) from the least‑demanding non‑switch condition (univalent-univalent). Predictors were subsequently added to this model in three steps (see model outline below).
+(model outline figure here)
 
 EZ‑DDM parameters of non‑decision time (Ter) and boundary separation (a) were also computed. If the EZ‑DDM non‑decision time parameter (Ter) was negative in fewer than 20% of cases across all subjects and conditions, the linear regression models were re‑run with data cells in those conditions set as missing. Results obtained from the drift‑rate models were cross‑referenced with two additional models: one using log‑transformed reaction time as the dependent variable and another using error rate as the dependent variable. These models were implemented identically to the steps outlined above.  
 
