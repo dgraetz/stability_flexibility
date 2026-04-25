@@ -1018,7 +1018,7 @@ autocor_model_lrt <-
   lmer(rt_log_res_w_s_int_c ~ valence_contr * lvalence_contr * switch * lrt_log_res_w_s_int_c + (lrt_log_res_w_s_int_c|id), control = lmerControl(optimizer = "bobyqa"),
      alt_run %>% filter(filter_correct==0))
 summary(autocor_model_lrt)
-
+tab_model(autocor_model_lrt, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 #val
 
