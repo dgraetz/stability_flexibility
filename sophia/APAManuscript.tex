@@ -337,7 +337,32 @@ predictor measure second
 \subsection{Analysis Plan}\label{analysis-plan}
 
 We used R (Version 4.5.2; R Core Team, 2025) and the R-packages \emph{dplyr} (Version 1.1.4; \textbf{R-dplyr?}), \emph{forcats} (Version 1.0.1; \textbf{R-forcats?}), \emph{ggplot2} (Version 4.0.1; \textbf{R-ggplot2?}), \emph{hausekeep} (Version 0.0.0.9003; \textbf{R-hausekeep?}), \emph{hlmer} (Version 0.1.0; \textbf{R-hlmer?}), \emph{janitor} (Version 2.2.1; \textbf{R-janitor?}), \emph{lme4} (Version 1.1.38; \textbf{R-lme4?}), \emph{lmerTest} (Version 3.2.0; \textbf{R-lmerTest?}), \emph{lubridate} (Version 1.9.4; \textbf{R-lubridate?}), \emph{Matrix} (Version 1.7.4; \textbf{R-Matrix?}), \emph{papaja} (Version 0.1.4; Aust \& Barth, 2025), \emph{psych} (Version 2.5.6; \textbf{R-psych?}), \emph{purrr} (Version 1.2.0; \textbf{R-purrr?}), \emph{readr} (Version 2.1.6; \textbf{R-readr?}), \emph{rio} (Version 1.2.4; \textbf{R-rio?}), \emph{sjPlot} (Version 2.9.0; \textbf{R-sjPlot?}), \emph{stringr} (Version 1.6.0; \textbf{R-stringr?}), \emph{tibble} (Version 3.3.0; \textbf{R-tibble?}), \emph{tidyr} (Version 1.3.2; \textbf{R-tidyr?}), \emph{tidyverse} (Version 2.0.0; \textbf{R-tidyverse?}), and \emph{tinylabels} (Version 0.2.5; Barth, 2025) for all our analyses.
-layout how we conducted our analyses
+
+Our analysis plan was consistent across both experiments. However, some models we used, particularly when conducting drift-diffusion modeling and in our within-subjects modeling we ran into issues of convergence and/or singularity across both experiments. As a result, we conducted a pre-set series of model comparisons detailed below to achieve the most complex model for each experiment that did not have any convergence or singularity issues.
+
+(write more about our model comparisons decision-tree procedure and how our final models for these ended up looking)
+
+\subsection{Experimental Level Analysis}\label{experimental-level-analysis}
+
+Analyses of the dependent variables were conducted on the trial level using multilevel modeling. Independent models for response times and error rates were fit according to the valence (univalent, bivalent) of the previous trial group, the valence of the current trial group, and the switch condition.
+
+These models were run on the data from both experiments. The outcomes of these analyses guided how subsequent analytic layers were approached. We accounted for the possibility of finding evidence for speed--accuracy trade‑offs through observation of opposing effects on reaction times and errors but they did not emerge. Consequently, drift‑diffusion modeling (EZ‑DDM) was applied not as an additional validation of the observed effects and we proceeded with analysis of within-subject dynamics.
+
+For the EZ‑DDM analysis, the mean and variance of reaction times and mean error rates were calculated for each subject and for the same contrasts specified above. The resulting parameters were analyzed using linear mixed‑effects models with random intercepts for each subject to confirm the robustness of the experimental‑level findings.
+
+\subsection{Within-Subjects Level Analysis}\label{within-subjects-level-analysis}
+
+()
+
+\subsection{Individual Differences Level Analysis}\label{individual-differences-level-analysis}
+
+Individuals' reaction time and error data were aggregated for all crossings of previous‑trial group valence (n-1 bivalent, n-1 univalent), current‑trial valence (n bivalent, n univalent), and switch condition (switch trial, no‑switch trial). Reaction times were averaged across the no‑switch trials within each trial group. Each trial group consisted of three trials for the alternate‑cues experiment and four trials for the alternate‑runs experiment.
+
+Individual‑differences analyses of the dependent variable were conducted using linear regression modeling. For each participant, drift rate was computed as a function of switch condition and previous and current group‑valence conditions (eight estimates per subject).
+
+A stringent test was then performed to determine the presence of a trade‑off pattern by adding predictors sequentially. The first model type predicted drift rate in the least‑demanding switch condition (univalent-univalent) from the least‑demanding non‑switch condition (univalent-univalent). Predictors were subsequently added to this model in three steps (see model outline below).
+
+EZ‑DDM parameters of non‑decision time (Ter) and boundary separation (a) were also computed. If the EZ‑DDM non‑decision time parameter (Ter) was negative in fewer than 20\% of cases across all subjects and conditions, the linear regression models were re‑run with data cells in those conditions set as missing. Results obtained from the drift‑rate models were cross‑referenced with two additional models: one using log‑transformed reaction time as the dependent variable and another using error rate as the dependent variable. These models were implemented identically to the steps outlined above.
 
 \section{Results}\label{results}
 
@@ -363,7 +388,7 @@ Across both experiments, we see a tradeoff occurring in within-sub dynamics. Thi
 
 \subsection{On the Individual Differences Level.}\label{on-the-individual-differences-level.}
 
-Across both experiments, we see an anti-tradeoff relationship occurring on the individual differences level.Co-occurance of stability-flexibility is consistently found across error rate, drift rate and logged RT. Where in general individuals who are better at switch trials will also be better at no-switch trials. Additionally, the switch to no-switch bivalent-bivalent pairing which is the strongest test of switching from stable trial is strongly positive in error rate and drift rate. This means that people who are good at bi-bi switch trials will also be better at bivalent-bivalent no-switch trials.
+Across both experiments, we see an anti-tradeoff relationship occurring on the individual differences level. Co-occurance of stability-flexibility is consistently found across error rate, drift rate and logged RT. Where in general individuals who are better at switch trials will also be better at no-switch trials. Additionally, the switch to no-switch bivalent-bivalent pairing which is the strongest test of switching from stable trial is strongly positive in error rate and drift rate. This means that people who are good at bi-bi switch trials will also be better at bivalent-bivalent no-switch trials.
 
 \newpage
 
