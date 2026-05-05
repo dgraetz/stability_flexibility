@@ -430,6 +430,20 @@ make_model_table(alt_cue_error_eff)
 
 ```
 
+Model figure:
+
+```{r}
+pos  = position_dodge(width = 0.4)
+emmeans::emmeans(alt_cue_error_eff, ~is_bivalent_eff * prev_bivalent_eff * switch_contr) %>%
+  as.data.frame() %>%
+  ggplot(aes(x = switch_contr, y = emmean, linetype = prev_bivalent_eff, color = is_bivalent_eff, group = interaction(prev_bivalent_eff, is_bivalent_eff)))+
+  geom_line(position = pos)+
+  geom_point(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, max = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  theme_classic()
+
+```
 
 ### Contrast coded (0, 1)
 
