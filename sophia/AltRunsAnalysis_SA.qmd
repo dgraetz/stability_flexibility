@@ -64,6 +64,7 @@ out.format = "tex-document",  # LaTeX document
 out.dir = getwd(),        # directory to save files
 bib.file = "my-packages.bib"  # BibTeX file name
 )
+
 ```
 
 ## Data Cleaning
@@ -315,6 +316,45 @@ also make figures with averages of no-switch by cycle
 By logged RT
 
 ```{r}
+apa_theming <- function(base_size = 12,
+                        base_family = "sans",
+                        blue = "#56B4E9",
+                        orange = "#E69F00") {
+
+  list(
+    # based off how others strucutre their apa figure themes but adding the specifications we talked about
+    theme_bw(base_size = base_size, base_family = base_family) %+replace%
+      theme(
+        text = element_text(family = base_family, color = "black"),
+        plot.title = element_text(size = base_size * 1.4, face = "bold"),
+        plot.subtitle = element_text(size = base_size * 1.1),
+        plot.caption = element_text(size = base_size * 0.9),
+
+        axis.title = element_text(size = base_size * 1.1),
+        axis.text = element_text(size = base_size),
+        axis.line = element_line(color = "black", linewidth = 0.5),
+        axis.ticks = element_line(color = "black"),
+
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+
+        legend.position = "right",
+        legend.title = element_text(size = base_size * 1.1),
+        legend.text = element_text(size = base_size),
+
+        strip.background = element_rect(fill = "gray90", color = "black"),
+        strip.text = element_text(size = base_size * 1.1, face = "bold")
+      ),
+
+    #assigning colors specified in specfifc order
+    scale_color_manual(values = c(blue, orange))
+  )
+}
+
+
+
+
 
 rtlogplot <- ggplot(
   allagg_ci,
@@ -334,7 +374,7 @@ rtlogplot <- ggplot(
     position =position_dodge(width = 0.25),
     linewidth = 0.8
   ) +
-  theme_classic()
+  apa_theming()
 
 rtlogplot
 
@@ -363,7 +403,7 @@ erplot <- ggplot(allagg_ci,
     position =position_dodge(width = 0.25),
     linewidth = 0.8
   ) +
-  theme_classic()
+  apa_theming()
 
 erplot
 ```
@@ -390,7 +430,7 @@ rtplot <- ggplot(
     position =position_dodge(width = 0.25),
     linewidth = 0.8
   ) +
-  theme_classic()
+  apa_theming()
 
 rtplot
 ```
@@ -649,18 +689,18 @@ alt_run_agg_ddm_collapsed <- alt_run_agg_ID_ddm_collapsed %>%
 plt_ddm_a <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = a_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
   geom_line(position = position_dodge(width = 0.25))+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
-  theme_classic()
+  apa_theming()
 
 plt_ddm_v <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = v_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
   geom_line(position = position_dodge(width = 0.25))+
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
-  theme_classic()
+  apa_theming()
 
 
 plt_ddm_Ter <- ggplot(alt_run_agg_ddm, aes(x = cycle2, y = Ter_m, color = valence, linetype = lvalence, group = interaction(valence,lvalence )))+
   geom_line(position = position_dodge(width = 0.25))+
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = position_dodge(width = 0.25))+
-  theme_classic()
+  apa_theming()
 
 ggpubr::ggarrange(plt_ddm_a, plt_ddm_v, plt_ddm_Ter, common.legend = TRUE, nrow = 1)  
 

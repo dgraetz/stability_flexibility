@@ -44,7 +44,7 @@ apa_theming <- function(base_size = 12,
 }
 
 
-
+theme_set(apa_theming())
 
 ```
 
