@@ -1,0 +1,50 @@
+---
+title: "apaTheming"
+author: "Sophia Vi Angleton"
+date: "2026-05-06"
+output: html_document
+---
+
+```{r}
+
+apa_theming <- function(base_size = 12,
+                        base_family = "sans",
+                        blue = "#56B4E9",
+                        orange = "#E69F00") {
+
+  list(
+    # based off how others strucutre their apa figure themes but adding the specifications we talked about
+    theme_bw(base_size = base_size, base_family = base_family) %+replace%
+      theme(
+        text = element_text(family = base_family, color = "black"),
+        plot.title = element_text(size = base_size * 1.4, face = "bold"),
+        plot.subtitle = element_text(size = base_size * 1.1),
+        plot.caption = element_text(size = base_size * 0.9),
+
+        axis.title = element_text(size = base_size * 1.1),
+        axis.text = element_text(size = base_size),
+        axis.line = element_line(color = "black", linewidth = 0.5),
+        axis.ticks = element_line(color = "black"),
+
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+
+        legend.position = "right",
+        legend.title = element_text(size = base_size * 1.1),
+        legend.text = element_text(size = base_size),
+
+        strip.background = element_rect(fill = "gray90", color = "black"),
+        strip.text = element_text(size = base_size * 1.1, face = "bold")
+      ),
+
+    #assigning colors specified in specfifc order
+    scale_color_manual(values = c(blue, orange))
+  )
+}
+
+
+
+
+```
+
