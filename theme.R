@@ -42,7 +42,7 @@ apa_theming <- function(base_size = 12,
         legend.text = element_text(size = base_size),
         
         strip.background = element_rect(fill = "gray90", color = "black"),
-        strip.text = element_text(size = base_size * 1.1, face = "bold")
+        strip.text = element_text(size = base_size * 1.1, face = "bold", margin = margin(t = 4, b = 4))
       )#,
     
     #assigning colors specified in specfifc order
