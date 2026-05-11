@@ -259,7 +259,7 @@ alt_run_contr_agg <- alt_run_agg_ID %>%
 # Plots of correct RTs and Errors
 
 ```{r}
-pos <- position_dodge(width = 0.1)
+pos <- position_dodge(width = 0.3)
 
 plt_rtlog_cycle <- ggplot(alt_run_agg, aes(x = cycle, y = RT_log_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
   geom_line(position = pos)+
@@ -307,30 +307,35 @@ ggpubr::ggarrange(plt_error_cycle, plt_error_switch)
 
 ```{r}
 
-ggplot(alt_run_contr_agg, aes(x = switch_contr, y = RT_log_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+plt_RT_log <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = RT_log_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = RT_log_ci_lower, ymax = RT_log_ci_upper), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
-                       labels = c("0" = "univalent",
-                                  "1" = "biivalent"),
-                       values = c("0" = design$curr_val$color$uni,
-                                 "1" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
-                       labels = c("0" = "univalent",
-                                  "1" = "biivalent"),
+                       labels = c("0" = "Univalent",
+                                  "1" = "Bivalent"),
                        values = c("0" = design$curr_val$linetype$uni,
                                  "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
-  labs(x = "", y = "log(RT)")
+  scale_color_manual(name = "Current Valence",
+                       labels = c("0" = "Univalent",
+                                  "1" = "Bivalent"),
+                       values = c("0" = design$curr_val$color$uni,
+                                 "1" = design$curr_val$color$bi))+
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
+  labs(x = "", y = "log(RT)")+
+  guides(
+    linetype = guide_legend(order = 1),
+    color    = guide_legend(order = 2)
+  )
 
-ggsave("figures/AR_RTlog.svg", width = 5, height = 5, units = "in")
+plt_RT_log
+ggsave(plot = plt_RT_log, "figures/AR_RTlog.svg", width = 5, height = 5, units = "in")
+saveRDS(plt_RT_log, "figures/AR_RTlog.RDS")
 
-
-ggplot(alt_run_contr_agg, aes(x = switch_contr, y = Error_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+plt_Error <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = Error_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = Error_ci_lower, ymax = Error_ci_upper), 
                 width = design$errorbar$width, 
@@ -338,20 +343,20 @@ ggplot(alt_run_contr_agg, aes(x = switch_contr, y = Error_m, color = is_bivalent
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
   scale_color_manual(name = "Current Valence",
-                       labels = c("0" = "univalent",
-                                  "1" = "bivalent"),
+                       labels = c("0" = "Univalent",
+                                  "1" = "Bivalent"),
                        values = c("0" = design$curr_val$color$uni,
                                  "1" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
-                       labels = c("0" = "univalent",
-                                  "1" = "bivalent"),
+                       labels = c("0" = "Univalent",
+                                  "1" = "Bivalent"),
                        values = c("0" = design$curr_val$linetype$uni,
                                  "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   labs(x = "", y = "Errors")
-
-ggsave("figures/AR_Errors.svg", width = 5, height = 5, units = "in")
-
+plt_Error
+ggsave(plot = plt_Error, "figures/AR_Errors.svg", width = 5, height = 5, units = "in")
+saveRDS(plt_Error, "figures/AR_Error.RDS")
 ```
 
 
@@ -421,7 +426,7 @@ make_model_table(alt_run_error_eff)
 Model figure:
 
 ```{r}
-pos  = position_dodge(width = 0.4)
+pos  = position_dodge(width = 0.3)
 emmeans::emmeans(alt_run_error_eff, ~is_bivalent_eff * prev_bivalent_eff * switch_contr) %>%
   as.data.frame() %>%
   ggplot(aes(x = switch_contr, y = emmean, linetype = prev_bivalent_eff, color = is_bivalent_eff, group = interaction(prev_bivalent_eff, is_bivalent_eff)))+
@@ -588,7 +593,7 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
 #### Publication Figures
 
 ```{r}
-pos = position_dodge(0.25)
+pos = position_dodge(0.3)
 plt_ddm_a_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = a_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), 
@@ -597,18 +602,22 @@ plt_ddm_a_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = a
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
   scale_color_manual(name = "Current Valence",
-                     labels = c("0" = "univalent",
-                                "1" = "bivalent"),
+                     labels = c("0" = "Univalent",
+                                "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
-                        labels = c("0" = "univalent",
-                                   "1" = "bivalent"),
+                        labels = c("0" = "Univalent",
+                                   "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
                                    "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   labs(x = "",
-       y = "Boundary Separation\na") 
+       y = "Boundary Separation\na") +
+  guides(
+    linetype = guide_legend(order = 1),  # appears first
+    color    = guide_legend(order = 2)   # appears second
+  )
 
 plt_ddm_a_nocycle
 
@@ -622,22 +631,26 @@ plt_ddm_v_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = v
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
   scale_color_manual(name = "Current Valence",
-                     labels = c("0" = "univalent",
-                                "1" = "bivalent"),
+                     labels = c("0" = "Univalent",
+                                "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
-                        labels = c("0" = "univalent",
-                                   "1" = "bivalent"),
+                        labels = c("0" = "Univalent",
+                                   "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
                                    "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   labs(x = "",
-       y = "Drift Rate\nv") 
+       y = "Drift Rate\nv") +
+  guides(
+    linetype = guide_legend(order = 1),  # appears first
+    color    = guide_legend(order = 2)   # appears second
+  )
 plt_ddm_v_nocycle
 
 
-plt_ddm_Ter_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = Ter_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+plt_ddm_Ter_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = Ter_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), 
                 width = design$errorbar$width, 
@@ -645,18 +658,22 @@ plt_ddm_Ter_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y =
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
   scale_color_manual(name = "Current Valence",
-                     labels = c("0" = "univalent",
-                                "1" = "bivalent"),
+                     labels = c("0" = "Univalent",
+                                "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
-                        labels = c("0" = "univalent",
-                                   "1" = "bivalent"),
+                        labels = c("0" = "Univalent",
+                                   "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
                                    "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch")) +
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat")) +
   labs(x = "",
-       y = "Non Reaction Time\nTer")
+       y = "Non Reaction Time\nTer")+
+  guides(
+    linetype = guide_legend(order = 1),  # appears first
+    color    = guide_legend(order = 2)   # appears second
+  )
 
 
 plt_ddm_Ter_nocycle
@@ -665,6 +682,10 @@ plt_ddm_Ter_nocycle
 ggsave(plot = plt_ddm_Ter_nocycle, filename = "figures/AR_ddm_TER.svg", width = 5, height = 5, units = "in")
 ggsave(plot = plt_ddm_v_nocycle, filename = "figures/AR_ddm_v.svg", width = 5, height = 5, units = "in")
 ggsave(plot = plt_ddm_a_nocycle, filename = "figures/AR_ddm_a.svg", width = 5, height = 5, units = "in")
+
+saveRDS(plt_ddm_Ter_nocycle,"figures/AR_ddm_TER.RDS")
+saveRDS(plt_ddm_v_nocycle, "figures/AR_ddm_v.RDS")
+saveRDS(plt_ddm_a_nocycle, "figures/AR_ddm_a.RDS")
 
 ```
 
@@ -1324,7 +1345,7 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 ```{r}
  
 
-ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+plt_RTlog <- ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), 
                 width = design$errorbar$width, 
@@ -1332,22 +1353,27 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
   scale_color_manual(name = "Current Valence",
-                     labels = c("0" = "univalent",
-                                "1" = "biivalent"),
+                     labels = c("0" = "Univalent",
+                                "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
-                        labels = c("0" = "univalent",
-                                   "1" = "biivalent"),
+                        labels = c("0" = "Univalent",
+                                   "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
                                    "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
                                                    "fast" = "lag RT fast")))+
-  labs(x = "", y = "log(RT) prediction")
+  labs(x = "", y = "log(RT) prediction")+
+  guides(
+    linetype = guide_legend(order = 1),  # appears first
+    color    = guide_legend(order = 2)   # appears second
+  )
 
-
-ggsave("figures/AR_lagRT.svg", height = 5, width = 7.5, units = "in")
+plt_RTlog
+ggsave(plot = plt_RTlog, "figures/AR_lagRT.svg", height = 5, width = 7.5, units = "in")
+saveRDS(plt_RTlog, "figures/AR_lagRT.RDS")
   
 ```
 
@@ -1565,87 +1591,110 @@ alt_run_indiv <- alt_run_indiv %>%
 
 ```{r}
 alt_run_indiv_diff_models <- list(
-  RT = list(uu1 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
-            uu2 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
-            uu3 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
-            uu4 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv),
-            
-            bu1 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
-            bu2 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
-            bu3 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
-            bu4 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv),
-            
-            ub1 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
-            ub2 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
-            ub3 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
-            ub4 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv),
-            
-            bb1 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
-            bb2 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
-            bb3 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
-            bb4 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv)
+  RT = list(
+    uu0 = lm(RT_log_s1_cbiv0_lbiv0 ~ 1, alt_run_indiv),
+    uu1 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
+    uu2 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
+    uu3 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
+    uu4 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    bu0 = lm(RT_log_s1_cbiv1_lbiv0 ~ 1, alt_run_indiv),
+    bu1 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
+    bu2 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
+    bu3 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
+    bu4 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    ub0 = lm(RT_log_s1_cbiv0_lbiv1 ~ 1, alt_run_indiv),
+    ub1 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
+    ub2 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
+    ub3 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
+    ub4 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    bb0 = lm(RT_log_s1_cbiv1_lbiv1 ~ 1, alt_run_indiv),
+    bb1 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_run_indiv),
+    bb2 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_run_indiv),
+    bb3 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_run_indiv),
+    bb4 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_run_indiv)
   ),
   
-  Error = list(uu1 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
-               uu2 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
-               uu3 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
-               uu4 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv),
-               
-               bu1 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
-               bu2 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
-               bu3 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
-               bu4 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv),
-               
-               ub1 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
-               ub2 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
-               ub3 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
-               ub4 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv),
-               
-               bb1 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
-               bb2 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
-               bb3 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
-               bb4 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv)
+  
+  Error = list(
+    uu1 = lm(Error_s1_cbiv0_lbiv0 ~ 1, alt_run_indiv),
+    uu1 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
+    uu2 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
+    uu3 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
+    uu4 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    bu0 = lm(Error_s1_cbiv1_lbiv0 ~ 1, alt_run_indiv),
+    bu1 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
+    bu2 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
+    bu3 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
+    bu4 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    ub0 = lm(Error_s1_cbiv0_lbiv1 ~ 1, alt_run_indiv),
+    ub1 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
+    ub2 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
+    ub3 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
+    ub4 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    bb0 = lm(Error_s1_cbiv1_lbiv1 ~ 1, alt_run_indiv),
+    bb1 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_run_indiv),
+    bb2 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_run_indiv),
+    bb3 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_run_indiv),
+    bb4 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_run_indiv)
   ),
   
-  v = list(uu1 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
-           uu2 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
-           uu3 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
-           uu4 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv),
-           
-           bu1 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
-           bu2 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
-           bu3 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
-           bu4 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv),
-           
-           ub1 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
-           ub2 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
-           ub3 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
-           ub4 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv),
-           
-           bb1 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
-           bb2 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
-           bb3 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
-           bb4 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv)
+  v = list(
+    
+    uu0 = lm(v_s1_cbiv0_lbiv0 ~ 1, alt_run_indiv),
+    uu1 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
+    uu2 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
+    uu3 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
+    uu4 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    bu0 = lm(v_s1_cbiv1_lbiv0 ~ 1, alt_run_indiv),
+    bu1 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
+    bu2 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
+    bu3 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
+    bu4 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    ub0 = lm(v_s1_cbiv0_lbiv1 ~ 1, alt_run_indiv),
+    ub1 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
+    ub2 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
+    ub3 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
+    ub4 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv),
+    
+    bb0 = lm(v_s1_cbiv1_lbiv1 ~ 1, alt_run_indiv),
+    bb1 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_run_indiv),
+    bb2 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_run_indiv),
+    bb3 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_run_indiv),
+    bb4 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_run_indiv)
   ),
-  v_NA = list(uu1 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
-              uu2 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
-              uu3 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
-              uu4 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv),
-              
-              bu1 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
-              bu2 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
-              bu3 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
-              bu4 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv),
-              
-              ub1 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
-              ub2 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
-              ub3 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
-              ub4 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv),
-              
-              bb1 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
-              bb2 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
-              bb3 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
-              bb4 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv)
+  v_NA = list(
+    
+    uu0 = lm(v_s1_cbiv0_lbiv0_NA ~ 1, alt_run_indiv),
+    uu1 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
+    uu2 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
+    uu3 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
+    uu4 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv),
+    
+    bu0 = lm(v_s1_cbiv1_lbiv0_NA ~ 1, alt_run_indiv),
+    bu1 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
+    bu2 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
+    bu3 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
+    bu4 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv),
+    
+    ub0 = lm(v_s1_cbiv0_lbiv1_NA ~ 1, alt_run_indiv),
+    ub1 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
+    ub2 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
+    ub3 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
+    ub4 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv),
+    
+    bb0 = lm(v_s1_cbiv1_lbiv1_NA ~ 1, alt_run_indiv),
+    bb1 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_run_indiv),
+    bb2 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_run_indiv),
+    bb3 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_run_indiv),
+    bb4 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_run_indiv)
   )
 )
 
@@ -1692,17 +1741,17 @@ alt_run_RT_model_summary <- lapply(alt_run_indiv_diff_models$RT, function(x){
          outcome = gsub("[[:digit:]]", "", model),
          outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
-         r_label = as.character(round(r_sq, 2)),
-         r_label = gsub("^0.", ".", r_label),
+         # r_label = as.character(round(r_sq, 2)),
+         # r_label = gsub("^0.", ".", r_label),
+         r_label = sprintf("%.2f", r_sq),
          r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
-         r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label),
+         r_adj_label = sprintf("%.2f", r_sq_adj),
          r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
          color = parse_number(model) %>% factor())
 
 
 n = 4
-ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+plt_betw_RT <- ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
   geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
@@ -1710,23 +1759,24 @@ ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = mode
   geom_text(data = alt_run_RT_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_RT_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  labs(x = "Coefficient",
-       y = "Standardized Beta")+
-  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
-                                                       "ub" = "uni-bi",
-                                                       "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), ncol = 1)+
+   labs(x = "",
+       y = "")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
   scale_color_manual(values = colorRampPalette(c("blue", "red"))(n))+
-  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
-                              "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
-                              "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
-                              "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
   theme(legend.position = "none")
 
-ggsave("figures/AR_between_RT.svg", width = 4, height = 6, units = "in")
-
+plt_betw_RT
+ggsave(plot = plt_betw_RT, "figures/AR_betw_RT.svg", width = 4, height = 6, units = "in")
+saveRDS(plt_betw_RT, file = "figures/AR_betw_RT.RDS")
 ```
 
 
@@ -1791,11 +1841,11 @@ alt_run_Error_model_summary <- lapply(alt_run_indiv_diff_models$Error, function(
          outcome = gsub("[[:digit:]]", "", model),
          outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
-         r_label = as.character(round(r_sq, 2)),
-         r_label = gsub("^0.", ".", r_label),
+         # r_label = as.character(round(r_sq, 2)),
+         # r_label = gsub("^0.", ".", r_label),
+         r_label = sprintf("%.2f", r_sq),
          r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
-         r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label),
+         r_adj_label = sprintf("%.2f", r_sq_adj),
          r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
          color = parse_number(model) %>% factor())
 
@@ -1823,7 +1873,7 @@ ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = m
 
 
 
-ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+plt_betw_Error <- ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
   geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
@@ -1831,22 +1881,24 @@ ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = m
   geom_text(data = alt_run_Error_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  labs(x = "Coefficient",
-       y = "Standardized Beta")+
-  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
-                                                       "ub" = "uni-bi",
-                                                       "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), ncol = 1)+
+   labs(x = "",
+       y = "")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
   scale_color_manual(values = colorRampPalette(c("blue", "red"))(n))+
-  scale_x_discrete(labels = c("Error_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
-                              "Error_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
-                              "Error_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
-                              "Error_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+  scale_x_discrete(labels = c("Error_s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "Error_s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "Error_s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "Error_s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
   theme(legend.position = "none")
+plt_betw_Error
 
-ggsave("figures/AR_between_Error.svg", width = 4, height = 6, units = "in")
+ggsave(plot= plt_betw_Error, "figures/AR_betw_Error.svg", width = 4, height = 6, units = "in")
+saveRDS(plt_betw_Error, "figures/AR_betw_Error.RDS")
 
 ```
 
@@ -1914,11 +1966,11 @@ alt_run_v_model_summary <- lapply(alt_run_indiv_diff_models$v, function(x){
          outcome = gsub("[[:digit:]]", "", model),
          outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
-         r_label = as.character(round(r_sq, 2)),
-         r_label = gsub("^0.", ".", r_label),
+         # r_label = as.character(round(r_sq, 2)),
+         # r_label = gsub("^0.", ".", r_label),
+         r_label = sprintf("%.2f", r_sq),
          r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
-         r_adj_label = as.character(round(r_sq_adj, 2)),
-         r_adj_label = gsub("^0.", ".", r_adj_label),
+         r_adj_label = sprintf("%.2f", r_sq_adj),
          r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
          color = parse_number(model) %>% factor())
 
@@ -1932,10 +1984,10 @@ ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_v_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
   theme_classic()+
-  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
-                                                       "ub" = "uni-bi",
-                                                       "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), ncol = 1)+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
   scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "v_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "v_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
@@ -1944,31 +1996,38 @@ ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model
   coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 
-ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+plt_betw_v <- ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
   geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
-  geom_text(data = alt_run_v_model_summary %>% group_by(model) %>% slice(n()),
-            aes(label = r_adj_label), hjust = -0.3)+
+  # geom_text(data = alt_run_v_model_summary %>% group_by(model) %>% slice(n()),
+  #           aes(label = r_adj_label), hjust = -0.3)+
+  geom_label(data = alt_run_v_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.1, alpha = 0.8, label.size = 0)+
   geom_point(data = alt_run_v_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  labs(x = "Coefficient",
-       y = "Standardized Beta")+
-  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
-                                                       "ub" = "uni-bi",
-                                                       "bu" = "bi-uni",
-                                                       "bb" = "bi-bi")), ncol = 1)+
+  labs(x = "",
+       y = "")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
   scale_color_manual(values = colorRampPalette(c("blue", "red"))(n))+
-  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
-                              "v_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
-                              "v_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
-                              "v_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "v_s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "v_s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "v_s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
   theme(legend.position = "none")
 
-ggsave("figures/AR_between_v.svg", width = 4, height = 6, units = "in")
+plt_betw_v
+
+ggsave(plot = plt_betw_v, "figures/AR_betw_v.svg", width = 4, height = 6, units = "in")
+saveRDS(plt_betw_v, "figures/AR_betw_v.RDS")
+
 ```
+
 
 
 
