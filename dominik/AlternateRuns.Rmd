@@ -608,8 +608,7 @@ plt_ddm_a_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = a
                                    "1" = design$curr_val$linetype$bi))+
   scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
   labs(x = "",
-       y = "Boundary Separation\na")  +
-  theme(legend.key.width = unit(0.3, "in"))
+       y = "Boundary Separation\na") 
 
 plt_ddm_a_nocycle
 
@@ -634,8 +633,7 @@ plt_ddm_v_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = v
                                    "1" = design$curr_val$linetype$bi))+
   scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
   labs(x = "",
-       y = "Drift Rate\nv")  +
-  theme(legend.key.width = unit(0.3, "in"))
+       y = "Drift Rate\nv") 
 plt_ddm_v_nocycle
 
 
@@ -658,8 +656,7 @@ plt_ddm_Ter_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y =
                                    "1" = design$curr_val$linetype$bi))+
   scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch")) +
   labs(x = "",
-       y = "Non Reaction Time\nTer") +
-  theme(legend.key.width = unit(0.3, "in"))
+       y = "Non Reaction Time\nTer")
 
 
 plt_ddm_Ter_nocycle
@@ -1233,37 +1230,6 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 
 ```
 
-#### Publication Figure
-
-```{r}
- 
-
-ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), 
-                width = design$errorbar$width, 
-                position = pos, 
-                linewidth = design$errorbar$linewidth,
-                linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
-                     labels = c("0" = "univalent",
-                                "1" = "biivalent"),
-                     values = c("0" = design$curr_val$color$uni,
-                                "1" = design$curr_val$color$bi))+
-  scale_linetype_manual(name = "Previous Valence",
-                        labels = c("0" = "univalent",
-                                   "1" = "biivalent"),
-                        values = c("0" = design$curr_val$linetype$uni,
-                                   "1" = design$curr_val$linetype$bi))+
-  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
-  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
-                                                   "fast" = "lag RT fast")))+
-  labs(y = "log(RT) prediction")
-
-
-
-  
-```
 
 
 ### Added subject intercepts
@@ -1353,6 +1319,37 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 
 ```
 
+#### Publication Figure
+
+```{r}
+ 
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+  geom_line(position = pos, linewidth = design$lines$linewidth)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), 
+                width = design$errorbar$width, 
+                position = pos, 
+                linewidth = design$errorbar$linewidth,
+                linetype = "solid")+
+  scale_color_manual(name = "Current Valence",
+                     labels = c("0" = "univalent",
+                                "1" = "biivalent"),
+                     values = c("0" = design$curr_val$color$uni,
+                                "1" = design$curr_val$color$bi))+
+  scale_linetype_manual(name = "Previous Valence",
+                        labels = c("0" = "univalent",
+                                   "1" = "biivalent"),
+                        values = c("0" = design$curr_val$linetype$uni,
+                                   "1" = design$curr_val$linetype$bi))+
+  scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "No Switch"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(x = "", y = "log(RT) prediction")
+
+
+ggsave("figures/AR_lagRT.svg", height = 5, width = 7.5, units = "in")
+  
+```
 
 
 ## Helmert-coded cycle variable (we decided to skip!)
@@ -1689,6 +1686,7 @@ alt_run_RT_model_summary <- lapply(alt_run_indiv_diff_models$RT, function(x){
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
   left_join(RT_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("RT_log_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
@@ -1699,11 +1697,12 @@ alt_run_RT_model_summary <- lapply(alt_run_indiv_diff_models$RT, function(x){
          r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
          r_adj_label = gsub("^0.", ".", r_adj_label),
-         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label))
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
+         color = parse_number(model) %>% factor())
 
 
-
-ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+n = 4
+ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
   geom_hline(yintercept = 0, linetype = "dotted")+
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
@@ -1711,18 +1710,23 @@ ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimate, group = mode
   geom_text(data = alt_run_RT_model_summary %>% group_by(model) %>% slice(n()),
             aes(label = r_adj_label), hjust = -0.3)+
   geom_point(data = alt_run_RT_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
-  theme_classic()+
+  labs(x = "Coefficient",
+       y = "Standardized Beta")+
   facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
                                                        "ub" = "uni-bi",
                                                        "bu" = "bi-uni",
                                                        "bb" = "bi-bi")), ncol = 1)+
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(n))+
   scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
                               "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
                               "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
                               "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
                               "(Intercept)" = "Int"))+
-  coord_cartesian(xlim = c(1, 5.5))+
+  coord_cartesian(xlim = c(1, 4.5))+
   theme(legend.position = "none")
+
+ggsave("figures/AR_between_RT.svg", width = 4, height = 6, units = "in")
+
 ```
 
 
@@ -1781,6 +1785,7 @@ alt_run_Error_model_summary <- lapply(alt_run_indiv_diff_models$Error, function(
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
   left_join(Error_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("RT_log_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
@@ -1791,7 +1796,8 @@ alt_run_Error_model_summary <- lapply(alt_run_indiv_diff_models$Error, function(
          r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
          r_adj_label = gsub("^0.", ".", r_adj_label),
-         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label))
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
+         color = parse_number(model) %>% factor())
 
 
 ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1815,6 +1821,32 @@ ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = m
   coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 
+
+
+ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_run_Error_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_run_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  labs(x = "Coefficient",
+       y = "Standardized Beta")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
+                                                       "ub" = "uni-bi",
+                                                       "bu" = "bi-uni",
+                                                       "bb" = "bi-bi")), ncol = 1)+
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(n))+
+  scale_x_discrete(labels = c("Error_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "Error_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "Error_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "Error_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 4.5))+
+  theme(legend.position = "none")
+
+ggsave("figures/AR_between_Error.svg", width = 4, height = 6, units = "in")
 
 ```
 
@@ -1876,6 +1908,7 @@ alt_run_v_model_summary <- lapply(alt_run_indiv_diff_models$v, function(x){
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
   left_join(v_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("RT_log_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
@@ -1886,7 +1919,8 @@ alt_run_v_model_summary <- lapply(alt_run_indiv_diff_models$v, function(x){
          r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
          r_adj_label = gsub("^0.", ".", r_adj_label),
-         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label))
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
+         color = parse_number(model) %>% factor())
 
 
 ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1910,7 +1944,30 @@ ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model
   coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
 
+ggplot(alt_run_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_run_v_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_run_v_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  labs(x = "Coefficient",
+       y = "Standardized Beta")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
+                                                       "ub" = "uni-bi",
+                                                       "bu" = "bi-uni",
+                                                       "bb" = "bi-bi")), ncol = 1)+
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(n))+
+  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "v_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "v_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "v_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 4.5))+
+  theme(legend.position = "none")
 
+ggsave("figures/AR_between_v.svg", width = 4, height = 6, units = "in")
 ```
 
 
@@ -1972,7 +2029,8 @@ alt_run_v_NA_model_summary <- lapply(alt_run_indiv_diff_models$v_NA, function(x)
          r_label = gsub("^0.", ".", r_label),
          r_adj_label = as.character(round(r_sq_adj, 2)),
          r_adj_label = gsub("^0.", ".", r_adj_label),
-         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")))
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         color = parse_number(model) %>% factor())
 
 
 ggplot(alt_run_v_NA_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
@@ -1995,6 +2053,7 @@ ggplot(alt_run_v_NA_model_summary, aes(x = coefficient, y = estimate, group = mo
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
+
 
 
 

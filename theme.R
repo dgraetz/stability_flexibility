@@ -1,9 +1,9 @@
 library(ggplot2)
 design <- list()
-design$curr_val$color$bi <- "#E69F00"
-design$curr_val$color$uni <- "#56B4E9"
-design$prev_val$color$bi <- "#E69F00"
-design$prev_val$color$uni <- "#56B4E9"
+design$curr_val$color$bi <- "orange"
+design$curr_val$color$uni <- "navy"
+design$prev_val$color$bi <- "orange"
+design$prev_val$color$uni <- "navy"
 
 design$curr_val$linetype$bi <- "solid"
 design$curr_val$linetype$uni <- "41" #dashed
@@ -17,8 +17,8 @@ design$errorbar$linewidth <- 0.8
 
 apa_theming <- function(base_size = 12,
                         base_family = "sans",
-                        blue = "#56B4E9",
-                        orange = "#E69F00") {
+                        blue = "navy",
+                        orange = "orange") {
   
     # based off how others strucutre their apa figure themes but adding the specifications we talked about
     theme_bw(base_size = base_size, base_family = base_family) %+replace%
@@ -40,8 +40,9 @@ apa_theming <- function(base_size = 12,
         legend.position = "right",
         legend.title = element_text(size = base_size * 1.1),
         legend.text = element_text(size = base_size),
+        legend.key.width = unit(0.4, "in"),
         
-        strip.background = element_rect(fill = "gray90", color = "black"),
+        strip.background = element_rect(fill = "white", color = "white"),
         strip.text = element_text(size = base_size * 1.1, face = "bold", margin = margin(t = 4, b = 4))
       )#,
     

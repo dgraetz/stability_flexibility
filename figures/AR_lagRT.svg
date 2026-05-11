@@ -110,7 +110,7 @@
   </clipPath>
 </defs>
 <g clip-path='url(#cpNTMuOTF8MjI4LjIyfDUuOTh8MjYuMTc=)'>
-<rect x='53.91' y='5.98' width='174.31' height='20.19' style='stroke-width: 1.16; fill: #E5E5E5;' />
+<rect x='53.91' y='5.98' width='174.31' height='20.19' style='stroke-width: 1.16; stroke: #FFFFFF; fill: #FFFFFF;' />
 <text x='141.06' y='20.80' text-anchor='middle' style='font-size: 13.20px; font-weight: bold; font-family: "Arial";' textLength='67.39px' lengthAdjust='spacingAndGlyphs'>lag RT fast</text>
 </g>
 <g clip-path='url(#cpMC4wMHw1NDAuMDB8MC4wMHwzNjAuMDA=)'>
@@ -121,7 +121,7 @@
   </clipPath>
 </defs>
 <g clip-path='url(#cpMjM0LjE5fDQwOC41MHw1Ljk4fDI2LjE3)'>
-<rect x='234.19' y='5.98' width='174.31' height='20.19' style='stroke-width: 1.16; fill: #E5E5E5;' />
+<rect x='234.19' y='5.98' width='174.31' height='20.19' style='stroke-width: 1.16; stroke: #FFFFFF; fill: #FFFFFF;' />
 <text x='321.35' y='20.80' text-anchor='middle' style='font-size: 13.20px; font-weight: bold; font-family: "Arial";' textLength='73.25px' lengthAdjust='spacingAndGlyphs'>lag RT slow</text>
 </g>
 <g clip-path='url(#cpMC4wMHw1NDAuMDB8MC4wMHwzNjAuMDA=)'>
@@ -149,22 +149,22 @@
 <text transform='translate(15.42,174.24) rotate(-90)' text-anchor='middle' style='font-size: 13.20px; font-family: "Arial";' textLength='104.55px' lengthAdjust='spacingAndGlyphs'>log(RT) prediction</text>
 <rect x='420.46' y='103.55' width='113.56' height='64.71' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <text x='426.44' y='120.36' style='font-size: 13.20px; font-family: "Arial";' textLength='101.61px' lengthAdjust='spacingAndGlyphs'>Previous Valence</text>
-<rect x='426.44' y='127.73' width='17.28' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
-<line x1='428.16' y1='136.37' x2='441.99' y2='136.37' style='stroke-width: 2.35; stroke-dasharray: 12.52,3.13; stroke-linecap: butt;' />
-<rect x='426.44' y='145.01' width='17.28' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
-<line x1='428.16' y1='153.65' x2='441.99' y2='153.65' style='stroke-width: 2.35; stroke-linecap: butt;' />
-<text x='449.69' y='140.67' style='font-size: 12.00px; font-family: "Arial";' textLength='48.03px' lengthAdjust='spacingAndGlyphs'>univalent</text>
-<text x='449.69' y='157.95' style='font-size: 12.00px; font-family: "Arial";' textLength='44.03px' lengthAdjust='spacingAndGlyphs'>biivalent</text>
+<rect x='426.44' y='127.73' width='28.80' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
+<line x1='429.32' y1='136.37' x2='452.36' y2='136.37' style='stroke-width: 2.35; stroke-dasharray: 12.52,3.13; stroke-linecap: butt;' />
+<rect x='426.44' y='145.01' width='28.80' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
+<line x1='429.32' y1='153.65' x2='452.36' y2='153.65' style='stroke-width: 2.35; stroke-linecap: butt;' />
+<text x='461.21' y='140.67' style='font-size: 12.00px; font-family: "Arial";' textLength='48.03px' lengthAdjust='spacingAndGlyphs'>univalent</text>
+<text x='461.21' y='157.95' style='font-size: 12.00px; font-family: "Arial";' textLength='44.03px' lengthAdjust='spacingAndGlyphs'>biivalent</text>
 <rect x='420.46' y='180.22' width='106.22' height='64.71' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <text x='426.44' y='197.03' style='font-size: 13.20px; font-family: "Arial";' textLength='94.27px' lengthAdjust='spacingAndGlyphs'>Current Valence</text>
-<rect x='426.44' y='204.39' width='17.28' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
-<line x1='428.16' y1='213.03' x2='441.99' y2='213.03' style='stroke-width: 2.35; stroke: #56B4E9; stroke-linecap: butt;' />
-<line x1='428.16' y1='213.03' x2='441.99' y2='213.03' style='stroke-width: 1.71; stroke: #56B4E9; stroke-linecap: butt;' />
-<rect x='426.44' y='221.67' width='17.28' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
-<line x1='428.16' y1='230.31' x2='441.99' y2='230.31' style='stroke-width: 2.35; stroke: #E69F00; stroke-linecap: butt;' />
-<line x1='428.16' y1='230.31' x2='441.99' y2='230.31' style='stroke-width: 1.71; stroke: #E69F00; stroke-linecap: butt;' />
-<text x='449.69' y='217.33' style='font-size: 12.00px; font-family: "Arial";' textLength='48.03px' lengthAdjust='spacingAndGlyphs'>univalent</text>
-<text x='449.69' y='234.61' style='font-size: 12.00px; font-family: "Arial";' textLength='44.03px' lengthAdjust='spacingAndGlyphs'>biivalent</text>
+<rect x='426.44' y='204.39' width='28.80' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
+<line x1='429.32' y1='213.03' x2='452.36' y2='213.03' style='stroke-width: 2.35; stroke: #56B4E9; stroke-linecap: butt;' />
+<line x1='429.32' y1='213.03' x2='452.36' y2='213.03' style='stroke-width: 1.71; stroke: #56B4E9; stroke-linecap: butt;' />
+<rect x='426.44' y='221.67' width='28.80' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
+<line x1='429.32' y1='230.31' x2='452.36' y2='230.31' style='stroke-width: 2.35; stroke: #E69F00; stroke-linecap: butt;' />
+<line x1='429.32' y1='230.31' x2='452.36' y2='230.31' style='stroke-width: 1.71; stroke: #E69F00; stroke-linecap: butt;' />
+<text x='461.21' y='217.33' style='font-size: 12.00px; font-family: "Arial";' textLength='48.03px' lengthAdjust='spacingAndGlyphs'>univalent</text>
+<text x='461.21' y='234.61' style='font-size: 12.00px; font-family: "Arial";' textLength='44.03px' lengthAdjust='spacingAndGlyphs'>biivalent</text>
 </g>
 </g>
 </svg>
