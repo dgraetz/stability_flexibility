@@ -356,7 +356,7 @@ plt_Error <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = Error_m, color 
   labs(x = "", y = "Errors")
 plt_Error
 ggsave(plot = plt_Error, "figures/AR_Errors.svg", width = 5, height = 5, units = "in")
-saveRDS(plt_Error, "figures/AR_Error.RDS")
+saveRDS(plt_Error, "figures/AR_Errors.RDS")
 ```
 
 
