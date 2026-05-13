@@ -1756,8 +1756,10 @@ plt_betw_RT <- ggplot(alt_run_RT_model_summary, aes(x = coefficient, y = estimat
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
-  geom_text(data = alt_run_RT_model_summary %>% group_by(model) %>% slice(n()),
-            aes(label = r_adj_label), hjust = -0.3)+
+  # geom_text(data = alt_run_RT_model_summary %>% group_by(model) %>% slice(n()),
+  #           aes(label = r_adj_label), hjust = -0.3)+
+  geom_label(data = alt_run_RT_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.1, alpha = 0.8, label.size = 0)+
   geom_point(data = alt_run_RT_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
    labs(x = "",
        y = "")+
@@ -1878,8 +1880,10 @@ plt_betw_Error <- ggplot(alt_run_Error_model_summary, aes(x = coefficient, y = e
   geom_ribbon(aes(ymin = estimate - std_error,
                   ymax = estimate + std_error), alpha = 0.1, color = NA)+
   geom_line()+
-  geom_text(data = alt_run_Error_model_summary %>% group_by(model) %>% slice(n()),
-            aes(label = r_adj_label), hjust = -0.3)+
+  # geom_text(data = alt_run_Error_model_summary %>% group_by(model) %>% slice(n()),
+  #           aes(label = r_adj_label), hjust = -0.3)+
+  geom_label(data = alt_run_Error_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.1, alpha = 0.8, label.size = 0)+
   geom_point(data = alt_run_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
    labs(x = "",
        y = "")+
