@@ -103,6 +103,9 @@ AR_ddm_a
 ggsave(plot = AR_ddm_a, "figures/postprocessing/AR_ddm_a.svg", width = 3, height = 3, units = "in")
 ggsave(plot = AC_ddm_a, "figures/postprocessing/AC_ddm_a.svg", width = 3, height = 3, units = "in")
 
+ggsave(plot = AC_ddm_a + theme(legend.position = "bottom"), "figures/postprocessing/legend_bottom.svg", width = 10, height = 3, units = "in")
+ggsave(plot = AC_ddm_a + theme(legend.position = "right"), "figures/postprocessing/legend_right.svg", width = 10, height = 3, units = "in")
+
 ### TER ----
 
 
