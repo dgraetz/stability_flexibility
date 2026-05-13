@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+source("theme.R")
 ```
 
 ```{r}
@@ -2735,7 +2736,7 @@ m_error_effect<- glmer(error ~  val_c_g * val_p_g * switch + ( val_c_g + val_p_g
 
 alt_cue_a <- lmer(a ~ val_c_g * val_p_g * switch + (val_c_g + val_p_g + switch | id), alt_cue_agg_ID_ddm_nocycl, control = lmerControl(optimizer = "bobyqa")) # converged BUT is singualr warning 
 
-## step 1: so, running baseline model 
+## step 1: so, cuening baseline model 
 
 alt_cue_a_b <- lmer(a ~ val_c_g * val_p_g * switch + (1 | id), alt_cue_agg_ID_ddm_nocycle, control = lmerControl(optimizer = "bobyqa")) 
 
@@ -2844,7 +2845,7 @@ anova(alt_cue_v_b, alt_cue_v_3) # significant
 
 ###### Compring different random intercepts model versions base moel and each other to get to the most complex model we can use (only comparing the models that converge and give no singular warnings)
 
-## running Sophia's best model version and comparing it to my best model version 
+## cuening Sophia's best model version and comparing it to my best model version 
 
 alt_cue_v_4 <- lmer(v ~  val_c_g * val_p_g * switch + (val_c_g + switch |id), 
      alt_cue_agg_ID_ddm_nocycle, control = lmerControl(optimizer = "bobyqa"))
@@ -3065,27 +3066,29 @@ logrt_explevel_plot <- ggplot(log_rt_plot_df,
         y        = mean_rt,
         color    = valence_current_group,
         linetype = valence_previous_group,
-        group    = interaction(valence_current_group,
-                               valence_previous_group))) +
+        group    = interaction(valence_previous_group,
+                               valence_current_group))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_point(size = 3, position= pos) +
+  #geom_point(size = 3, position= pos) +
   geom_errorbar(aes(ymin = mean_rt - se_rt,
                     ymax = mean_rt + se_rt),
                 width     = design$errorbar$width,
                 linewidth = design$errorbar$linewidth, 
                 position= pos) +
+   scale_linetype_manual(
+    name   = "Previous Group",
+    values = c("Univalent" = design$prev_val$linetype$uni,
+               "Bivalent"  = design$prev_val$linetype$bi)
+  ) +
   scale_color_manual(
     name   = "Current Group",
     values = c("Univalent" = design$curr_val$color$uni,
                "Bivalent"  = design$curr_val$color$bi)
   ) +
-  scale_linetype_manual(
-    name   = "Previous Group",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
-  ) +
+ 
   labs(
-    x = "Switch Status",
+   # x = "Switch Status",
+    x = NULL,
     y = "Mean log RT"
   )
 
@@ -3093,7 +3096,9 @@ logrt_explevel_plot <- ggplot(log_rt_plot_df,
 logrt_explevel_plot
 
 
-ggsave("logrt_explevel_plot_apa.svg", logrt_explevel_plot, width = 10, height = 6)
+ggsave("AC_RTlog.svg", logrt_explevel_plot, width = 10, height = 6)
+
+saveRDS(logrt_explevel_plot, "AC_RTlog.RDS")
 
 ```
 2. error 
@@ -3127,40 +3132,42 @@ error_explevel_plot <- ggplot(err_plot_df,
         y        = error_rate,
         color    = valence_current_group,
         linetype = valence_previous_group,
-        group    = interaction(valence_current_group,
-                               valence_previous_group))) +
+        group    = interaction(valence_previous_group,
+                               valence_current_group))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_point(size = 3, position = pos) +
+  #geom_point(size = 3, position = pos) +
   geom_errorbar(aes(ymin = error_rate - se_error,
                     ymax = error_rate + se_error),
                 width     = design$errorbar$width,
                 linewidth = design$errorbar$linewidth, 
                 position = pos) +
-  scale_color_manual(
-    name   = "Current Group",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
-  ) +
-  scale_linetype_manual(
-    name   = "Previous Group",
+    scale_linetype_manual(
+    name   = "Previous Group Valence ",
     values = c("Univalent" = design$prev_val$linetype$uni,
                "Bivalent"  = design$prev_val$linetype$bi)
   ) +
+  scale_color_manual(
+    name   = "Current Group Valence",
+    values = c("Univalent" = design$curr_val$color$uni,
+               "Bivalent"  = design$curr_val$color$bi)
+  ) +
+
   labs(
-    x = "Switch Status",
+  #  x = "Switch Status",
+    x = NULL,
     y = "Error Rate"
   )
 
 error_explevel_plot
 
-ggsave("error_explevel_plot_apa.svg", error_explevel_plot, width = 10, height = 6)  
+ggsave("AC_Errors.svg", error_explevel_plot, width = 10, height = 6)  
 
-
+saveRDS( error_explevel_plot, "AC_Errors.rds" )
 ```
 
 
 
-3. ezddm-- this is from the contrast coding of valence actually 
+3. ezddm
 
 ```{r}
 
@@ -3242,7 +3249,7 @@ plt_ddm_a <- ggplot(alt_cue_agg_ddm,
     aes(x = cycle, y = a_m,
         color    = val_c_g,
         linetype = val_p_g,
-        group    = interaction(val_c_g, val_p_g))) +
+        group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
@@ -3254,7 +3261,7 @@ plt_ddm_v <- ggplot(alt_cue_agg_ddm,
     aes(x = cycle, y = v_m,
         color    = val_c_g,
         linetype = val_p_g,
-        group    = interaction(val_c_g, val_p_g))) +
+        group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
@@ -3266,7 +3273,7 @@ plt_ddm_Ter <- ggplot(alt_cue_agg_ddm,
     aes(x = cycle, y = Ter_m,
         color    = val_c_g,
         linetype = val_p_g,
-        group    = interaction(val_c_g, val_p_g))) +
+        group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
@@ -3278,40 +3285,40 @@ plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = a_m,
         color    = val_c_g,
         linetype = val_p_g,
-        group    = interaction(val_c_g, val_p_g))) +
+        group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
                 position = pos) +
 scale_x_discrete(limits = c("Switch", "Repeat"))+
   ddm_scales +
-  labs(x = "Switch Status", y = "a")
+  labs(x = NULL, y = "Boundary Separation")
 
 plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = v_m,
         color    = val_c_g,
         linetype = val_p_g,
-        group    = interaction(val_c_g, val_p_g))) +
+        group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
                 position = pos) +
   scale_x_discrete(limits = c("Switch", "Repeat")) +
   ddm_scales +
-  labs(x = "Switch Status", y = "a")
+  labs(x = NULL, y = "Drift Rate")
 
 plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = Ter_m,
         color    = val_c_g,
         linetype = val_p_g,
-        group    = interaction(val_c_g, val_p_g))) +
+        group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
                 position = pos) +
   scale_x_discrete(limits = c("Switch", "Repeat")) +
   ddm_scales +
- labs(x = "Switch Status", y = "a")
+ labs(x = NULL, y = "Non-Decision Time")
 
 ezddm_effect_plot <- ggpubr::ggarrange(
        plt_ddm_a_nocycle,
@@ -3329,10 +3336,16 @@ ezddm_effect_plot
 
 #ggsave("RT_descriptive_plot.svg", RT_descriptive_plot, width = 10, height = 6)
 
-ggsave("ezddm_effect_plot_a_apa.svg", plt_ddm_a_nocycle, width = 10, height = 6)
-ggsave("ezddm_effect_plot_v_apa.svg", plt_ddm_v_nocycle, width = 10, height = 6)
-ggsave("ezddm_effect_plot_ter_apa.svg", plt_ddm_Ter_nocycle, width = 10, height = 6)
+ggsave("AC_ddm_a.svg", plt_ddm_a_nocycle, width = 10, height = 6)
+ggsave("AC_ddm_v.svg", plt_ddm_v_nocycle, width = 10, height = 6)
+ggsave("AC_ddm_TER.svg", plt_ddm_Ter_nocycle, width = 10, height = 6)
 ggsave("ezddm_effect_plot_apa.svg", ezddm_effect_plot, width = 10, height = 6)
+
+
+saveRDS( plt_ddm_a_nocycle, "AC_ddm_a.rds" )
+saveRDS(plt_ddm_v_nocycle, "AC_ddm_v.rds" )
+saveRDS( plt_ddm_Ter_nocycle, "AC_ddm_TER.rds")
+
 ```
 
 
@@ -3373,35 +3386,548 @@ logrt_pred_switch <- ggplot(preds_switch,
         y        = emmean,
         color    = is_bivalent,
         linetype = prev_bivalent,
-        group    = interaction(is_bivalent, prev_bivalent))) +
+        group    = interaction(prev_bivalent, is_bivalent))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_point(size = 3, position = pos) +
+  #geom_point(size = 3, position = pos) +
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),
                 width     = design$errorbar$width,
                 linewidth = design$errorbar$linewidth,
                 position  = pos) +
   facet_wrap(~speed, labeller = labeller(speed = c("Slow" = "Lag RT Slow",
                                                    "Fast" = "Lag RT Fast"))) +
-  scale_color_manual(
-    name   = "Current Group",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
-  ) +
+ 
   scale_linetype_manual(
-    name   = "Previous Group",
+    name   = "Previous Group Valence",
     values = c("Univalent" = design$prev_val$linetype$uni,
                "Bivalent"  = design$prev_val$linetype$bi)
   ) +
+   scale_color_manual(
+    name   = "Current Group Valnece",
+    values = c("Univalent" = design$curr_val$color$uni,
+               "Bivalent"  = design$curr_val$color$bi)
+  ) +
   labs(
-    title = "Model predictions for log RTs",
-    y     = "log(RT) Prediction",
-    x     = "Switch Status"
+  #  title = "Model predictions for log RTs",
+    x = NULL,
+    y     = "log(RT) Prediction"
+    #x     = "Switch Status"
   )
 
 
 logrt_pred_switch
 
-ggsave("logrt_pred_switch_apa.svg", logrt_pred_switch, width = 10, height = 6)
+ggsave("AC_lagRT.svg", logrt_pred_switch, width = 10, height = 6)
+saveRDS(logrt_pred_switch, "AC_lagRT.rds" )
 ```
+
+
+```{r}
+
+alt_cue_v_NA_model_summary <- lapply(alt_cue_indiv_diff_models$v_NA, function(x){
+  m_sum <- x %>% 
+    summary() 
+  
+  m_sum %>% 
+    coef() %>% 
+    as.data.frame() %>%
+    mutate(r_sq = m_sum$r.squared,
+           r_sq_adj = m_sum$adj.r.squared)
+  
+}) %>% 
+  bind_rows(.id = "model") %>% 
+  rownames_to_column("coefficient") %>%
+  janitor::clean_names() %>%
+  cross_join(RT_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
+  mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
+         coefficient = gsub("^RT_log_", "", coefficient),   # <-- fixed
+         outcome = gsub("[[:digit:]]", "", model),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         is_sig = ifelse(pr_t < 0.05, 1, 0),
+         r_label = as.character(round(r_sq, 2)),
+         r_label = gsub("^0.", ".", r_label),
+         r_adj_label = as.character(round(r_sq_adj, 2)),
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")))
+
+
+ggplot(alt_cue_v_NA_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_cue_v_NA_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_cue_v_NA_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  theme_classic()+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
+                                                       "bu" = "bi-uni",
+                                                       "ub" = "uni-bi",
+                                                       "bb" = "bi-bi")),
+            ncol = 1)+
+  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
+  theme(legend.position = "none")
+
+
+
+# compare_models(alt_cue_indiv_diff_models$v_NA, "uu")
+# compare_models(alt_cue_indiv_diff_models$v_NA, "ub")
+# compare_models(alt_cue_indiv_diff_models$v_NA, "bu")
+# compare_models(alt_cue_indiv_diff_models$v_NA, "bb")
+
+```
+
+
+```{r}
+
+
+alt_cue_v_NA_model_summary <- lapply(alt_cue_indiv_diff_models$v_NA, function(x){
+  m_sum <- x %>% 
+    summary() 
+  
+  m_sum %>% 
+    coef() %>% 
+    as.data.frame() %>%
+    mutate(r_sq = m_sum$r.squared,
+           r_sq_adj = m_sum$adj.r.squared)
+  
+}) %>% 
+  bind_rows(.id = "model") %>% 
+  rownames_to_column("coefficient") %>%
+  janitor::clean_names() %>%
+  mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
+         coefficient = gsub("v_", "", coefficient),
+         coefficient = gsub("_NA", "", coefficient),
+         outcome = gsub("[[:digit:]]", "", model),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         is_sig = ifelse(pr_t < 0.05, 1, 0),
+         r_label = as.character(round(r_sq, 2)),
+         r_label = gsub("^0.", ".", r_label),
+         r_adj_label = as.character(round(r_sq_adj, 2)),
+         r_adj_label = gsub("^0.", ".", r_adj_label),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         color = parse_number(model) %>% factor())
+
+
+ggplot(alt_cue_v_NA_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_cue_v_NA_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_cue_v_NA_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  theme_classic()+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "uni-uni",
+                                                       "ub" = "uni-bi",
+                                                       "bu" = "bi-uni",
+                                                       "bb" = "bi-bi")), nrow = 1)+
+  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
+  theme(legend.position = "none")
+
+
+```
+
+## Models
+
+```{r}
+alt_cue_indiv_diff_models <- list(
+  RT = list(
+    uu0 = lm(RT_log_s1_cbiv0_lbiv0 ~ 1, alt_cue_indiv),
+    uu1 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+    uu2 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+    uu3 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+    uu4 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    bu0 = lm(RT_log_s1_cbiv1_lbiv0 ~ 1, alt_cue_indiv),
+    bu1 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+    bu2 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+    bu3 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+    bu4 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    ub0 = lm(RT_log_s1_cbiv0_lbiv1 ~ 1, alt_cue_indiv),
+    ub1 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+    ub2 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+    ub3 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+    ub4 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    bb0 = lm(RT_log_s1_cbiv1_lbiv1 ~ 1, alt_cue_indiv),
+    bb1 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv),
+    bb2 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
+    bb3 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
+    bb4 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv)
+  ),
+  
+  
+  Error = list(
+    uu1 = lm(Error_s1_cbiv0_lbiv0 ~ 1, alt_cue_indiv),
+    uu1 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+    uu2 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+    uu3 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+    uu4 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    bu0 = lm(Error_s1_cbiv1_lbiv0 ~ 1, alt_cue_indiv),
+    bu1 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+    bu2 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+    bu3 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+    bu4 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    ub0 = lm(Error_s1_cbiv0_lbiv1 ~ 1, alt_cue_indiv),
+    ub1 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+    ub2 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+    ub3 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+    ub4 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    bb0 = lm(Error_s1_cbiv1_lbiv1 ~ 1, alt_cue_indiv),
+    bb1 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
+    bb2 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
+    bb3 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
+    bb4 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv)
+  ),
+  
+  v = list(
+    
+    uu0 = lm(v_s1_cbiv0_lbiv0 ~ 1, alt_cue_indiv),
+    uu1 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+    uu2 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+    uu3 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+    uu4 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    bu0 = lm(v_s1_cbiv1_lbiv0 ~ 1, alt_cue_indiv),
+    bu1 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+    bu2 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+    bu3 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+    bu4 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    ub0 = lm(v_s1_cbiv0_lbiv1 ~ 1, alt_cue_indiv),
+    ub1 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+    ub2 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+    ub3 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+    ub4 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
+    
+    bb0 = lm(v_s1_cbiv1_lbiv1 ~ 1, alt_cue_indiv),
+    bb1 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
+    bb2 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
+    bb3 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
+    bb4 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv)
+  ),
+  v_NA = list(
+    
+    uu0 = lm(v_s1_cbiv0_lbiv0_NA ~ 1, alt_cue_indiv),
+    uu1 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+    uu2 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+    uu3 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+    uu4 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv),
+    
+    bu0 = lm(v_s1_cbiv1_lbiv0_NA ~ 1, alt_cue_indiv),
+    bu1 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+    bu2 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+    bu3 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+    bu4 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv),
+    
+    ub0 = lm(v_s1_cbiv0_lbiv1_NA ~ 1, alt_cue_indiv),
+    ub1 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+    ub2 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+    ub3 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+    ub4 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv),
+    
+    bb0 = lm(v_s1_cbiv1_lbiv1_NA ~ 1, alt_cue_indiv),
+    bb1 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
+    bb2 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv),
+    bb3 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv),
+    bb4 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv)
+  )
+)
+
+summary(alt_cue_indiv_diff_models$RT$uu4)
+
+```
+
+
+
+```{r}
+
+### USE THIS 
+
+v_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
+  
+  result <- compare_models(alt_cue_indiv_diff_models$v, x)
+  
+  data.frame(
+    comparison = x,
+    comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
+  )
+  
+}) %>%
+  bind_rows() %>%
+  mutate(comparison_sig = ifelse(comparison_p < 0.05, 1, 0))
+
+alt_cue_v_model_summary <- lapply(alt_cue_indiv_diff_models$v, function(x){
+  m_sum <- x %>% 
+    summary() 
+  
+  m_sum %>% 
+    coef() %>% 
+    as.data.frame() %>%
+    mutate(r_sq = m_sum$r.squared,
+           r_sq_adj = m_sum$adj.r.squared)
+}) %>% 
+  bind_rows(.id = "model") %>% 
+  rownames_to_column("coefficient") %>%
+  janitor::clean_names() %>%
+  cross_join(v_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
+  mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
+         coefficient = gsub("RT_log_", "", coefficient),
+         outcome = gsub("[[:digit:]]", "", model),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         is_sig = ifelse(pr_t < 0.05, 1, 0),
+         # r_label = as.character(round(r_sq, 2)),
+         # r_label = gsub("^0.", ".", r_label),
+         r_label = sprintf("%.2f", r_sq),
+         r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
+         r_adj_label = sprintf("%.2f", r_sq_adj),
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
+         color = parse_number(model) %>% factor())
+
+
+ggplot(alt_cue_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_cue_v_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_cue_v_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  theme_classic()+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
+  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "v_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "v_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "v_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
+  theme(legend.position = "none")
+
+plt_betw_v <- ggplot(alt_cue_v_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  # geom_text(data = alt_cue_v_model_summary %>% group_by(model) %>% slice(n()),
+  #           aes(label = r_adj_label), hjust = -0.3)+
+  geom_label(data = alt_cue_v_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.1, alpha = 0.8, linewidth = 0)+
+  geom_point(data = alt_cue_v_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  labs(x = "",
+       y = "")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(5))+
+  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "v_s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "v_s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "v_s0_cbiv1_lbiv0" = "Uni-Bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 4.5))+
+  theme(legend.position = "none")
+
+plt_betw_v
+
+ggsave(plot = plt_betw_v, "AR_betw_v.svg", width = 4, height = 6, units = "in")
+ saveRDS(plt_betw_v, "AR_betw_v.RDS")
+
+
+
+
+```
+
+
+```{r}
+RT_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
+  
+  result <- compare_models(alt_cue_indiv_diff_models$RT, x)
+  
+  data.frame(
+    comparison = x,
+    comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
+  )
+  
+}) %>%
+  bind_rows() %>%
+  mutate(comparison_sig = ifelse(comparison_p < 0.05, 1, 0))
+
+alt_cue_rt_model_summary <- lapply(alt_cue_indiv_diff_models$RT, function(x){
+  m_sum <- x %>% 
+    summary() 
+  
+  m_sum %>% 
+    coef() %>% 
+    as.data.frame() %>%
+    mutate(r_sq = m_sum$r.squared,
+           r_sq_adj = m_sum$adj.r.squared)
+}) %>% 
+  bind_rows(.id = "model") %>% 
+  rownames_to_column("coefficient") %>%
+  janitor::clean_names() %>%
+  cross_join(RT_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
+  mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
+         coefficient = gsub("RT_log_", "", coefficient),
+         outcome = gsub("[[:digit:]]", "", model),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         is_sig = ifelse(pr_t < 0.05, 1, 0),
+         # r_label = as.character(round(r_sq, 2)),
+         # r_label = gsub("^0.", ".", r_label),
+         r_label = sprintf("%.2f", r_sq),
+         r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
+         r_adj_label = sprintf("%.2f", r_sq_adj),
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
+         color = parse_number(model) %>% factor())
+
+
+ggplot(alt_cue_rt_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_cue_rt_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_cue_rt_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  theme_classic()+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
+  scale_x_discrete(labels = c("RT_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "RT_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "RT_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "RT_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
+  theme(legend.position = "none")
+
+plt_betw_rt <- ggplot(alt_cue_rt_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  # geom_text(data = alt_cue_v_model_summary %>% group_by(model) %>% slice(n()),
+  #           aes(label = r_adj_label), hjust = -0.3)+
+  geom_label(data = alt_cue_rt_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.1, alpha = 0.8, linewidth = 0)+
+  geom_point(data = alt_cue_rt_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  labs(x = "",
+       y = "")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(5))+
+  scale_x_discrete(labels = c("RT_log_s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "RT_log_s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "RT_log_s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "RT_log_s0_cbiv1_lbiv0" = "Uni-Bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 4.5))+
+  theme(legend.position = "none")
+
+
+plt_betw_rt
+
+ggsave(plot = plt_betw_v, "AR_betw_RT.svg", width = 4, height = 6, units = "in")
+ saveRDS(plt_betw_v, "AR_betw_RT.RDS")
+```
+
+
+###############################################################################################
+
+IQ and WM Tests 
+
+
+```{r}
+library(readr)
+tests <- read_tsv("BigTestsToR.txt")
+
+class(tests)
+
+head(tests)
+
+names(tests)
+
+length(unique(tests$ID)) # 81 subjects 
+
+```
+
+```{r}
+tests_clean <- tests %>%
+  filter(!ID %in% c(901, 959, 201, 975, 902)) %>% 
+  droplevels()
+
+
+length(unique(tests_clean$ID)) ## 76 subjects 
+
+
+
+sort(unique((d_clean$id))) # 3, 4, 5, 7 ,8, 9 , 10, 11, 12, 13, 14, 15, 16, 17, 99, 202 , 203    204, 401 , 402 , 403, 404, 405 , 406, 501,  502,  503, 504, 505, 701, 702, 703 , 704 ,705 ,706, 707, 708 , 752, 800, 903, 904, 905, 906, 907, 908, 909 , 910, 911, 912, 913, 914, 915, 916 ,   917 ,918, 919, 953, 954, 958, 962 ,963, 964 ,965 ,966 , 967 , 968 , 969 , 970,971, 974, 75033, 750445, 961422
+
+sort(unique(tests_clean$ID)) #  3   4   5   7   9  10  11  12  13  14  15  17  99 202 203 204 301 403 404 405 406 501 502 503 504 505 701 702 703 704 705 706 707 708 751 752 800 903 904 905 906 907 908 909 910 911 912 913 914 915 916 917 918 919 951 952 953 954 956 957 958 960 961 962 963 964 965 966 967 968 969 970 971 972 973 974
+
+## difference: tests has 301, d clean does not have it ; d_clean has 401 and 402. tests does not have it; tests has 751 and d clean does not; tests has 951, 952, 956, 957, 950, 960, 961 but d clean does not have it. tests does not have 75033, 750445, 961422
+
+
+# # 1. Who is in df1 but NOT in df2? (The "Lost" subjects)
+ missing_from_dclean <- setdiff(tests_clean$ID, d_clean$id)
+ missing_from_dclean # 301 751 951 952 956 957 960 961 972 973
+# 
+# # 2. Who is in df2 but NOT in df1? (The "New" subjects)
+ missing_from_test <- setdiff(d_clean$id, tests_clean$ID)
+ missing_from_test # "16"     "8"      "401"    "402"    "750445" "75033"  "961422"
+# 
+# # 3. Who is in BOTH? (The "Overlap")
+ common_ids <- intersect(tests_clean$ID, d_clean$id)
+ sort(common_ids)  #  [1] "10"  "11"  "12"  "13"  "14"  "15"  "17"  "202" "203" "204" "3"   "4"   "403" "404" "405" "406" "5"   "501" "502" "503" "504" "505" "7"   "701" "702" "703" "704" "705" "706" "707" "708" "752" "800" "9"   "903" "904" "905" "906" "907" "908" "909" "910" "911" "912" "913" "914" "915" "916" "917" "918" "919" "953" "954" "958" "962" "963"  "964" "965" "966" "967" "968" "969" "970" "971" "974" "99" 
+ 
+ length(common_ids) # 66 subjects 
+```
+ 
+ 
+ 
+
+```{r}
+
+
+id_4_clean <- d_clean %>%
+  filter(id == 4) %>% 
+  group_by(id, block, trial) %>%
+  slice(1) %>%   # keep first occurrence
+  ungroup() %>% 
+  droplevels()
+```
+
+
+```{r}
+data_clean <- d_clean %>%
+  filter(id != 4) %>%   # keep everyone else untouched
+  bind_rows(id_4_clean) %>% 
+  droplevels()
+
+```
+
 
 
