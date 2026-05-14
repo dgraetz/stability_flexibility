@@ -23,96 +23,11 @@ library(ggplot2)
 
 ```
 
-```{r}
-
-# #sophia: 
-# 
-# apa_theming <- function(base_size = 12,
-#                         base_family = "sans",
-#                         blue = "#56B4E9",
-#                         orange = "#E69F00") {
-# 
-#   list(
-#     # based off how others strucutre their apa figure themes but adding the specifications we talked about
-#     theme_bw(base_size = base_size, base_family = base_family) %+replace%
-#       theme(
-#         text = element_text(family = base_family, color = "black"),
-#         plot.title = element_text(size = base_size * 1.4, face = "bold"),
-#         plot.subtitle = element_text(size = base_size * 1.1),
-#         plot.caption = element_text(size = base_size * 0.9),
-# 
-#         axis.title = element_text(size = base_size * 1.1),
-#         axis.text = element_text(size = base_size),
-#         axis.line = element_line(color = "black", linewidth = 0.5),
-#         axis.ticks = element_line(color = "black"),
-# 
-#         panel.grid.major = element_blank(),
-#         panel.grid.minor = element_blank(),
-#         panel.border = element_blank(),
-# 
-#         legend.position = "right",
-#         legend.title = element_text(size = base_size * 1.1),
-#         legend.text = element_text(size = base_size),
-# 
-#         strip.background = element_rect(fill = "gray90", color = "black"),
-#         strip.text = element_text(size = base_size * 1.1, face = "bold")
-#       ),
-# 
-#     #assigning colors specified in specfifc order
-#     scale_color_manual(values = c(blue, orange))
-#   )
-# }
-# 
-# 
-# #theme_set(apa_theming())
-# 
-# 
-# ## gemini fix: 
-# 
-# apa_theming <- function(base_size = 12,
-#                         base_family = "sans",
-#                         blue = "#56B4E9",
-#                         orange = "#E69F00") {
-#   
-#   # Define the theme object separately
-#   theme_obj <- theme_bw(base_size = base_size, base_family = base_family) %+replace%
-#     theme(
-#       text = element_text(family = base_family, color = "black"),
-#       plot.title = element_text(size = base_size * 1.4, face = "bold"),
-#       plot.subtitle = element_text(size = base_size * 1.1),
-#       plot.caption = element_text(size = base_size * 0.9),
-#       
-#       axis.title = element_text(size = base_size * 1.1),
-#       axis.text = element_text(size = base_size),
-#       axis.line = element_line(color = "black", linewidth = 0.5),
-#       axis.ticks = element_line(color = "black"),
-#       
-#       panel.grid.major = element_blank(),
-#       panel.grid.minor = element_blank(),
-#       panel.border = element_blank(),
-#       
-#       legend.position = "right",
-#       legend.title = element_text(size = base_size * 1.1),
-#       legend.text = element_text(size = base_size),
-#       
-#       strip.background = element_rect(fill = "gray90", color = "black"),
-#       strip.text = element_text(size = base_size * 1.1, face = "bold")
-#     )
-#   
-#   # Return a list so you can use + apa_theming()
-#   list(
-#     theme_obj,
-#     scale_color_manual(values = c(blue, orange))
-#   )
-# }
-
-```
-
 
 ```{r}
 
 
-## Dominik 
+## Dominik's version: 
 
 library(ggplot2)
 design <- list()
@@ -916,38 +831,38 @@ alt_cue_agg_ddm_nocycle$val_p_g <- as.factor(alt_cue_agg_ddm_nocycle$val_p_g)
 plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
-apa_theming()
+theme_classic()
 
 plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
-apa_theming()
+theme_classic()
 
 
 plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
-apa_theming()
+theme_classic()
 
 #########
 plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = a_m, color = val_c_g , linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
   scale_x_discrete(limits = c("1", "0"))+
-apa_theming()
+theme_classic()
 
 plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = v_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
   scale_x_discrete(limits = c("1", "0"))+
-apa_theming()
+theme_classic()
 
 
 plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = Ter_m, color = val_c_g, linetype = val_p_g, group = interaction(val_c_g, val_p_g)))+
   geom_line(position = pos)+
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
   scale_x_discrete(limits = c("1", "0"))+
-apa_theming()
+theme_classic()
 
 ezddm_effect_plot<- ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
                   plt_ddm_v, plt_ddm_v_nocycle,
@@ -1199,7 +1114,9 @@ tab_model(alt_cue_Ter_contrast, df.method = "satterthwaite")
 
 descriptive plots 
 
-1. rt
+!!!!!!!!!!!!!!!!! wrong CI!! so do not use these sets of plots !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+1. rt: 
 ```{r}
 # 
 # 
@@ -2010,7 +1927,7 @@ alt_cue_indiv <- alt_cue_indiv %>%
 ```
 
 
-2. linear regression models 
+2. linear regression models- my version. so do not use these sets of models. Use Dominik's code later on that has all the models per DV as a list 
 
 Model 1A: lm(S[UU] ~ NS[UU]) 
 
@@ -3040,44 +2957,47 @@ experimental-level
 
 1b. log rt 
 ```{r}
-
-pos <- position_dodge(0.3)
-
-
 log_rt_plot_df <- d_analysis %>%
   filter(filter_correct == 0) %>%
-  group_by(valence_current_group,
-           valence_previous_group,
-           switch) %>%
+  group_by(id, valence_current_group, valence_previous_group, switch) %>%
   summarise(
     mean_rt = mean(log(time), na.rm = TRUE),
-    se_rt   = sd(log(time),  na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  ) %>%
+  normWS(s = "id", dv = "mean_rt") %>%
+  mutate(mean_rt = DV_n) %>%
+  group_by(valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    RT_m = mean(mean_rt, na.rm = TRUE),
+    RT_ci_lower = get_ci(mean_rt, RT_m)[2],
+    RT_ci_upper = get_ci(mean_rt, RT_m)[1],
     .groups = "drop"
   ) %>%
   mutate(
-    switch = factor(switch),
+    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat")),
     valence_current_group  = factor(valence_current_group,
                                     labels = c("Univalent", "Bivalent")),
     valence_previous_group = factor(valence_previous_group,
-                                    labels = c("Univalent", "Bivalent")), 
-    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat"))
+                                    labels = c("Univalent", "Bivalent"))
   )
+
+log_rt_plot_df
 
 logrt_explevel_plot <- ggplot(log_rt_plot_df,
     aes(x        = switch,
-        y        = mean_rt,
+        y        = RT_m,
         color    = valence_current_group,
         linetype = valence_previous_group,
         group    = interaction(valence_previous_group,
                                valence_current_group))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
-  #geom_point(size = 3, position= pos) +
-  geom_errorbar(aes(ymin = mean_rt - se_rt,
-                    ymax = mean_rt + se_rt),
+  geom_errorbar(aes(ymin = RT_ci_lower,
+                    ymax = RT_ci_upper),
                 width     = design$errorbar$width,
-                linewidth = design$errorbar$linewidth, 
-                position= pos) +
-   scale_linetype_manual(
+                linewidth = design$errorbar$linewidth,
+                position  = pos, 
+                linetype = "solid") +
+  scale_linetype_manual(
     name   = "Previous Group",
     values = c("Univalent" = design$prev_val$linetype$uni,
                "Bivalent"  = design$prev_val$linetype$bi)
@@ -3087,20 +3007,16 @@ logrt_explevel_plot <- ggplot(log_rt_plot_df,
     values = c("Univalent" = design$curr_val$color$uni,
                "Bivalent"  = design$curr_val$color$bi)
   ) +
- 
   labs(
-   # x = "Switch Status",
     x = NULL,
     y = "Mean log RT"
   )
 
-
 logrt_explevel_plot
 
-
 ggsave("AC_RTlog.svg", logrt_explevel_plot, width = 10, height = 6)
-
 saveRDS(logrt_explevel_plot, "AC_RTlog.RDS")
+
 
 ```
 2. error 
@@ -3109,42 +3025,48 @@ saveRDS(logrt_explevel_plot, "AC_RTlog.RDS")
 # library(dplyr)
 # library(ggplot2)
 
-pos <- position_dodge(0.3)
-
+names(err_plot_df)
 
 err_plot_df <- d_analysis %>%
-  group_by(valence_current_group,
-           valence_previous_group,
-           switch) %>%
+  group_by(id, valence_current_group, valence_previous_group, switch) %>%
   summarise(
     error_rate = mean(error, na.rm = TRUE),
-    se_error   = sd(error,  na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  ) %>%
+  normWS(s = "id", dv = "error_rate") %>%
+  mutate(error_rate = DV_n) %>%
+  group_by(valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    Error_m = mean(error_rate, na.rm = TRUE),
+    Error_ci_lower = get_ci(error_rate, Error_m)[2],
+    Error_ci_upper = get_ci(error_rate, Error_m)[1],
     .groups = "drop"
   ) %>%
   mutate(
-    switch = factor(switch, levels = c(1, 0), labels = c("Switch" , "Repeat")),
+    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat")),
     valence_current_group  = factor(valence_current_group,
                                     labels = c("Univalent", "Bivalent")),
     valence_previous_group = factor(valence_previous_group,
                                     labels = c("Univalent", "Bivalent"))
   )
 
+
 error_explevel_plot <- ggplot(err_plot_df,
     aes(x        = switch,
-        y        = error_rate,
+        y        = Error_m,
         color    = valence_current_group,
         linetype = valence_previous_group,
         group    = interaction(valence_previous_group,
                                valence_current_group))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
-  #geom_point(size = 3, position = pos) +
-  geom_errorbar(aes(ymin = error_rate - se_error,
-                    ymax = error_rate + se_error),
+  geom_errorbar(aes(ymin = Error_ci_lower,
+                    ymax = Error_ci_upper),
                 width     = design$errorbar$width,
-                linewidth = design$errorbar$linewidth, 
-                position = pos) +
-    scale_linetype_manual(
-    name   = "Previous Group Valence ",
+                linewidth = design$errorbar$linewidth,
+                position  = pos, 
+                linetype = "solid") +
+  scale_linetype_manual(
+    name   = "Previous Group Valence",
     values = c("Univalent" = design$prev_val$linetype$uni,
                "Bivalent"  = design$prev_val$linetype$bi)
   ) +
@@ -3153,18 +3075,15 @@ error_explevel_plot <- ggplot(err_plot_df,
     values = c("Univalent" = design$curr_val$color$uni,
                "Bivalent"  = design$curr_val$color$bi)
   ) +
-
   labs(
-  #  x = "Switch Status",
     x = NULL,
     y = "Error Rate"
   )
 
 error_explevel_plot
 
-ggsave("AC_Errors.svg", error_explevel_plot, width = 10, height = 6)  
-
-saveRDS( error_explevel_plot, "AC_Errors.rds" )
+ggsave("AC_Errors.svg", error_explevel_plot, width = 10, height = 6)
+saveRDS(error_explevel_plot, "AC_Errors.rds")
 ```
 
 
@@ -3198,14 +3117,14 @@ alt_cue_agg_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
   mutate(Ter = DV_n) %>%
   group_by(val_c_g, val_p_g, switch) %>%
   summarize(a_m = mean(a, na.rm = TRUE),
-            a_ci_lower = get_ci(a, a_m)[1],
-            a_ci_upper = get_ci(a, a_m)[2],
+            a_ci_lower = get_ci(a, a_m)[2],
+            a_ci_upper = get_ci(a, a_m)[1],
             v_m = mean(v, na.rm = TRUE),
-            v_ci_lower = get_ci(v, v_m)[1],
-            v_ci_upper = get_ci(v, v_m)[2],
+            v_ci_lower = get_ci(v, v_m)[2],
+            v_ci_upper = get_ci(v, v_m)[1],
             Ter_m = mean(Ter, na.rm = TRUE),
-            Ter_ci_lower = get_ci(Ter, Ter_m)[1],
-            Ter_ci_upper = get_ci(Ter, Ter_m)[2],)
+            Ter_ci_lower = get_ci(Ter, Ter_m)[2],
+            Ter_ci_upper = get_ci(Ter, Ter_m)[1],)
 
 
 alt_cue_agg_ddm$switch <- as.factor(alt_cue_agg_ddm$switch)
@@ -3291,7 +3210,8 @@ plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
-                position = pos) +
+                position = pos, 
+                linetype = "solid") +
 scale_x_discrete(limits = c("Switch", "Repeat"))+
   ddm_scales +
   labs(x = NULL, y = "Boundary Separation")
@@ -3304,7 +3224,8 @@ plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
-                position = pos) +
+                position = pos, 
+                linetype = "solid") +
   scale_x_discrete(limits = c("Switch", "Repeat")) +
   ddm_scales +
   labs(x = NULL, y = "Drift Rate")
@@ -3317,7 +3238,8 @@ plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper),
                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
-                position = pos) +
+                position = pos, 
+                linetype = "solid") +
   scale_x_discrete(limits = c("Switch", "Repeat")) +
   ddm_scales +
  labs(x = NULL, y = "Non-Decision Time")
@@ -3338,15 +3260,15 @@ ezddm_effect_plot
 
 #ggsave("RT_descriptive_plot.svg", RT_descriptive_plot, width = 10, height = 6)
 
-ggsave("AC_ddm_a.svg", plt_ddm_a_nocycle, width = 10, height = 6)
-ggsave("AC_ddm_v.svg", plt_ddm_v_nocycle, width = 10, height = 6)
-ggsave("AC_ddm_TER.svg", plt_ddm_Ter_nocycle, width = 10, height = 6)
-ggsave("ezddm_effect_plot_apa.svg", ezddm_effect_plot, width = 10, height = 6)
-
-
-saveRDS( plt_ddm_a_nocycle, "AC_ddm_a.rds" )
-saveRDS(plt_ddm_v_nocycle, "AC_ddm_v.rds" )
-saveRDS( plt_ddm_Ter_nocycle, "AC_ddm_TER.rds")
+# ggsave("AC_ddm_a.svg", plt_ddm_a_nocycle, width = 10, height = 6)
+# ggsave("AC_ddm_v.svg", plt_ddm_v_nocycle, width = 10, height = 6)
+# ggsave("AC_ddm_TER.svg", plt_ddm_Ter_nocycle, width = 10, height = 6)
+# ggsave("ezddm_effect_plot_apa.svg", ezddm_effect_plot, width = 10, height = 6)
+# 
+# 
+# saveRDS( plt_ddm_a_nocycle, "AC_ddm_a.rds" )
+# saveRDS(plt_ddm_v_nocycle, "AC_ddm_v.rds" )
+# saveRDS( plt_ddm_Ter_nocycle, "AC_ddm_TER.rds")
 
 ```
 
@@ -3422,6 +3344,7 @@ ggsave("AC_lagRT.svg", logrt_pred_switch, width = 10, height = 6)
 saveRDS(logrt_pred_switch, "AC_lagRT.rds" )
 ```
 
+3. between subjects (individual differences)
 
 ```{r}
 
@@ -3539,7 +3462,7 @@ ggplot(alt_cue_v_NA_model_summary, aes(x = coefficient, y = estimate, group = mo
 
 ```
 
-## Models
+## Models (just have this here pasted again as a reference)
 
 ```{r}
 alt_cue_indiv_diff_models <- list(
@@ -4046,133 +3969,6 @@ ungroup and then scale for within-subjects
 
 
 ###########################################################################################
-
-within-subject error bars 
-
-1. experiment level 
-
-
-```{r}
-
-
-log_rt_plot_df <- d_analysis %>%
-  filter(filter_correct == 0) %>%
-  group_by(id, valence_current_group, valence_previous_group, switch) %>%
-  summarise(
-    mean_rt = mean(log(time), na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  normWS(s = "id", dv = "mean_rt") %>%
-  mutate(mean_rt = DV_n) %>%
-  group_by(valence_current_group, valence_previous_group, switch) %>%
-  summarise(
-    RT_m = mean(mean_rt, na.rm = TRUE),
-    RT_ci_lower = get_ci(mean_rt, RT_m)[2],
-    RT_ci_upper = get_ci(mean_rt, RT_m)[1],
-    .groups = "drop"
-  ) %>%
-  mutate(
-    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat")),
-    valence_current_group  = factor(valence_current_group,
-                                    labels = c("Univalent", "Bivalent")),
-    valence_previous_group = factor(valence_previous_group,
-                                    labels = c("Univalent", "Bivalent"))
-  )
-
-logrt_explevel_plot <- ggplot(log_rt_plot_df,
-    aes(x        = switch,
-        y        = RT_m,
-        color    = valence_current_group,
-        linetype = valence_previous_group,
-        group    = interaction(valence_previous_group,
-                               valence_current_group))) +
-  geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_errorbar(aes(ymin = RT_ci_lower,
-                    ymax = RT_ci_upper),
-                width     = design$errorbar$width,
-                linewidth = design$errorbar$linewidth,
-                position  = pos) +
-  scale_linetype_manual(
-    name   = "Previous Group",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
-  ) +
-  scale_color_manual(
-    name   = "Current Group",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
-  ) +
-  labs(
-    x = NULL,
-    y = "Mean log RT"
-  )
-
-logrt_explevel_plot
-
-ggsave("AC_RTlog.svg", logrt_explevel_plot, width = 10, height = 6)
-saveRDS(logrt_explevel_plot, "AC_RTlog.RDS")
-  
-```
-
-```{r}
-err_plot_df <- d_analysis %>%
-  group_by(id, valence_current_group, valence_previous_group, switch) %>%
-  summarise(
-    error_rate = mean(error, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  normWS(s = "id", dv = "error_rate") %>%
-  mutate(error_rate = DV_n) %>%
-  group_by(valence_current_group, valence_previous_group, switch) %>%
-  summarise(
-    Error_m = mean(error_rate, na.rm = TRUE),
-    Error_ci_lower = get_ci(error_rate, Error_m)[1],
-    Error_ci_upper = get_ci(error_rate, Error_m)[2],
-    .groups = "drop"
-  ) %>%
-  mutate(
-    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat")),
-    valence_current_group  = factor(valence_current_group,
-                                    labels = c("Univalent", "Bivalent")),
-    valence_previous_group = factor(valence_previous_group,
-                                    labels = c("Univalent", "Bivalent"))
-  )
-
-
-error_explevel_plot <- ggplot(err_plot_df,
-    aes(x        = switch,
-        y        = Error_m,
-        color    = valence_current_group,
-        linetype = valence_previous_group,
-        group    = interaction(valence_previous_group,
-                               valence_current_group))) +
-  geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_errorbar(aes(ymin = Error_ci_lower,
-                    ymax = Error_ci_upper),
-                width     = design$errorbar$width,
-                linewidth = design$errorbar$linewidth,
-                position  = pos) +
-  scale_linetype_manual(
-    name   = "Previous Group Valence",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
-  ) +
-  scale_color_manual(
-    name   = "Current Group Valence",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
-  ) +
-  labs(
-    x = NULL,
-    y = "Error Rate"
-  )
-
-error_explevel_plot
-
-ggsave("AC_Errors.svg", error_explevel_plot, width = 10, height = 6)
-saveRDS(error_explevel_plot, "AC_Errors.rds")
-```
-
 
 
 
