@@ -906,7 +906,7 @@ alt_cue_agg_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
 ### Plots
 
 ```{r}
-theme_set(apa_theming()[[1]])
+#theme_set(apa_theming()[[1]])
 
 alt_cue_agg_ddm$switch <- as.factor(alt_cue_agg_ddm$switch)
 alt_cue_agg_ddm_nocycle$switch <- as.factor(alt_cue_agg_ddm_nocycle$switch)
@@ -1084,54 +1084,54 @@ alt_cue_agg_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
 
 ```{r}
 
-alt_cue_agg_ddm$val_p_g_contrast <- as.factor(alt_cue_agg_ddm$val_p_g_contrast)
-alt_cue_agg_ddm$val_c_g_contrast <- as.factor(alt_cue_agg_ddm$val_c_g_contrast)
-alt_cue_agg_ddm$switch <- as.factor(alt_cue_agg_ddm$switch)
-alt_cue_agg_ddm_nocycle$switch <- as.factor(alt_cue_agg_ddm_nocycle$switch)
-alt_cue_agg_ddm_nocycle$val_c_g_contrast <- as.factor(alt_cue_agg_ddm_nocycle$val_c_g_contrast)
-alt_cue_agg_ddm_nocycle$val_p_g_contrast <- as.factor(alt_cue_agg_ddm_nocycle$val_p_g_contrast)
-
-plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
-theme_set(apa_theming())
-
-plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
- theme_set(apa_theming())
-
-
-plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
-theme_set(apa_theming())
-
-#########
-plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = a_m, color = val_c_g_contrast , linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
-  scale_x_discrete(limits = c("1", "0"))+
-theme_set(apa_theming())
-
-plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = v_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
-  scale_x_discrete(limits = c("1", "0"))+
-theme_set(apa_theming())
-
-
-plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = Ter_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
-  geom_line(position = pos)+
-  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
-  scale_x_discrete(limits = c("1", "0"))+
-theme_set(apa_theming())
-
-ezddm_contrast_plot <- ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
-                  plt_ddm_v, plt_ddm_v_nocycle,
-                  plt_ddm_Ter, plt_ddm_Ter_nocycle, common.legend = TRUE, nrow = 3, ncol = 2)  
-
-ggsave("ezddm_contrast_plot_apa.svg", ezddm_contrast_plot, width = 10, height = 6)
+# alt_cue_agg_ddm$val_p_g_contrast <- as.factor(alt_cue_agg_ddm$val_p_g_contrast)
+# alt_cue_agg_ddm$val_c_g_contrast <- as.factor(alt_cue_agg_ddm$val_c_g_contrast)
+# alt_cue_agg_ddm$switch <- as.factor(alt_cue_agg_ddm$switch)
+# alt_cue_agg_ddm_nocycle$switch <- as.factor(alt_cue_agg_ddm_nocycle$switch)
+# alt_cue_agg_ddm_nocycle$val_c_g_contrast <- as.factor(alt_cue_agg_ddm_nocycle$val_c_g_contrast)
+# alt_cue_agg_ddm_nocycle$val_p_g_contrast <- as.factor(alt_cue_agg_ddm_nocycle$val_p_g_contrast)
+# 
+# plt_ddm_a <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = a_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
+#   geom_line(position = pos)+
+#   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
+# theme_set(apa_theming())
+# 
+# plt_ddm_v <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = v_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
+#   geom_line(position = pos)+
+#   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
+#  theme_set(apa_theming())
+# 
+# 
+# plt_ddm_Ter <- ggplot(alt_cue_agg_ddm, aes(x = cycle, y = Ter_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
+#   geom_line(position = pos)+
+#   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
+# theme_set(apa_theming())
+# 
+# #########
+# plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = a_m, color = val_c_g_contrast , linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
+#   geom_line(position = pos)+
+#   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), width = 0.1, position = pos)+
+#   scale_x_discrete(limits = c("1", "0"))+
+# theme_set(apa_theming())
+# 
+# plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = v_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
+#   geom_line(position = pos)+
+#   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), width = 0.1, position = pos)+
+#   scale_x_discrete(limits = c("1", "0"))+
+# theme_set(apa_theming())
+# 
+# 
+# plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle, aes(x = switch, y = Ter_m, color = val_c_g_contrast, linetype = val_p_g_contrast, group = interaction(val_c_g_contrast, val_p_g_contrast)))+
+#   geom_line(position = pos)+
+#   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), width = 0.1, position = pos)+
+#   scale_x_discrete(limits = c("1", "0"))+
+# theme_set(apa_theming())
+# 
+# ezddm_contrast_plot <- ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
+#                   plt_ddm_v, plt_ddm_v_nocycle,
+#                   plt_ddm_Ter, plt_ddm_Ter_nocycle, common.legend = TRUE, nrow = 3, ncol = 2)  
+# 
+# ggsave("ezddm_contrast_plot_apa.svg", ezddm_contrast_plot, width = 10, height = 6)
 ```
 
 ### lmer models on ezDDM parameters for both effect and contrast coding  
@@ -1201,149 +1201,149 @@ descriptive plots
 
 1. rt
 ```{r}
-
-
-rt_plot_df <- d_analysis %>%
-  filter(filter_correct == 0 ) %>%
-  group_by(valence_current_group,
-           valence_previous_group,
-           switch) %>%
-  summarise(
-    mean_rt = mean(time, na.rm = TRUE),
-    se_rt   = sd(time, na.rm = TRUE)/sqrt(n()),
-    .groups = "drop"
-  )
-rt_plot_df <- rt_plot_df %>%
-  mutate(
-    switch = factor(switch, levels = c(0,1)),
-    valence_current_group = factor(valence_current_group,
-                                   labels = c("Current: Univalent",
-                                              "Current: Bivalent")),
-    valence_previous_group = factor(valence_previous_group,
-                                    labels = c("Previous: Univalent",
-                                               "Previous: Bivalent"))
-  )
-
-rt_explevel_plot <- ggplot(rt_plot_df,
-       aes(x = switch,
-           y = mean_rt,
-           color = valence_current_group,
-           linetype = valence_previous_group,
-           group = interaction(valence_current_group,
-                               valence_previous_group))) +
-  
-  geom_line(size = 1) +
-  geom_point(size = 3) +
-  
-  geom_errorbar(aes(ymin = mean_rt - se_rt,
-                    ymax = mean_rt + se_rt),
-                width = .1) +
-  
-  labs(
-    x = "Cycle",
-    y = "Mean RT (ms)",
-    color = "Current Group",
-    linetype = "Previous Group"
-  ) +
-  
- theme_minimal()
-
-ggsave("rt_explevel_plot.svg", rt_explevel_plot, width = 10, height = 6)
-
-
-### apa_theming 
-
-# --- PLOTTING ---
-
-# 1. To set the global theme, extract just the first element of the list
-theme_set(apa_theming()[[1]])
-
-rt_explevel_plot <- ggplot(rt_plot_df,
-       aes(x = cycle,
-           y = mean_rt,
-           color = valence_current_group,
-           linetype = valence_previous_group,
-           group = interaction(valence_current_group,
-                               valence_previous_group))) +
-  
-  # Use linewidth instead of size for geom_line
-  geom_line(linewidth = 1) + 
-  geom_point(size = 3) +
-  
-  geom_errorbar(aes(ymin = mean_rt - se_rt,
-                    ymax = mean_rt + se_rt),
-                width = .1) +
-  
-  labs(
-    x = "Cycle",
-    y = "Mean RT (ms)",
-    color = "Current Group",
-    linetype = "Previous Group"
-  ) +
-  # Use the function here to apply both the theme and the colors
-  apa_theming() 
-
-ggsave("rt_explevel_plot_apa.svg", rt_explevel_plot, width = 10, height = 6)
-
-rt_explevel_plot
+# 
+# 
+# rt_plot_df <- d_analysis %>%
+#   filter(filter_correct == 0 ) %>%
+#   group_by(valence_current_group,
+#            valence_previous_group,
+#            switch) %>%
+#   summarise(
+#     mean_rt = mean(time, na.rm = TRUE),
+#     se_rt   = sd(time, na.rm = TRUE)/sqrt(n()),
+#     .groups = "drop"
+#   )
+# rt_plot_df <- rt_plot_df %>%
+#   mutate(
+#     switch = factor(switch, levels = c(0,1)),
+#     valence_current_group = factor(valence_current_group,
+#                                    labels = c("Current: Univalent",
+#                                               "Current: Bivalent")),
+#     valence_previous_group = factor(valence_previous_group,
+#                                     labels = c("Previous: Univalent",
+#                                                "Previous: Bivalent"))
+#   )
+# 
+# rt_explevel_plot <- ggplot(rt_plot_df,
+#        aes(x = switch,
+#            y = mean_rt,
+#            color = valence_current_group,
+#            linetype = valence_previous_group,
+#            group = interaction(valence_current_group,
+#                                valence_previous_group))) +
+#   
+#   geom_line(size = 1) +
+#   geom_point(size = 3) +
+#   
+#   geom_errorbar(aes(ymin = mean_rt - se_rt,
+#                     ymax = mean_rt + se_rt),
+#                 width = .1) +
+#   
+#   labs(
+#     x = "Cycle",
+#     y = "Mean RT (ms)",
+#     color = "Current Group",
+#     linetype = "Previous Group"
+#   ) +
+#   
+#  theme_minimal()
+# 
+# ggsave("rt_explevel_plot.svg", rt_explevel_plot, width = 10, height = 6)
+# 
+# 
+# ### apa_theming 
+# 
+# # --- PLOTTING ---
+# 
+# # 1. To set the global theme, extract just the first element of the list
+# 
+# 
+# rt_explevel_plot <- ggplot(rt_plot_df,
+#        aes(x = cycle,
+#            y = mean_rt,
+#            color = valence_current_group,
+#            linetype = valence_previous_group,
+#            group = interaction(valence_current_group,
+#                                valence_previous_group))) +
+#   
+#   # Use linewidth instead of size for geom_line
+#   geom_line(linewidth = 1) + 
+#   geom_point(size = 3) +
+#   
+#   geom_errorbar(aes(ymin = mean_rt - se_rt,
+#                     ymax = mean_rt + se_rt),
+#                 width = .1) +
+#   
+#   labs(
+#     x = "Cycle",
+#     y = "Mean RT (ms)",
+#     color = "Current Group",
+#     linetype = "Previous Group"
+#   ) +
+#   # Use the function here to apply both the theme and the colors
+#  theme_classic() 
+# 
+# ggsave("rt_explevel_plot_apa.svg", rt_explevel_plot, width = 10, height = 6)
+# 
+# rt_explevel_plot
 
 ```
 
 1b. log rt 
 ```{r}
-theme_set(apa_theming()[[1]])
+#theme_set(apa_theming()[[1]])
 
-log_rt_plot_df <- d_analysis %>%
-  filter(filter_correct == 0 ) %>%
-  group_by(valence_current_group,
-           valence_previous_group,
-           switch) %>%
-  summarise(
-    mean_rt = mean(log(time), na.rm = TRUE),
-    se_rt   = sd(log(time), na.rm = TRUE)/sqrt(n()),
-    .groups = "drop"
-  )
-log_rt_plot_df <- log_rt_plot_df %>%
-  mutate(
-    #switch = factor(switch, levels = c(0,1)),
-    switch = factor(switch),
-    valence_current_group = factor(valence_current_group,
-                                   labels = c("Current: Univalent",
-                                              "Current: Bivalent")),
-    valence_previous_group = factor(valence_previous_group,
-                                    labels = c("Previous: Univalent",
-                                               "Previous: Bivalent"))
-  )
-
-logrt_explevel_plot<- ggplot(log_rt_plot_df,
-       aes(x = switch,
-           y = mean_rt,
-           color = valence_current_group,
-           linetype = valence_previous_group,
-           group = interaction(valence_current_group,
-                               valence_previous_group))) +
-  
-  geom_line(linewidth = 1) +
-  geom_point(size = 3) +
-  
-  geom_errorbar(aes(ymin = mean_rt - se_rt,
-                    ymax = mean_rt + se_rt),
-                width = .1) +
-  
-  labs(
-    x = "Switch",
-    y = "Mean log RT (ms)",
-    color = "Current Group",
-    linetype = "Previous Group"
-  ) +
-  
- 
-  # Use the function here to apply both the theme and the colors
-  apa_theming() 
-
-ggsave("logrt_explevel_plot_apa.svg", logrt_explevel_plot, width = 10, height = 6)
-
-logrt_explevel_plot
+# log_rt_plot_df <- d_analysis %>%
+#   filter(filter_correct == 0 ) %>%
+#   group_by(valence_current_group,
+#            valence_previous_group,
+#            switch) %>%
+#   summarise(
+#     mean_rt = mean(log(time), na.rm = TRUE),
+#     se_rt   = sd(log(time), na.rm = TRUE)/sqrt(n()),
+#     .groups = "drop"
+#   )
+# log_rt_plot_df <- log_rt_plot_df %>%
+#   mutate(
+#     #switch = factor(switch, levels = c(0,1)),
+#     switch = factor(switch),
+#     valence_current_group = factor(valence_current_group,
+#                                    labels = c("Current: Univalent",
+#                                               "Current: Bivalent")),
+#     valence_previous_group = factor(valence_previous_group,
+#                                     labels = c("Previous: Univalent",
+#                                                "Previous: Bivalent"))
+#   )
+# 
+# logrt_explevel_plot<- ggplot(log_rt_plot_df,
+#        aes(x = switch,
+#            y = mean_rt,
+#            color = valence_current_group,
+#            linetype = valence_previous_group,
+#            group = interaction(valence_current_group,
+#                                valence_previous_group))) +
+#   
+#   geom_line(linewidth = 1) +
+#   geom_point(size = 3) +
+#   
+#   geom_errorbar(aes(ymin = mean_rt - se_rt,
+#                     ymax = mean_rt + se_rt),
+#                 width = .1) +
+#   
+#   labs(
+#     x = "Switch",
+#     y = "Mean log RT (ms)",
+#     color = "Current Group",
+#     linetype = "Previous Group"
+#   ) +
+#   
+#  
+#   # Use the function here to apply both the theme and the colors
+#   theme_classic() 
+# 
+# ggsave("logrt_explevel_plot_apa.svg", logrt_explevel_plot, width = 10, height = 6)
+# 
+# logrt_explevel_plot
 
 ```
 2. error 
@@ -1352,61 +1352,61 @@ logrt_explevel_plot
 # library(dplyr)
 # library(ggplot2)
 
-theme_set(apa_theming()[[1]])
-
-err_plot_df <- d_analysis %>%
-  group_by(valence_current_group,
-           valence_previous_group,
-           switch) %>%
-  summarise(
-    error_rate = mean(error, na.rm = TRUE),
-    se_error   = sd(error, na.rm = TRUE)/sqrt(n()),
-    .groups = "drop"
-  )
-err_plot_df <- err_plot_df %>%
-  mutate(
-    switch = factor(switch, levels = c(0,1)),
-    
-    valence_current_group = factor(
-      valence_current_group,
-      labels = c("Current: Univalent",
-                 "Current: Bivalent")
-    ),
-    
-    valence_previous_group = factor(
-      valence_previous_group,
-      labels = c("Previous: Univalent",
-                 "Previous: Bivalent")
-    )
-  )
-
-error_explevel_plot <- ggplot(err_plot_df,
-       aes(x = switch,
-           y = error_rate,
-           color = valence_current_group,
-           linetype = valence_previous_group,
-           group = interaction(valence_current_group,
-                               valence_previous_group))) +
-  
-  geom_line(size = 1) +
-  geom_point(size = 3) +
-  
-  geom_errorbar(aes(ymin = error_rate - se_error,
-                    ymax = error_rate + se_error),
-                width = .1) +
-  
-  labs(
-    x = "Cycle",
-    y = "Error Rate",
-    color = "Current Group",
-    linetype = "Previous Group"
-  ) +
-  
- apa_theming()
-
-error_explevel_plot
-
-ggsave("error_explevel_plot_apa.svg", error_explevel_plot, width = 10, height = 6)  
+#theme_set(apa_theming()[[1]])
+# 
+# err_plot_df <- d_analysis %>%
+#   group_by(valence_current_group,
+#            valence_previous_group,
+#            switch) %>%
+#   summarise(
+#     error_rate = mean(error, na.rm = TRUE),
+#     se_error   = sd(error, na.rm = TRUE)/sqrt(n()),
+#     .groups = "drop"
+#   )
+# err_plot_df <- err_plot_df %>%
+#   mutate(
+#     switch = factor(switch, levels = c(0,1)),
+#     
+#     valence_current_group = factor(
+#       valence_current_group,
+#       labels = c("Current: Univalent",
+#                  "Current: Bivalent")
+#     ),
+#     
+#     valence_previous_group = factor(
+#       valence_previous_group,
+#       labels = c("Previous: Univalent",
+#                  "Previous: Bivalent")
+#     )
+#   )
+# 
+# error_explevel_plot <- ggplot(err_plot_df,
+#        aes(x = switch,
+#            y = error_rate,
+#            color = valence_current_group,
+#            linetype = valence_previous_group,
+#            group = interaction(valence_current_group,
+#                                valence_previous_group))) +
+#   
+#   geom_line(size = 1) +
+#   geom_point(size = 3) +
+#   
+#   geom_errorbar(aes(ymin = error_rate - se_error,
+#                     ymax = error_rate + se_error),
+#                 width = .1) +
+#   
+#   labs(
+#     x = "Cycle",
+#     y = "Error Rate",
+#     color = "Current Group",
+#     linetype = "Previous Group"
+#   ) +
+#   
+# theme_classic()
+# 
+# error_explevel_plot
+# 
+# ggsave("error_explevel_plot_apa.svg", error_explevel_plot, width = 10, height = 6)  
 
 
 ```
@@ -1596,7 +1596,7 @@ logrt_pred_cycle_helmert<- ggplot(preds, aes(x = cycle_helmert, y = emmean, colo
        y = "log(RT) prediction")+
   theme_classic()
 
-ggsave("logrt_pred_cycle_helmert.svg", logrt_pred_cycle_helmert, width = 10, height = 6)
+#ggsave("logrt_pred_cycle_helmert.svg", logrt_pred_cycle_helmert, width = 10, height = 6)
 
 ```
 #################################################################################################################
@@ -1755,7 +1755,7 @@ levels(d_arrange$val_c_g)
 
 names(preds_switch)
 
-theme_set(apa_theming()[[1]])
+#theme_set(apa_theming()[[1]])
 # 1. Define the dodge position
 pos <- position_dodge(0.3) 
 
@@ -1775,12 +1775,11 @@ logrt_pred_switch <- ggplot(preds_switch,
   labs(title = "Model predictions for log RTs",
        y = "log(RT) Prediction",
        x = "Switch (0 = Repeat, 1 = Switch)") +
-  apa_theming()[[1]] + 
-  apa_theming()[[2]]
+ theme_classic()
 
 logrt_pred_switch
 
-ggsave("logrt_pred_switch_apa.svg", logrt_pred_switch, width = 10, height = 6)
+#ggsave("logrt_pred_switch_apa.svg", logrt_pred_switch, width = 10, height = 6)
 ```
 
 
@@ -1831,7 +1830,7 @@ logrt_pred_switch <- ggplot(preds_switch,
 logrt_pred_switch
 
 
-theme_set(apa_theming()[[1]])
+#theme_set(apa_theming()[[1]])
 # 1. Define the dodge position
 pos <- position_dodge(0.3) 
 
@@ -1851,12 +1850,11 @@ logrt_pred_switch <- ggplot(preds_switch,
   labs(title = "Model predictions for log RTs",
        y = "log(RT) Prediction",
        x = "Switch (0 = Repeat, 1 = Switch)") +
-  apa_theming()[[1]] + 
-  apa_theming()[[2]]
+ theme_classic()
 
 logrt_pred_switch
 
-ggsave("logrt_pred_switch_apa.svg", logrt_pred_switch, width = 10, height = 6)
+#ggsave("logrt_pred_switch_apa.svg", logrt_pred_switch, width = 10, height = 6)
 ```
 
 
@@ -1894,84 +1892,84 @@ alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle %>%
 
 
 ```{r}
-# 
-# 
-# view(alt_cue_agg_ID_ddm_nocycle)
-# view(d_analysis)
-# 
-# 
-# rt_df <- d_analysis %>%
-#   group_by(id, valence_current_group, val_c_g,
-#            valence_previous_group, val_p_g, switch) %>%
-#   summarise(
-#     RT = mean(time[error == 0 & prev_error == 0], na.rm = TRUE),
-#     RT_log = mean(log(time[error == 0 & prev_error == 0]), na.rm = TRUE),
-#     .groups = "drop"
-#   )
-# 
-# alt_cue_agg_ID_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
-#   left_join(rt_df,
-#             by = c("id",
-#               
-#                    "val_c_g",
-#            
-#                    "val_p_g",
-#                    "switch"))
-# 
-# 
-# alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
-#   left_join(rt_df,
-#             by = c("id",
-#               
-#                    "val_c_g",
-#            
-#                    "val_p_g",
-#                    "switch"))
-#  
-# 
-# names(alt_cue_agg_ID_ddm_nocycle_NA)
-# 
-# alt_cue_agg_ID_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
-#   select(-valence_current_group.y,
-#          -valence_previous_group.y,
-#          -RT.y) %>%
-#   rename(
-#     valence_current_group = valence_current_group.x,
-#     valence_previous_group = valence_previous_group.x,
-#     RT = RT.x
-#   )
-# 
-# alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
-#   select(-valence_current_group.y,
-#          -valence_previous_group.y,
-#          -RT.y) %>%
-#   rename(
-#     valence_current_group = valence_current_group.x,
-#     valence_previous_group = valence_previous_group.x,
-#     RT = RT.x
-#   )
-# 
-# names(alt_cue_agg_ID_ddm_nocycle_NA)
-# 
-# alt_cue_indiv <- alt_cue_agg_ID_ddm_nocycle %>% 
-#   pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch), 
-#               values_from = c(v, a, Ter, RT_log), 
-#               names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% ungroup() 
-# 
-# # cbiv: current bivlent ; lbiv : lag bivalent 
-# 
-# alt_cue_indiv
-# 
-# 
-# ggplot(alt_cue_indiv, aes(x = RT_log_s1_cbiv1_lbiv1, y = RT_log_s0_cbiv0_lbiv0))+
-#   geom_point()+
-#   geom_smooth(method = "lm")+
-#   theme_classic()
-# 
-# alt_cue_indiv_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>% 
-#   pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch), 
-#               values_from = c(v, a, Ter, RT_log), 
-#               names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% ungroup() 
+
+
+view(alt_cue_agg_ID_ddm_nocycle)
+view(d_analysis)
+
+
+rt_df <- d_analysis %>%
+  group_by(id, valence_current_group, val_c_g,
+           valence_previous_group, val_p_g, switch) %>%
+  summarise(
+    RT = mean(time[error == 0 & prev_error == 0], na.rm = TRUE),
+    RT_log = mean(log(time[error == 0 & prev_error == 0]), na.rm = TRUE),
+    .groups = "drop"
+  )
+
+alt_cue_agg_ID_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
+  left_join(rt_df,
+            by = c("id",
+
+                   "val_c_g",
+
+                   "val_p_g",
+                   "switch"))
+
+
+alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
+  left_join(rt_df,
+            by = c("id",
+
+                   "val_c_g",
+
+                   "val_p_g",
+                   "switch"))
+
+
+names(alt_cue_agg_ID_ddm_nocycle_NA)
+
+alt_cue_agg_ID_ddm_nocycle <- alt_cue_agg_ID_ddm_nocycle %>%
+  select(-valence_current_group.y,
+         -valence_previous_group.y,
+         -RT.y) %>%
+  rename(
+    valence_current_group = valence_current_group.x,
+    valence_previous_group = valence_previous_group.x,
+    RT = RT.x
+  )
+
+alt_cue_agg_ID_ddm_nocycle_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
+  select(-valence_current_group.y,
+         -valence_previous_group.y,
+         -RT.y) %>%
+  rename(
+    valence_current_group = valence_current_group.x,
+    valence_previous_group = valence_previous_group.x,
+    RT = RT.x
+  )
+
+names(alt_cue_agg_ID_ddm_nocycle_NA)
+
+alt_cue_indiv <- alt_cue_agg_ID_ddm_nocycle %>%
+  pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch),
+              values_from = c(v, a, Ter, RT_log),
+              names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% ungroup()
+
+# cbiv: current bivlent ; lbiv : lag bivalent
+
+alt_cue_indiv
+
+
+ggplot(alt_cue_indiv, aes(x = RT_log_s1_cbiv1_lbiv1, y = RT_log_s0_cbiv0_lbiv0))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  theme_classic()
+
+alt_cue_indiv_NA <- alt_cue_agg_ID_ddm_nocycle_NA %>%
+  pivot_wider(id_cols = id, names_from = c(val_c_g_contrast, val_p_g_contrast, switch),
+              values_from = c(v, a, Ter, RT_log),
+              names_glue = "{.value}_s{switch}_cbiv{val_c_g_contrast}_lbiv{val_p_g_contrast}") %>% ungroup()
 ```
 
 
@@ -2005,6 +2003,10 @@ alt_cue_indiv <- alt_cue_agg_ID_ddm_nocycle %>%
 #             neg_ter = sum(Ter < 0),
 #             p_neg_Ter = neg_ter/N,
 #             subjects_w_any_neg_Ter = length(unique(id[Ter < 0])))
+
+
+alt_cue_indiv <- alt_cue_indiv %>%
+  mutate(across(!id, ~ as.vector(scale(.x))))
 ```
 
 
@@ -3437,10 +3439,9 @@ alt_cue_v_NA_model_summary <- lapply(alt_cue_indiv_diff_models$v_NA, function(x)
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
-  cross_join(RT_comparisons) %>%
-  filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
-         coefficient = gsub("^RT_log_", "", coefficient),   # <-- fixed
+         coefficient = gsub("v_", "", coefficient),
+         coefficient = gsub("_NA", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
          outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
@@ -3688,7 +3689,7 @@ alt_cue_v_model_summary <- lapply(alt_cue_indiv_diff_models$v, function(x){
   cross_join(v_comparisons) %>%
   filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
-         coefficient = gsub("RT_log_", "", coefficient),
+         coefficient = gsub("v_", "", coefficient),
          outcome = gsub("[[:digit:]]", "", model),
          outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
          is_sig = ifelse(pr_t < 0.05, 1, 0),
@@ -3739,18 +3740,18 @@ plt_betw_v <- ggplot(alt_cue_v_model_summary, aes(x = coefficient, y = estimate,
                                                        "bu" = "Switch: Bi-Uni",
                                                        "bb" = "Switch: Bi-Bi")), ncol = 1)+
   scale_color_manual(values = colorRampPalette(c("blue", "red"))(5))+
-  scale_x_discrete(labels = c("v_s0_cbiv0_lbiv1" = "Bi-Uni",
-                              "v_s0_cbiv1_lbiv1" = "Bi-Bi",
-                              "v_s0_cbiv0_lbiv0" = "Uni-Uni",
-                              "v_s0_cbiv1_lbiv0" = "Uni-Bi",
+  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
   theme(legend.position = "none")
 
 plt_betw_v
 
-ggsave(plot = plt_betw_v, "AR_betw_v.svg", width = 4, height = 6, units = "in")
- saveRDS(plt_betw_v, "AR_betw_v.RDS")
+ggsave(plot = plt_betw_v, "AC_betw_v.svg", width = 4, height = 6, units = "in")
+ saveRDS(plt_betw_v, "AC_betw_v.RDS")
 
 
 
@@ -3814,10 +3815,10 @@ ggplot(alt_cue_rt_model_summary, aes(x = coefficient, y = estimate, group = mode
                                                        "ub" = "Switch: Uni-Bi",
                                                        "bu" = "Switch: Bi-Uni",
                                                        "bb" = "Switch: Bi-Bi")), ncol = 1)+
-  scale_x_discrete(labels = c("RT_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
-                              "RT_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
-                              "RT_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
-                              "RT_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+  scale_x_discrete(labels = c("RT_log_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "RT_log_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "RT_log_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "RT_log_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 5.5))+
   theme(legend.position = "none")
@@ -3838,11 +3839,11 @@ plt_betw_rt <- ggplot(alt_cue_rt_model_summary, aes(x = coefficient, y = estimat
                                                        "ub" = "Switch: Uni-Bi",
                                                        "bu" = "Switch: Bi-Uni",
                                                        "bb" = "Switch: Bi-Bi")), ncol = 1)+
-  scale_color_manual(values = colorRampPalette(c("blue", "red"))(5))+
-  scale_x_discrete(labels = c("RT_log_s0_cbiv0_lbiv1" = "Bi-Uni",
-                              "RT_log_s0_cbiv1_lbiv1" = "Bi-Bi",
-                              "RT_log_s0_cbiv0_lbiv0" = "Uni-Uni",
-                              "RT_log_s0_cbiv1_lbiv0" = "Uni-Bi",
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(4))+
+  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
   theme(legend.position = "none")
@@ -3850,10 +3851,108 @@ plt_betw_rt <- ggplot(alt_cue_rt_model_summary, aes(x = coefficient, y = estimat
 
 plt_betw_rt
 
-ggsave(plot = plt_betw_v, "AR_betw_RT.svg", width = 4, height = 6, units = "in")
- saveRDS(plt_betw_v, "AR_betw_RT.RDS")
+ggsave(plot = plt_betw_rt, "AC_betw_RT.svg", width = 4, height = 6, units = "in")
+ saveRDS(plt_betw_rt, "AC_betw_RT.RDS")
 ```
 
+```{r}
+
+
+Error_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
+  
+  result <- compare_models(alt_cue_indiv_diff_models$Error, x)
+  
+  data.frame(
+    comparison = x,
+    comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
+  )
+  
+}) %>%
+  bind_rows() %>%
+  mutate(comparison_sig = ifelse(comparison_p < 0.05, 1, 0))
+
+alt_cue_Error_model_summary <- lapply(alt_cue_indiv_diff_models$Error, function(x){
+  m_sum <- x %>% 
+    summary() 
+  
+  m_sum %>% 
+    coef() %>% 
+    as.data.frame() %>%
+    mutate(r_sq = m_sum$r.squared,
+           r_sq_adj = m_sum$adj.r.squared)
+}) %>% 
+  bind_rows(.id = "model") %>% 
+  rownames_to_column("coefficient") %>%
+  janitor::clean_names() %>%
+  cross_join(Error_comparisons) %>%
+  filter(!grepl("(Intercept)", coefficient)) %>%
+  mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
+         coefficient = gsub("^Error_", "", coefficient),
+         outcome = gsub("[[:digit:]]", "", model),
+         outcome = factor(outcome, levels = c("uu", "ub", "bu", "bb")),
+         is_sig = ifelse(pr_t < 0.05, 1, 0),
+         # r_label = as.character(round(r_sq, 2)),
+         # r_label = gsub("^0.", ".", r_label),
+         r_label = sprintf("%.2f", r_sq),
+         r_label = case_when(comparison_sig == 1 ~ paste0(r_label, "*"), .default = r_label),
+         r_adj_label = sprintf("%.2f", r_sq_adj),
+         r_adj_label = case_when(comparison_sig == 1 ~ paste0(r_adj_label, "*"), .default = r_adj_label),
+         color = parse_number(model) %>% factor())
+
+
+ggplot(alt_cue_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = model))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  geom_text(data = alt_cue_Error_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.3)+
+  geom_point(data = alt_cue_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  theme_classic()+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
+  scale_x_discrete(labels = c("Error_s0_cbiv0_lbiv1" = "NS\nL-bi\nC-uni",
+                              "Error_s0_cbiv1_lbiv1" = "NS\nL-bi\nC-bi",
+                              "Error_s0_cbiv0_lbiv0" = "NS\nL-uni\nC-uni",
+                              "Error_s0_cbiv1_lbiv0" = "NS\nL-uni\nC-bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 5.5))+
+  theme(legend.position = "none")
+
+plt_betw_Error <- ggplot(alt_cue_Error_model_summary, aes(x = coefficient, y = estimate, group = model, color = color))+ 
+  geom_hline(yintercept = 0, linetype = "dotted")+
+  geom_ribbon(aes(ymin = estimate - std_error,
+                  ymax = estimate + std_error), alpha = 0.1, color = NA)+
+  geom_line()+
+  # geom_text(data = alt_cue_v_model_summary %>% group_by(model) %>% slice(n()),
+  #           aes(label = r_adj_label), hjust = -0.3)+
+  geom_label(data = alt_cue_Error_model_summary %>% group_by(model) %>% slice(n()),
+            aes(label = r_adj_label), hjust = -0.1, alpha = 0.8, linewidth = 0)+
+  geom_point(data = alt_cue_Error_model_summary %>% filter(is_sig == 1), pch = "*", size = 10)+
+  labs(x = "",
+       y = "")+
+  facet_wrap(~outcome, labeller = labeller(outcome = c("uu" = "Switch: Uni-Uni",
+                                                       "ub" = "Switch: Uni-Bi",
+                                                       "bu" = "Switch: Bi-Uni",
+                                                       "bb" = "Switch: Bi-Bi")), ncol = 1)+
+  scale_color_manual(values = colorRampPalette(c("blue", "red"))(4))+
+  scale_x_discrete(labels = c("s0_cbiv0_lbiv1" = "Bi-Uni",
+                              "s0_cbiv1_lbiv1" = "Bi-Bi",
+                              "s0_cbiv0_lbiv0" = "Uni-Uni",
+                              "s0_cbiv1_lbiv0" = "Uni-Bi",
+                              "(Intercept)" = "Int"))+
+  coord_cartesian(xlim = c(1, 4.5))+
+  theme(legend.position = "none")
+
+
+plt_betw_Error
+
+ggsave(plot = plt_betw_Error, "AC_betw_Error.svg", width = 4, height = 6, units = "in")
+ saveRDS(plt_betw_Error, "AC_betw_Error.RDS")
+
+```
 
 ###############################################################################################
 
@@ -3909,7 +4008,7 @@ sort(unique(tests_clean$ID)) #  3   4   5   7   9  10  11  12  13  14  15  17  9
  
  
 
-```{r}
+#```{r}
 
 
 id_4_clean <- d_clean %>%
@@ -3918,16 +4017,163 @@ id_4_clean <- d_clean %>%
   slice(1) %>%   # keep first occurrence
   ungroup() %>% 
   droplevels()
-```
+#```
 
 
-```{r}
+#```{r}
 data_clean <- d_clean %>%
   filter(id != 4) %>%   # keep everyone else untouched
   bind_rows(id_4_clean) %>% 
   droplevels()
 
+#```
+
+testing if traeoff itself is a function of cognitive capacity 
+
+use g and slots
+g: IQ
+slots: WM 
+
+add them as main effects predictors and allow them to interact with the other predictors 
+
+WM is a pure measure of stability 
+higher WM capacity would mean higher stability 
+
+
+
+ungroup and then scale for within-subjects 
+
+
+
+###########################################################################################
+
+within-subject error bars 
+
+1. experiment level 
+
+
+```{r}
+
+
+log_rt_plot_df <- d_analysis %>%
+  filter(filter_correct == 0) %>%
+  group_by(id, valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    mean_rt = mean(log(time), na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  normWS(s = "id", dv = "mean_rt") %>%
+  mutate(mean_rt = DV_n) %>%
+  group_by(valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    RT_m = mean(mean_rt, na.rm = TRUE),
+    RT_ci_lower = get_ci(mean_rt, RT_m)[2],
+    RT_ci_upper = get_ci(mean_rt, RT_m)[1],
+    .groups = "drop"
+  ) %>%
+  mutate(
+    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat")),
+    valence_current_group  = factor(valence_current_group,
+                                    labels = c("Univalent", "Bivalent")),
+    valence_previous_group = factor(valence_previous_group,
+                                    labels = c("Univalent", "Bivalent"))
+  )
+
+logrt_explevel_plot <- ggplot(log_rt_plot_df,
+    aes(x        = switch,
+        y        = RT_m,
+        color    = valence_current_group,
+        linetype = valence_previous_group,
+        group    = interaction(valence_previous_group,
+                               valence_current_group))) +
+  geom_line(linewidth = design$lines$linewidth, position = pos) +
+  geom_errorbar(aes(ymin = RT_ci_lower,
+                    ymax = RT_ci_upper),
+                width     = design$errorbar$width,
+                linewidth = design$errorbar$linewidth,
+                position  = pos) +
+  scale_linetype_manual(
+    name   = "Previous Group",
+    values = c("Univalent" = design$prev_val$linetype$uni,
+               "Bivalent"  = design$prev_val$linetype$bi)
+  ) +
+  scale_color_manual(
+    name   = "Current Group",
+    values = c("Univalent" = design$curr_val$color$uni,
+               "Bivalent"  = design$curr_val$color$bi)
+  ) +
+  labs(
+    x = NULL,
+    y = "Mean log RT"
+  )
+
+logrt_explevel_plot
+
+ggsave("AC_RTlog.svg", logrt_explevel_plot, width = 10, height = 6)
+saveRDS(logrt_explevel_plot, "AC_RTlog.RDS")
+  
 ```
+
+```{r}
+err_plot_df <- d_analysis %>%
+  group_by(id, valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    error_rate = mean(error, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  normWS(s = "id", dv = "error_rate") %>%
+  mutate(error_rate = DV_n) %>%
+  group_by(valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    Error_m = mean(error_rate, na.rm = TRUE),
+    Error_ci_lower = get_ci(error_rate, Error_m)[1],
+    Error_ci_upper = get_ci(error_rate, Error_m)[2],
+    .groups = "drop"
+  ) %>%
+  mutate(
+    switch = factor(switch, levels = c(1, 0), labels = c("Switch", "Repeat")),
+    valence_current_group  = factor(valence_current_group,
+                                    labels = c("Univalent", "Bivalent")),
+    valence_previous_group = factor(valence_previous_group,
+                                    labels = c("Univalent", "Bivalent"))
+  )
+
+
+error_explevel_plot <- ggplot(err_plot_df,
+    aes(x        = switch,
+        y        = Error_m,
+        color    = valence_current_group,
+        linetype = valence_previous_group,
+        group    = interaction(valence_previous_group,
+                               valence_current_group))) +
+  geom_line(linewidth = design$lines$linewidth, position = pos) +
+  geom_errorbar(aes(ymin = Error_ci_lower,
+                    ymax = Error_ci_upper),
+                width     = design$errorbar$width,
+                linewidth = design$errorbar$linewidth,
+                position  = pos) +
+  scale_linetype_manual(
+    name   = "Previous Group Valence",
+    values = c("Univalent" = design$prev_val$linetype$uni,
+               "Bivalent"  = design$prev_val$linetype$bi)
+  ) +
+  scale_color_manual(
+    name   = "Current Group Valence",
+    values = c("Univalent" = design$curr_val$color$uni,
+               "Bivalent"  = design$curr_val$color$bi)
+  ) +
+  labs(
+    x = NULL,
+    y = "Error Rate"
+  )
+
+error_explevel_plot
+
+ggsave("AC_Errors.svg", error_explevel_plot, width = 10, height = 6)
+saveRDS(error_explevel_plot, "AC_Errors.rds")
+```
+
+
 
 
 
