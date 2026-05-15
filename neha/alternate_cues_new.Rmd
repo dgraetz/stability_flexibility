@@ -3133,11 +3133,11 @@ alt_cue_agg_ddm_nocycle$val_c_g <- as.factor(alt_cue_agg_ddm_nocycle$val_c_g)
 alt_cue_agg_ddm_nocycle$val_p_g <- as.factor(alt_cue_agg_ddm_nocycle$val_p_g)
 
 
-alt_cue_agg_ddm <- alt_cue_agg_ddm %>%
-  mutate(
-    val_c_g = factor(val_c_g, levels = c(-0.5, 0.5), labels = c("Univalent", "Bivalent")),
-    val_p_g = factor(val_p_g, levels = c(-0.5, 0.5), labels = c("Univalent", "Bivalent"))
-  )
+# alt_cue_agg_ddm <- alt_cue_agg_ddm %>%
+#   mutate(
+#     val_c_g = factor(val_c_g, levels = c(-0.5, 0.5), labels = c("Univalent", "Bivalent")),
+#     val_p_g = factor(val_p_g, levels = c(-0.5, 0.5), labels = c("Univalent", "Bivalent"))
+#   )
 
 alt_cue_agg_ddm_nocycle <- alt_cue_agg_ddm_nocycle %>%
   mutate(
@@ -3166,41 +3166,41 @@ ddm_scales <- list(
 
 pos <- position_dodge(0.3)
 
-plt_ddm_a <- ggplot(alt_cue_agg_ddm,
-    aes(x = cycle, y = a_m,
-        color    = val_c_g,
-        linetype = val_p_g,
-        group    = interaction(val_p_g, val_c_g))) +
-  geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper),
-                width = design$errorbar$width, linewidth = design$errorbar$linewidth,
-                position = pos) +
-  ddm_scales +
-  labs(y = "a")
-
-plt_ddm_v <- ggplot(alt_cue_agg_ddm,
-    aes(x = cycle, y = v_m,
-        color    = val_c_g,
-        linetype = val_p_g,
-        group    = interaction(val_p_g, val_c_g))) +
-  geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper),
-                width = design$errorbar$width, linewidth = design$errorbar$linewidth,
-                position = pos) +
-  ddm_scales +
-  labs(y = "v")
-
-plt_ddm_Ter <- ggplot(alt_cue_agg_ddm,
-    aes(x = cycle, y = Ter_m,
-        color    = val_c_g,
-        linetype = val_p_g,
-        group    = interaction(val_p_g, val_c_g))) +
-  geom_line(linewidth = design$lines$linewidth, position = pos) +
-  geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper),
-                width = design$errorbar$width, linewidth = design$errorbar$linewidth,
-                position = pos) +
-  ddm_scales +
-  labs(y = "Ter")
+# plt_ddm_a <- ggplot(alt_cue_agg_ddm,
+#     aes(x = cycle, y = a_m,
+#         color    = val_c_g,
+#         linetype = val_p_g,
+#         group    = interaction(val_p_g, val_c_g))) +
+#   geom_line(linewidth = design$lines$linewidth, position = pos) +
+#   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper),
+#                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
+#                 position = pos) +
+#   ddm_scales +
+#   labs(y = "a")
+# 
+# plt_ddm_v <- ggplot(alt_cue_agg_ddm,
+#     aes(x = cycle, y = v_m,
+#         color    = val_c_g,
+#         linetype = val_p_g,
+#         group    = interaction(val_p_g, val_c_g))) +
+#   geom_line(linewidth = design$lines$linewidth, position = pos) +
+#   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper),
+#                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
+#                 position = pos) +
+#   ddm_scales +
+#   labs(y = "v")
+# 
+# plt_ddm_Ter <- ggplot(alt_cue_agg_ddm,
+#     aes(x = cycle, y = Ter_m,
+#         color    = val_c_g,
+#         linetype = val_p_g,
+#         group    = interaction(val_p_g, val_c_g))) +
+#   geom_line(linewidth = design$lines$linewidth, position = pos) +
+#   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper),
+#                 width = design$errorbar$width, linewidth = design$errorbar$linewidth,
+#                 position = pos) +
+#   ddm_scales +
+#   labs(y = "Ter")
 
 plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = a_m,
@@ -3260,15 +3260,16 @@ ezddm_effect_plot
 
 #ggsave("RT_descriptive_plot.svg", RT_descriptive_plot, width = 10, height = 6)
 
-# ggsave("AC_ddm_a.svg", plt_ddm_a_nocycle, width = 10, height = 6)
-# ggsave("AC_ddm_v.svg", plt_ddm_v_nocycle, width = 10, height = 6)
-# ggsave("AC_ddm_TER.svg", plt_ddm_Ter_nocycle, width = 10, height = 6)
-# ggsave("ezddm_effect_plot_apa.svg", ezddm_effect_plot, width = 10, height = 6)
+ ggsave("AC_ddm_a.svg", plt_ddm_a_nocycle, width = 10, height = 6)
+ ggsave("AC_ddm_v.svg", plt_ddm_v_nocycle, width = 10, height = 6)
+ ggsave("AC_ddm_TER.svg", plt_ddm_Ter_nocycle, width = 10, height = 6)
+ ggsave("ezddm_effect_plot_apa.svg", ezddm_effect_plot, width = 10, height = 6)
 # 
 # 
-# saveRDS( plt_ddm_a_nocycle, "AC_ddm_a.rds" )
-# saveRDS(plt_ddm_v_nocycle, "AC_ddm_v.rds" )
-# saveRDS( plt_ddm_Ter_nocycle, "AC_ddm_TER.rds")
+saveRDS( plt_ddm_a_nocycle, "AC_ddm_a.rds" )
+saveRDS(plt_ddm_v_nocycle, "AC_ddm_v.rds" )
+saveRDS( plt_ddm_Ter_nocycle, "AC_ddm_TER.rds")
+
 
 ```
 
