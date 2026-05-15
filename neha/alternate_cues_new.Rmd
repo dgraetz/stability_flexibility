@@ -685,7 +685,7 @@ convert_extremes <- function(value){
   
   return(value)
   
-}#making sure error is either .99 or .001
+}#making sure error is either .99 or .001 -- Q: is this because: This is typically used before a logit transformation (log(p / (1-p))), which breaks down at exactly 0 or 1 since log(0) and log(1/0) are undefined. By nudging the values slightly, the transformation stays mathematically valid.
 ```
 
 
@@ -3733,7 +3733,8 @@ plt_betw_v <- ggplot(alt_cue_v_model_summary, aes(x = coefficient, y = estimate,
                               "s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
-  theme(legend.position = "none")
+  theme(legend.position = "none", 
+        strip.background = element_blank())
 
 plt_betw_v
 
@@ -3833,7 +3834,8 @@ plt_betw_rt <- ggplot(alt_cue_rt_model_summary, aes(x = coefficient, y = estimat
                               "s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
-  theme(legend.position = "none")
+  theme(legend.position = "none", 
+        strip.background = element_blank())
 
 
 plt_betw_rt
@@ -3931,7 +3933,8 @@ plt_betw_Error <- ggplot(alt_cue_Error_model_summary, aes(x = coefficient, y = e
                               "s0_cbiv1_lbiv0" = "Uni-Bi",
                               "(Intercept)" = "Int"))+
   coord_cartesian(xlim = c(1, 4.5))+
-  theme(legend.position = "none")
+  theme(legend.position = "none", 
+        strip.background = element_blank())
 
 
 plt_betw_Error
