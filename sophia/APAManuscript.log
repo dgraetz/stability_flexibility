@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  4 MAY 2026 17:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  14 MAY 2026 23:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -860,54 +860,54 @@ Package fancyhdr Warning: \headheight is too small (15.2pt):
 [1{C:/Users/forrest/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/
 forrest/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}
 
-]
-Underfull \vbox (badness 4954) has occurred while \output is active []
-
-
-Underfull \vbox (badness 4954) has occurred while \output is active []
-
-[2] [3] [4]
-<sophia/predmodels.png, id=29, 185.9748pt x 120.45pt>
+] [2] [3]
+<sophia/predmodels.png, id=22, 185.9748pt x 120.45pt>
 File: sophia/predmodels.png Graphic file (type png)
 <use sophia/predmodels.png>
-Package pdftex.def Info: sophia/predmodels.png  used on input line 246.
+Package pdftex.def Info: sophia/predmodels.png  used on input line 244.
 (pdftex.def)             Requested size: 234.8775pt x 152.12617pt.
+[4]
+Underfull \vbox (badness 2941) has occurred while \output is active []
+
+
+Underfull \vbox (badness 2941) has occurred while \output is active []
+
 [5 <./sophia/predmodels.png>]
-Underfull \vbox (badness 4752) has occurred while \output is active []
+Underfull \vbox (badness 5331) has occurred while \output is active []
 
 
-Underfull \vbox (badness 4752) has occurred while \output is active []
+Underfull \vbox (badness 5331) has occurred while \output is active []
 
-[6] [7] [8]
-Underfull \vbox (badness 2384) has occurred while \output is active []
+[6]
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
-Underfull \vbox (badness 2384) has occurred while \output is active []
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[9] [10] [11] [12] [13]
+[7] [8] [9] [10] [11] [12]
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 3
-82.
+84.
 (C:\Users\forrest\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-) [14{C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.
-enc}] [15]
+) [13{C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.
+enc}] [14]
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
 
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
-[16] AED endfloat: Processing end Figures and Tables [17] (APAManuscript.aux)
+[15] AED endfloat: Processing end Figures and Tables [16] (APAManuscript.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 18886 strings out of 467871
- 311007 string characters out of 5417408
- 788282 words of memory out of 5000000
+ 18882 strings out of 467871
+ 310976 string characters out of 5417408
+ 788479 words of memory out of 5000000
  47282 multiletter control sequences out of 15000+600000
- 680734 words of font info for 131 fonts, out of 8000000 for 9000
+ 680552 words of font info for 129 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,11n,93p,2254b,638s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.
@@ -917,9 +917,9 @@ r12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mr8.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mri12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm
 /lmss8.pfb>
-Output written on APAManuscript.pdf (17 pages, 256343 bytes).
+Output written on APAManuscript.pdf (16 pages, 256952 bytes).
 PDF statistics:
- 249 PDF objects out of 1000 (max. 8388607)
+ 243 PDF objects out of 1000 (max. 8388607)
  58 named destinations out of 1000 (max. 500000)
- 28846 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 28838 words of extra memory for PDF output out of 29859 (max. 10000000)
 
