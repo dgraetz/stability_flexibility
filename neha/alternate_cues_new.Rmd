@@ -3017,8 +3017,37 @@ logrt_explevel_plot
 ggsave("AC_RTlog.svg", logrt_explevel_plot, width = 10, height = 6)
 saveRDS(logrt_explevel_plot, "AC_RTlog.RDS")
 
+log_rt_plot_df
 
 ```
+adding the lower and upper limits of the confidence interval bars back into the d_analysis dataframe: 
+
+```{r}
+
+subject_rt <- d_analysis %>%
+  filter(filter_correct == 0) %>%
+  group_by(id, valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    mean_rt = mean(log(time), na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  normWS(s = "id", dv = "mean_rt") %>%
+  mutate(mean_rt_n = DV_n)
+
+ci_df <- subject_rt %>%
+  group_by(valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    RT_m        = mean(mean_rt_n, na.rm = TRUE),
+    RT_ci_lower = get_ci(mean_rt_n, RT_m)[2],
+    RT_ci_upper = get_ci(mean_rt_n, RT_m)[1],
+    .groups = "drop"
+  )
+
+d_analysis <- d_analysis %>%
+  left_join(ci_df, by = c("valence_current_group", "valence_previous_group", "switch"))
+```
+
+
 2. error 
 
 ```{r}
@@ -3084,8 +3113,42 @@ error_explevel_plot
 
 ggsave("AC_Errors.svg", error_explevel_plot, width = 10, height = 6)
 saveRDS(error_explevel_plot, "AC_Errors.rds")
+
+err_plot_df
 ```
 
+adding the CIs into d_analysis 
+
+```{r}
+
+subject_err <- d_analysis %>%
+  group_by(id, valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    error_rate = mean(error, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  normWS(s = "id", dv = "error_rate") %>%
+  mutate(error_rate_n = DV_n)
+
+
+ci_err_df <- subject_err %>%
+  group_by(valence_current_group, valence_previous_group, switch) %>%
+  summarise(
+    Error_m        = mean(error_rate_n, na.rm = TRUE),
+    Error_ci_lower = get_ci(error_rate_n, Error_m)[2],
+    Error_ci_upper = get_ci(error_rate_n, Error_m)[1],
+    .groups = "drop"
+  )
+
+
+d_analysis <- d_analysis %>%
+  left_join(ci_err_df, by = c("valence_current_group", "valence_previous_group", "switch"))
+```
+
+
+```{r}
+saveRDS( d_analysis, "d_analysis.RDS")
+```
 
 
 3. ezddm
@@ -3270,7 +3333,7 @@ saveRDS( plt_ddm_a_nocycle, "AC_ddm_a.rds" )
 saveRDS(plt_ddm_v_nocycle, "AC_ddm_v.rds" )
 saveRDS( plt_ddm_Ter_nocycle, "AC_ddm_TER.rds")
 
-
+alt_cue_agg_ddm_nocycle
 ```
 
 
