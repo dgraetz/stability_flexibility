@@ -2518,8 +2518,14 @@ alt_cue_indiv_diff_models <- list(
 
 ```{r}
 compare_models <- function(model_list, dv){
-  
-  do.call(anova, unname(model_list[grepl(dv, names(model_list))]))
+
+  return(
+    list(
+      comparison = do.call(anova, unname(model_list[grepl(dv, names(model_list))])),
+      model_names = names(model_list)[grepl(dv, names(model_list))]
+    )
+  )
+
 }
 ```
 
@@ -3651,10 +3657,14 @@ v_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
   
   result <- compare_models(alt_cue_indiv_diff_models$v, x)
   
-  data.frame(
-    comparison = x,
-    comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
-  )
+  # data.frame(
+  #   model = result$model_names,
+  #   comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
+  # )
+  
+  
+  data.frame(model = compare_models(alt_cue_indiv_diff_models$v, x)$model_names,
+             comparison_p = compare_models(alt_cue_indiv_diff_models$v, x)$comparison$`Pr(>F)`)
   
 }) %>%
   bind_rows() %>%
@@ -3673,7 +3683,7 @@ alt_cue_v_model_summary <- lapply(alt_cue_indiv_diff_models$v, function(x){
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
-  cross_join(v_comparisons) %>%
+  left_join(v_comparisons) %>%
   filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("v_", "", coefficient),
@@ -3742,8 +3752,8 @@ ggsave(plot = plt_betw_v, "AC_betw_v.svg", width = 4, height = 6, units = "in")
  saveRDS(plt_betw_v, "AC_betw_v.RDS")
 
 
-
-
+alt_cue_v_model_summary
+v_comparisons
 ```
 
 
@@ -3752,10 +3762,9 @@ RT_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
   
   result <- compare_models(alt_cue_indiv_diff_models$RT, x)
   
-  data.frame(
-    comparison = x,
-    comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
-  )
+  data.frame(model = compare_models(alt_cue_indiv_diff_models$v, x)$model_names,
+             comparison_p = compare_models(alt_cue_indiv_diff_models$v, x)$comparison$`Pr(>F)`)
+  
   
 }) %>%
   bind_rows() %>%
@@ -3774,7 +3783,7 @@ alt_cue_rt_model_summary <- lapply(alt_cue_indiv_diff_models$RT, function(x){
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
-  cross_join(RT_comparisons) %>%
+  left_join(RT_comparisons) %>%
   filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("RT_log_", "", coefficient),
@@ -3851,10 +3860,9 @@ Error_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
   
   result <- compare_models(alt_cue_indiv_diff_models$Error, x)
   
-  data.frame(
-    comparison = x,
-    comparison_p = result[["Pr(>F)"]][!is.na(result[["Pr(>F)"]])]
-  )
+  data.frame(model = compare_models(alt_cue_indiv_diff_models$v, x)$model_names,
+             comparison_p = compare_models(alt_cue_indiv_diff_models$v, x)$comparison$`Pr(>F)`)
+  
   
 }) %>%
   bind_rows() %>%
@@ -3873,7 +3881,7 @@ alt_cue_Error_model_summary <- lapply(alt_cue_indiv_diff_models$Error, function(
   bind_rows(.id = "model") %>% 
   rownames_to_column("coefficient") %>%
   janitor::clean_names() %>%
-  cross_join(Error_comparisons) %>%
+  left_join(Error_comparisons) %>%
   filter(!grepl("(Intercept)", coefficient)) %>%
   mutate(coefficient = gsub("\\...[[:digit:]]+", "", coefficient),
          coefficient = gsub("^Error_", "", coefficient),
