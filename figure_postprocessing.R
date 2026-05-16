@@ -27,13 +27,17 @@ get_range <- function(plt_a, plt_b, dv_a, dv_b, eb_a_lower = NULL, eb_a_upper = 
   if (is.character(eb_a_lower) & is.character(eb_a_upper) & is.character(eb_b_lower) & is.character(eb_b_upper)){
     
     eb_upper_range<- range(c(plt_a@data[,eb_a_upper] %>% unlist(), plt_b@data[,eb_b_upper] %>% unlist(),
-                            plt_a@data[,eb_a_lower] %>% unlist(), plt_b@data[,eb_b_lower] %>% unlist()))
+                             plt_a@data[,eb_a_lower] %>% unlist(), plt_b@data[,eb_b_lower] %>% unlist()))
     
     ranges$error <- eb_upper_range
   }
   
   return(ranges)
 }
+
+
+AR_plt_background <- rgb(1, 1, 1)
+AC_plt_background <- rgb(0.96, 0.96, 0.96)
 
 
 # Manipulating plots ----
@@ -63,8 +67,10 @@ AR_ddm_a <- AR_ddm_a +
     color    = guide_legend(order = 2)   # appears second
   )+
   theme(axis.title.x = element_blank(),
-        legend.position = "none")
-
+        legend.position = "none")+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
+AR_ddm_a
 
 AC_ddm_a@layers$geom_errorbar$aes_params$linetype = "solid"
 
@@ -93,20 +99,22 @@ AC_ddm_a <- AC_ddm_a +
                         values = c("Univalent" = design$prev_val$linetype$uni,
                                    "Bivalent" = design$prev_val$linetype$bi))+
   theme(axis.title.x = element_blank(),
-        axis.ticks.y = element_line(color = "white"),
-        axis.text.y = element_text(color = "white"),
-        axis.title.y = element_text(color = "white"),
-        axis.line.y = element_line(color = "white"),
+        axis.ticks.y = element_line(color = alpha("white", 0)),
+        axis.text.y = element_text(color = alpha("white", 0)),
+        axis.title.y = element_text(color = alpha("white", 0)),
+        axis.line.y = element_line(color = alpha("white", 0)),
         legend.position = "none"
-        )
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 AC_ddm_a
 AR_ddm_a
 
 ggsave(plot = AR_ddm_a, "figures/postprocessing/AR_ddm_a.svg", width = 3, height = 3, units = "in")
 ggsave(plot = AC_ddm_a, "figures/postprocessing/AC_ddm_a.svg", width = 3, height = 3, units = "in")
 
-ggsave(plot = AC_ddm_a + theme(legend.position = "bottom"), "figures/postprocessing/legend_bottom.svg", width = 10, height = 3, units = "in")
-ggsave(plot = AC_ddm_a + theme(legend.position = "right"), "figures/postprocessing/legend_right.svg", width = 10, height = 3, units = "in")
+ggsave(plot = AR_ddm_a + theme(legend.position = "bottom"), "figures/postprocessing/legend_bottom.svg", width = 10, height = 3, units = "in")
+ggsave(plot = AR_ddm_a + theme(legend.position = "right"), "figures/postprocessing/legend_right.svg", width = 10, height = 3, units = "in")
 
 ### TER ----
 
@@ -143,12 +151,14 @@ AC_ddm_TER <- AC_ddm_TER +
                         values = c("Univalent" = design$prev_val$linetype$uni,
                                    "Bivalent" = design$prev_val$linetype$bi))+
   theme(axis.title.x = element_blank(),
-        axis.ticks.y = element_line(color = "white"),
-        axis.text.y = element_text(color = "white"),
-        axis.title.y = element_text(color = "white"),
-        axis.line.y = element_line(color = "white"),
+        axis.ticks.y = element_line(color = alpha("white", 0)),
+        axis.text.y = element_text(color = alpha("white", 0)),
+        axis.title.y = element_text(color = alpha("white", 0)),
+        axis.line.y = element_line(color = alpha("white", 0)),
         legend.position = "none"
-  )
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 
 AR_ddm_TER <- AR_ddm_TER +
   labs(y = "Non-Decision Time")+
@@ -165,8 +175,12 @@ AR_ddm_TER <- AR_ddm_TER +
     color    = guide_legend(order = 2)   # appears second
   )+
   theme(axis.title.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none")+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 
+AC_ddm_TER
+AR_ddm_TER
 
 ggsave(plot = AC_ddm_TER, "figures/postprocessing/AC_ddm_TER.svg", width = 3, height = 3, units = "in")
 ggsave(plot = AR_ddm_TER, "figures/postprocessing/AR_ddm_TER.svg", width = 3, height = 3, units = "in")
@@ -203,9 +217,16 @@ AC_ddm_v <- AC_ddm_v +
                         values = c("Univalent" = design$prev_val$linetype$uni,
                                    "Bivalent" = design$prev_val$linetype$bi))+
   theme(axis.title.x = element_blank(),
-        legend.position = "none")
-
-AR_ddm_v <- AR_ddm_v +
+        axis.ticks.y = element_line(color = alpha("white", 0)),
+        axis.text.y = element_text(color = alpha("white", 0)),
+        axis.title.y = element_text(color = alpha("white", 0)),
+        axis.line.y = element_line(color = alpha("white", 0)),
+        legend.position = "none"
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
+  
+  AR_ddm_v <- AR_ddm_v +
   scale_y_continuous(
     breaks = function(x) {
       b <- seq(0, max(x), by = 0.03)
@@ -219,13 +240,11 @@ AR_ddm_v <- AR_ddm_v +
     linetype = guide_legend(order = 1),  # appears first
     color    = guide_legend(order = 2)   # appears second
   )+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))+
   theme(axis.title.x = element_blank(),
-        axis.ticks.y = element_line(color = "white"),
-        axis.text.y = element_text(color = "white"),
-        axis.title.y = element_text(color = "white"),
-        axis.line.y = element_line(color = "white"),
-        legend.position = "none"
-  )
+        legend.position = "none")
+
 
 
 
@@ -254,22 +273,24 @@ AC_Errors <- AC_Errors +
   ) +
   labs(y = "Error") +
   scale_color_manual(name = "Current Valence",
-                        labels = c("Univalent" = "Univalent",
-                                   "Bivalent" = "Bivalent"),
-                        values = c("Univalent" = design$curr_val$color$uni,
-                                   "Bivalent" = design$curr_val$color$bi))+
+                     labels = c("Univalent" = "Univalent",
+                                "Bivalent" = "Bivalent"),
+                     values = c("Univalent" = design$curr_val$color$uni,
+                                "Bivalent" = design$curr_val$color$bi))+
   scale_linetype_manual(name = "Previous Valence",
                         labels = c("Univalent" = "Univalent",
                                    "Bivalent" = "Bivalent"),
                         values = c("Univalent" = design$prev_val$linetype$uni,
                                    "Bivalent" = design$prev_val$linetype$bi))+
   theme(axis.title.x = element_blank(),
-        axis.ticks.y = element_line(color = "white"),
-        axis.text.y = element_text(color = "white"),
-        axis.title.y = element_text(color = "white"),
-        axis.line.y = element_line(color = "white"),
+        axis.ticks.y = element_line(color = alpha("white", 0)),
+        axis.text.y = element_text(color = alpha("white", 0)),
+        axis.title.y = element_text(color = alpha("white", 0)),
+        axis.line.y = element_line(color = alpha("white", 0)),
         legend.position = "none"
-  )
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 AC_Errors
 
 AR_Errors <- AR_Errors +
@@ -287,11 +308,13 @@ AR_Errors <- AR_Errors +
   ) +
   labs(y = "Error") +
   theme(axis.title.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none")+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 AR_Errors
 
-ggsave(plot = AC_Errors, "figures/postprocessing/AC_Errors.svg", width = 3, height = 3, units = "in")
-ggsave(plot = AR_Errors, "figures/postprocessing/AR_Errors.svg", width = 3, height = 3, units = "in")
+ggsave(plot = AC_Errors, "figures/postprocessing/AC_Errors.svg", width = 3.7/2, height = 2.5, units = "in")
+ggsave(plot = AR_Errors, "figures/postprocessing/AR_Errors.svg", width = 3.7/2, height = 2.5, units = "in")
 
 ## log(RT) ----
 
@@ -324,12 +347,14 @@ AC_RTlog <- AC_RTlog +
                         values = c("Univalent" = design$prev_val$linetype$uni,
                                    "Bivalent" = design$prev_val$linetype$bi))+
   theme(axis.title.x = element_blank(),
-        axis.ticks.y = element_line(color = "white"),
-        axis.text.y = element_text(color = "white"),
-        axis.title.y = element_text(color = "white"),
-        axis.line.y = element_line(color = "white"),
+        axis.ticks.y = element_line(color = alpha("white", 0)),
+        axis.text.y = element_text(color = alpha("white", 0)),
+        axis.title.y = element_text(color = alpha("white", 0)),
+        axis.line.y = element_line(color = alpha("white", 0)),
         legend.position = "none"
-  )
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 
 AR_RTlog <- AR_RTlog +
   guides(
@@ -347,10 +372,12 @@ AR_RTlog <- AR_RTlog +
   labs(y = "log(RT)") +
   
   theme(axis.title.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none")+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 
-ggsave(plot = AC_RTlog, "figures/postprocessing/AC_RTlog.svg", width = 3, height = 3, units = "in")
-ggsave(plot = AR_RTlog, "figures/postprocessing/AR_RTlog.svg", width = 3, height = 3, units = "in")
+ggsave(plot = AC_RTlog, "figures/postprocessing/AC_RTlog.svg", width = 3.7/2, height = 2.5, units = "in")
+ggsave(plot = AR_RTlog, "figures/postprocessing/AR_RTlog.svg", width = 3.7/2, height = 2.5, units = "in")
 
 
 ## lag RT ----
@@ -386,12 +413,14 @@ AC_lagRT <- AC_lagRT +
                         values = c("Univalent" = design$prev_val$linetype$uni,
                                    "Bivalent" = design$prev_val$linetype$bi))+
   theme(axis.title.x = element_blank(),
-        axis.ticks.y = element_line(color = "white"),
-        axis.text.y = element_text(color = "white"),
-        axis.title.y = element_text(color = "white"),
-        axis.line.y = element_line(color = "white"),
+        axis.ticks.y = element_line(color = alpha("white", 0)),
+        axis.text.y = element_text(color = alpha("white", 0)),
+        axis.title.y = element_text(color = alpha("white", 0)),
+        axis.line.y = element_line(color = alpha("white", 0)),
         legend.position = "none"
-  )
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 
 AR_lagRT <- AR_lagRT +
   guides(
@@ -399,7 +428,7 @@ AR_lagRT <- AR_lagRT +
     color    = guide_legend(order = 2)   # appears second
   )+
   facet_wrap(~lag1_time_log_res_w_s_int_c, labeller = labeller(lag1_time_log_res_w_s_int_c = c("-1.5" = "Lag RT Fast",
-                                                                               "1.5" = "Lag RT Slow")))+
+                                                                                               "1.5" = "Lag RT Slow")))+
   coord_cartesian(ylim = lagRT_range$error)+
   scale_y_continuous(
     breaks = function(x) {
@@ -410,10 +439,12 @@ AR_lagRT <- AR_lagRT +
   ) + 
   labs(y = "log(RT) Prediction") +
   theme(axis.title.x = element_blank(),
-        legend.position = "none")
+        legend.position = "none")+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 
-ggsave(plot = AC_lagRT, "figures/postprocessing/AC_lagRT.svg", width = 4, height = 3.5, units = "in")
-ggsave(plot = AR_lagRT, "figures/postprocessing/AR_lagRT.svg", width = 4, height = 3.5, units = "in")
+ggsave(plot = AC_lagRT, "figures/postprocessing/AC_lagRT.svg", width = 3.7, height = 2.5, units = "in")
+ggsave(plot = AR_lagRT, "figures/postprocessing/AR_lagRT.svg", width = 3.7, height = 2.5, units = "in")
 
 
 
@@ -425,7 +456,8 @@ betw_textsize <- 3.2
 betw_asterisk_size <- 6
 betw_asterisk_symbol <- "*"
 betw_output_size <- c(3, 5)
-
+betw_se_color <- "grey40"
+betw_se_alpha <- 0.2
 
 ### RT ----
 
@@ -438,8 +470,17 @@ AR_betw_RT@layers$geom_point$aes_params$shape <- betw_asterisk_symbol
 AC_betw_RT@layers$geom_point$aes_params$shape <- betw_asterisk_symbol
 
 
-betw_RT_range <- c(-0.1, 0.8)
+AR_betw_RT@layers$geom_ribbon$aes_params$colour <- NA
+AR_betw_RT@layers$geom_ribbon$aes_params$fill <- betw_se_color
+AR_betw_RT@layers$geom_ribbon$aes_params$alpha <- betw_se_alpha
 
+
+AC_betw_RT@layers$geom_ribbon$aes_params$colour <- NA
+AC_betw_RT@layers$geom_ribbon$aes_params$fill <- betw_se_color
+AC_betw_RT@layers$geom_ribbon$aes_params$alpha <- betw_se_alpha
+
+betw_RT_range <- c(-0.25, 0.9)
+AC_betw_RT
 
 AC_betw_RT <- AC_betw_RT + 
   scale_y_continuous(
@@ -451,16 +492,18 @@ AC_betw_RT <- AC_betw_RT +
   ) + 
   coord_cartesian(ylim = betw_RT_range, xlim = c(1, 4.5))+ 
   theme(
-    strip.text = element_text(color = "white"),
+    strip.text = element_text(color = alpha("white", 0)),
     strip.background = element_blank(),
-    axis.line.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.x = element_blank(),
+    #axis.line.x = element_blank(),
+    #axis.ticks.x = element_blank(),
     axis.title.y = element_blank(),
     axis.line.y = element_blank(),
-    axis.text.y = element_text(color = "white"),
-    axis.ticks.y = element_line(color = "white")
-  )
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10, color = alpha("white", 0)),
+    axis.ticks.y = element_line(color = alpha("white", 0))
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 AC_betw_RT
 
 AR_betw_RT <- AR_betw_RT + 
@@ -473,14 +516,16 @@ AR_betw_RT <- AR_betw_RT +
   ) + 
   coord_cartesian(ylim = betw_RT_range, xlim = c(1, 4.5)) + 
   theme(
-    strip.text = element_text(color = "white"),
+    strip.text = element_text(color = alpha("white", 0)),
     strip.background = element_blank(),
-    axis.line.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    axis.text.x = element_blank(),
+    #axis.line.x = element_blank(),
+    #axis.ticks.x = element_blank(),
     axis.text.y = element_text(size = 10),
+    axis.text.x = element_text(size = 10),
     axis.title.y = element_blank()
-  )
+  )+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 
 AR_betw_RT
 
@@ -506,7 +551,14 @@ AC_betw_Error@layers$geom_point$aes_params$size <- betw_asterisk_size
 AR_betw_Error@layers$geom_point$aes_params$shape <- betw_asterisk_symbol
 AC_betw_Error@layers$geom_point$aes_params$shape <- betw_asterisk_symbol
 
-betw_Error_range <- c(-0.1, 0.8)
+AR_betw_Error@layers$geom_ribbon$aes_params$colour <- NA
+AR_betw_Error@layers$geom_ribbon$aes_params$fill <- betw_se_color
+AR_betw_Error@layers$geom_ribbon$aes_params$alpha <- betw_se_alpha
+AC_betw_Error@layers$geom_ribbon$aes_params$colour <- NA
+AC_betw_Error@layers$geom_ribbon$aes_params$fill <- betw_se_color
+AC_betw_Error@layers$geom_ribbon$aes_params$alpha <- betw_se_alpha
+
+betw_Error_range <- c(-0.25, 0.9)
 
 AC_betw_Error <- AC_betw_Error + 
   scale_y_continuous(
@@ -518,7 +570,7 @@ AC_betw_Error <- AC_betw_Error +
   ) + 
   coord_cartesian(ylim = betw_Error_range, xlim = c(1, 4.5)) + 
   theme(
-    strip.text = element_text(color = "white"),
+    strip.text = element_text(color = alpha("white", 0)),
     strip.background = element_blank(),
     # axis.line.x = element_blank(),
     # axis.ticks.x = element_blank(),
@@ -526,9 +578,11 @@ AC_betw_Error <- AC_betw_Error +
     axis.text.x = element_text(size = 10),
     axis.title.y = element_blank(),
     axis.line.y = element_blank(),
-    axis.text.y = element_text(color = "white"),
-    axis.ticks.y = element_line(color = "white")
-  )
+    axis.text.y = element_text(size = 10, color = alpha("white", 0)),
+    axis.ticks.y = element_line(color = alpha("white", 0))
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 
 AC_betw_Error
 
@@ -542,7 +596,7 @@ AR_betw_Error <- AR_betw_Error +
   ) + 
   coord_cartesian(ylim = betw_Error_range, xlim = c(1, 4.5)) + 
   theme(
-    strip.text = element_text(color = "white"),
+    strip.text = element_text(color = alpha("white", 0)),
     strip.background = element_blank(),
     # axis.line.x = element_blank(),
     # axis.ticks.x = element_blank(),
@@ -550,7 +604,9 @@ AR_betw_Error <- AR_betw_Error +
     axis.text.y = element_text(size = 10),
     axis.text.x = element_text(size = 10),
     axis.title.y = element_blank()
-  )
+  )+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 AR_betw_Error
 
 
@@ -575,7 +631,14 @@ AC_betw_v@layers$geom_point$aes_params$size <- betw_asterisk_size
 AR_betw_v@layers$geom_point$aes_params$shape <- betw_asterisk_symbol
 AC_betw_v@layers$geom_point$aes_params$shape <- betw_asterisk_symbol
 
-betw_v_range <- c(-0.1, 0.8)
+AR_betw_v@layers$geom_ribbon$aes_params$colour <- NA
+AR_betw_v@layers$geom_ribbon$aes_params$fill <- betw_se_color
+AR_betw_v@layers$geom_ribbon$aes_params$alpha <- betw_se_alpha
+AC_betw_v@layers$geom_ribbon$aes_params$colour <- NA
+AC_betw_v@layers$geom_ribbon$aes_params$fill <- betw_se_color
+AC_betw_v@layers$geom_ribbon$aes_params$alpha <- betw_se_alpha
+
+betw_v_range <- c(-0.25, 0.9)
 
 AC_betw_v <- AC_betw_v + 
   scale_y_continuous(
@@ -587,17 +650,19 @@ AC_betw_v <- AC_betw_v +
   ) + 
   coord_cartesian(ylim = betw_v_range, xlim = c(1, 4.5)) + 
   theme(
-    strip.text = element_text(color = "white"),
+    strip.text = element_text(color = alpha("white", 0)),
     strip.background = element_blank(),
     # axis.line.x = element_blank(),
     # axis.ticks.x = element_blank(),
     # axis.text.x = element_blank(),
     axis.text.x = element_text(size = 10),
     axis.title.y = element_blank(),
-    axis.line.y = element_blank(),
-    axis.text.y = element_text(color = "white"),
-    axis.ticks.y = element_line(color = "white")
-  )
+    axis.line.y = element_line(color = alpha("white", 0)),
+    axis.text.y = element_text(size = 10, color = alpha("white", 0)),
+    axis.ticks.y = element_line(color = alpha("white", 0))
+  )+
+  theme(plot.background = element_rect(fill = AC_plt_background, color = AC_plt_background), 
+        panel.background = element_rect(fill = AC_plt_background, color = AC_plt_background))
 
 AC_betw_v
 
@@ -611,7 +676,7 @@ AR_betw_v <- AR_betw_v +
   ) + 
   coord_cartesian(ylim = betw_v_range, xlim = c(1, 4.5)) + 
   theme(
-    strip.text = element_text(color = "white"),
+    strip.text = element_text(color = alpha("white", 0)),
     strip.background = element_blank(),
     # axis.line.x = element_blank(),
     # axis.ticks.x = element_blank(),
@@ -619,22 +684,18 @@ AR_betw_v <- AR_betw_v +
     axis.text.y = element_text(size = 10),
     axis.text.x = element_text(size = 10),
     axis.title.y = element_blank()
-  )
+  )+
+  theme(plot.background = element_rect(fill = AR_plt_background, color = AR_plt_background), 
+        panel.background = element_rect(fill = AR_plt_background, color = AR_plt_background))
 AR_betw_v
 
 
-ggsave(plot = AC_betw_Error, "figures/postprocessing/AC_betw_Error.svg", 
+ggsave(plot = AC_betw_v, "figures/postprocessing/AC_betw_v.svg", 
        width = betw_output_size[1], 
        height = betw_output_size[2], units = "in")
-ggsave(plot = AR_betw_Error, "figures/postprocessing/AR_betw_Error.svg", 
+ggsave(plot = AR_betw_v, "figures/postprocessing/AR_betw_v.svg", 
        width = betw_output_size[1], 
        height = betw_output_size[2], units = "in")
-
-
-
-
-ggsave(plot = AC_betw_v, "figures/postprocessing/AC_betw_v.svg", width = 3.5, height = 4.3, units = "in")
-ggsave(plot = AR_betw_v, "figures/postprocessing/AR_betw_v.svg", width = 3.5, height = 4.3, units = "in")
 
 
 
