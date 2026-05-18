@@ -88,6 +88,14 @@ alt_cue <- alt_cue %>%
   filter(time_outlier == 0) 
 
 nrow(alt_cue)
+
+#read in indiv differences
+alt_cue_indivdiff <- import("data/AlternateCues_indivdiff.txt") %>%
+  mutate(ID = as.character(ID))
+
+
+alt_cue <- alt_cue %>% left_join(alt_cue_indivdiff, by = c("id" = "ID"))
+
 ```
 
 # Contrast coding
@@ -315,6 +323,36 @@ make_model_table(alt_cue_rt_log_eff)
 
 
 ```
+
+
+#### Adding individual differences
+
+```{r}
+
+
+
+alt_cue_rt_log_eff_id_g <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * g+ (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
+                           alt_cue %>% 
+                             filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
+
+make_model_table(alt_cue_rt_log_eff_id_g)
+
+alt_cue_rt_log_eff_id_slots <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * Slots + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
+                           alt_cue %>% 
+                             filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
+
+
+make_model_table(alt_cue_rt_log_eff_id_slots)
+
+
+alt_cue_rt_log_eff_id_gslots <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * (g + Slots) + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
+                           alt_cue %>% 
+                             filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
+
+
+make_model_table(alt_cue_rt_log_eff_id_gslots)
+```
+
 
 
 ### Contrast coded (0, 1)

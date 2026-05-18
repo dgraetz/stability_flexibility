@@ -95,6 +95,11 @@ alt_run <- alt_run %>%
   filter(time_outlier == 0)
 
 nrow(alt_run)
+
+
+#read in indiv differences
+alt_run_indivdiff <- import("data/AlternateRuns_indivdiff.txt")
+
 ```
 
 
