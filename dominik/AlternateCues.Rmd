@@ -1182,9 +1182,121 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
                                                    "fast" = "lag RT fast")))+
   labs(title = "Model predictions for residual log RTs",
        y = "log(RT) prediction")+
-  theme_classic()
+  theme_classic()+
+  theme(legend.position = "bottom")
 
 ```
+
+
+
+
+#### Coding position 2 as NA
+
+One issue with the previous analysis is that the lag RT for the first trial after the switch is a switch RT. Therefore, I am here coding that RT as NA.
+
+
+```{r}
+
+alt_cue_withinID_cycle2NA <- alt_cue %>% 
+  filter(filter_correct == 0) %>%
+  mutate(lag1_time_log_res_w_s_int_c = ifelse(cycle == 2, NA, lag1_time_log_res_w_s_int_c))
+
+alt_cue_rt_log_resrt_eff_w_s_int_cy2NA_is_bivalent_switch <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + 
+         (lag1_time_log_res_w_s_int_c + switch_contr + is_bivalent_eff| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_cue_withinID_cycle2NA
+  )
+}, dir = "dominik/models/", file = "alt_cue_rt_log_resrt_eff_w_s_int_cy2NA_is_bivalent_switch.RDS", rerun = rerun_all)
+
+summary(alt_cue_rt_log_resrt_eff_w_s_int_cy2NA_is_bivalent_switch)
+
+model_comp(summary(alt_cue_rt_log_resrt_eff_w_s_int_cy2NA_is_bivalent_switch), summary(alt_cue_rt_log_resrt_eff_w_s_int_is_bivalent_switch))
+
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_eff_w_s_int_cy2NA_is_bivalent_switch, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c, type = "response",
+                          at = list(is_bivalent_eff = factor(c(0, 1)),
+                                    prev_bivalent_eff = factor(c(0, 1)),
+                                    switch_contr = factor(c(0, 1)),
+                                    lag1_time_log_res_w_s_int_c = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(lag1_time_log_res_w_s_int_c == min(lag1_time_log_res_w_s_int_c) ~ "fast",
+                           lag1_time_log_res_w_s_int_c == max(lag1_time_log_res_w_s_int_c) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff, group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()+
+  theme(legend.position = "bottom")
+
+```
+
+
+#### Using the mean NS RT from previous group
+
+```{r}
+
+alt_cue <- alt_cue %>%
+  group_by(id, block, trialgroup) %>%
+  mutate(Avg_NS_RT_log_res_w_s_int_c = mean(lag1_time_log_res_w_s_int_c[switch == 0], na.rm = TRUE)) %>%
+  group_by(id, block) %>%
+  mutate(prev_group_Avg_NS_RT_log_res_w_s_int_c = lag(Avg_NS_RT_log_res_w_s_int_c, 1)) %>%
+  group_by(id, block, trialgroup) %>%
+  mutate(prev_group_Avg_NS_RT_log_res_w_s_int_c = prev_group_Avg_NS_RT_log_res_w_s_int_c[1])
+
+
+
+alt_cue_rt_log_resrt_eff_w_s_int_rt_prevgroup_is_bivalent_switch <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_group_Avg_NS_RT_log_res_w_s_int_c + 
+         (prev_group_Avg_NS_RT_log_res_w_s_int_c + switch_contr + is_bivalent_eff| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_cue %>%
+         filter(filter_correct == 0)
+  )
+}, dir = "dominik/models/", file = "alt_cue_rt_log_resrt_eff_w_s_int_rt_prevgroup_is_bivalent_switch.RDS", rerun = rerun_all)
+
+summary(alt_cue_rt_log_resrt_eff_w_s_int_rt_prevgroup_is_bivalent_switch)
+
+model_comp(
+  summary(alt_cue_rt_log_resrt_eff_w_s_int_rt_prevgroup_is_bivalent_switch), summary(alt_cue_rt_log_resrt_eff_w_s_int_is_bivalent_switch))
+
+
+preds <- emmeans::emmeans(alt_cue_rt_log_resrt_eff_w_s_int_rt_prevgroup_is_bivalent_switch, ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * prev_group_Avg_NS_RT_log_res_w_s_int_c, type = "response",
+                          at = list(is_bivalent_eff = factor(c(0, 1)),
+                                    prev_bivalent_eff = factor(c(0, 1)),
+                                    switch_contr = factor(c(0, 1)),
+                                    prev_group_Avg_NS_RT_log_res_w_s_int_c = c(-1.5, 1.5))) %>%
+  as.data.frame() %>%
+  mutate(speed = case_when(prev_group_Avg_NS_RT_log_res_w_s_int_c == min(prev_group_Avg_NS_RT_log_res_w_s_int_c) ~ "fast",
+                           prev_group_Avg_NS_RT_log_res_w_s_int_c == max(prev_group_Avg_NS_RT_log_res_w_s_int_c) ~ "slow") %>% factor()) 
+
+
+
+ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetype = prev_bivalent_eff, group = interaction(is_bivalent_eff, prev_bivalent_eff)))+
+  geom_line(position = pos)+
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), position = pos)+
+  scale_x_discrete(limits = c("1", "0"))+
+  facet_wrap(~speed, labeller = labeller(speed = c("slow" = "lag RT slow",
+                                                   "fast" = "lag RT fast")))+
+  labs(title = "Model predictions for residual log RTs",
+       y = "log(RT) prediction")+
+  theme_classic()+
+  theme(legend.position = "bottom")
+
+
+make_model_table(alt_cue_rt_log_resrt_eff_w_s_int_is_bivalent_switch)
+make_model_table(alt_cue_rt_log_resrt_eff_w_s_int_cy2NA_is_bivalent_switch)
+make_model_table(alt_cue_rt_log_resrt_eff_w_s_int_rt_prevgroup_is_bivalent_switch)
+
+```
+
 
 
 ## Contrast coded (0, 1)
