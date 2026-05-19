@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  17 MAY 2026 21:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  18 MAY 2026 17:19
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -866,17 +866,11 @@ File: sophia/predmodels.png Graphic file (type png)
 <use sophia/predmodels.png>
 Package pdftex.def Info: sophia/predmodels.png  used on input line 244.
 (pdftex.def)             Requested size: 234.8775pt x 152.12617pt.
-[4]
-Underfull \vbox (badness 2941) has occurred while \output is active []
+[4] [5 <./sophia/predmodels.png>]
+Underfull \vbox (badness 1360) has occurred while \output is active []
 
 
-Underfull \vbox (badness 2941) has occurred while \output is active []
-
-[5 <./sophia/predmodels.png>]
-Underfull \vbox (badness 5331) has occurred while \output is active []
-
-
-Underfull \vbox (badness 5331) has occurred while \output is active []
+Underfull \vbox (badness 1360) has occurred while \output is active []
 
 [6]
 Underfull \vbox (badness 10000) has occurred while \output is active []
@@ -884,13 +878,25 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-[7] [8] [9] [10] [11] [12] [13] [14]
+[7] [8] [9] [10]
+Underfull \vbox (badness 1694) has occurred while \output is active []
+
+
+Underfull \vbox (badness 1694) has occurred while \output is active []
+
+[11]
+Underfull \vbox (badness 2119) has occurred while \output is active []
+
+
+Underfull \vbox (badness 2119) has occurred while \output is active []
+
+[12] [13]
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
 
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
-[15] [16] AED endfloat: Processing end Figures and Tables [17] (APAManuscript.a
+[14] [15] AED endfloat: Processing end Figures and Tables [16] (APAManuscript.a
 ux)
  ***********
 LaTeX2e <2025-11-01>
@@ -898,10 +904,10 @@ L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 18835 strings out of 467871
- 309769 string characters out of 5417408
- 788258 words of memory out of 5000000
- 47244 multiletter control sequences out of 15000+600000
+ 18844 strings out of 467871
+ 309887 string characters out of 5417408
+ 788343 words of memory out of 5000000
+ 47252 multiletter control sequences out of 15000+600000
  680168 words of font info for 127 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,11n,93p,2254b,638s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -912,9 +918,9 @@ r12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mr8.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mri12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm
 /lmss8.pfb>
-Output written on APAManuscript.pdf (17 pages, 253115 bytes).
+Output written on APAManuscript.pdf (16 pages, 252427 bytes).
 PDF statistics:
- 231 PDF objects out of 1000 (max. 8388607)
- 56 named destinations out of 1000 (max. 500000)
- 26766 words of extra memory for PDF output out of 29859 (max. 10000000)
+ 235 PDF objects out of 1000 (max. 8388607)
+ 57 named destinations out of 1000 (max. 500000)
+ 26782 words of extra memory for PDF output out of 29859 (max. 10000000)
 
