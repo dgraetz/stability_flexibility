@@ -3983,6 +3983,8 @@ length(unique(tests_clean$ID)) ## 76 subjects
 
 sort(unique((d_clean$id))) # 3, 4, 5, 7 ,8, 9 , 10, 11, 12, 13, 14, 15, 16, 17, 99, 202 , 203    204, 401 , 402 , 403, 404, 405 , 406, 501,  502,  503, 504, 505, 701, 702, 703 , 704 ,705 ,706, 707, 708 , 752, 800, 903, 904, 905, 906, 907, 908, 909 , 910, 911, 912, 913, 914, 915, 916 ,   917 ,918, 919, 953, 954, 958, 962 ,963, 964 ,965 ,966 , 967 , 968 , 969 , 970,971, 974, 75033, 750445, 961422
 
+sort(unique(d_analysis$id))
+
 sort(unique(tests_clean$ID)) #  3   4   5   7   9  10  11  12  13  14  15  17  99 202 203 204 301 403 404 405 406 501 502 503 504 505 701 702 703 704 705 706 707 708 751 752 800 903 904 905 906 907 908 909 910 911 912 913 914 915 916 917 918 919 951 952 953 954 956 957 958 960 961 962 963 964 965 966 967 968 969 970 971 972 973 974
 
 ## difference: tests has 301, d clean does not have it ; d_clean has 401 and 402. tests does not have it; tests has 751 and d clean does not; tests has 951, 952, 956, 957, 950, 960, 961 but d clean does not have it. tests does not have 75033, 750445, 961422
@@ -3997,34 +3999,27 @@ sort(unique(tests_clean$ID)) #  3   4   5   7   9  10  11  12  13  14  15  17  9
  missing_from_test # "16"     "8"      "401"    "402"    "750445" "75033"  "961422"
 # 
 # # 3. Who is in BOTH? (The "Overlap")
- common_ids <- intersect(tests_clean$ID, d_clean$id)
- sort(common_ids)  #  [1] "10"  "11"  "12"  "13"  "14"  "15"  "17"  "202" "203" "204" "3"   "4"   "403" "404" "405" "406" "5"   "501" "502" "503" "504" "505" "7"   "701" "702" "703" "704" "705" "706" "707" "708" "752" "800" "9"   "903" "904" "905" "906" "907" "908" "909" "910" "911" "912" "913" "914" "915" "916" "917" "918" "919" "953" "954" "958" "962" "963"  "964" "965" "966" "967" "968" "969" "970" "971" "974" "99" 
+common_ids <- intersect(as.character(tests_clean$id), as.character(d_clean$id))
+ sort(common_ids) # [1] "10"  "11"  "12"  "13"  "14"  "15"  "17"  "202" "203" "204" "3"   "4"   "403" "404" "405" "406" "5"   "501" "502" "503" "504" "505" "7"   "701" "702" "703" "704" "705" "706" "707" "708" "752" "800" "9"   "903" "904"  "905" "906" "907" "908" "909" "910" "911" "912" "913" "914" "915" "916" "917" "918" "919" "953" "954" "958"  "962" "963" "964" "965" "966" "967" "968" "969" "970" "971" "974" "99" 
  
  length(common_ids) # 66 subjects 
+ 
+ common_ids_analysis <-  intersect(as.character(tests_clean$id), as.character(d_analysis$id))
+  sort(common_ids_analysis) #  [1] "10"  "11"  "12"  "13"  "14"  "15"  "17"  "203" "204" "3"   "4"   "403" "404" "405" "406" "5"   "501" "502" "503" "504" "505" "7"   "701" "702" "703" "704" "705" "706" "707" "708" "752" "800" "9"   "903" "904" "905" "906" "907" "908" "909" "910" "911" "912" "913" "915" "916" "917" "918" "919" "953" "954" "958" "962" "963" "964" "965" "966" "967" "968" "969" "970" "971" "974" "99" 
+ 
+length(common_ids_analysis) # 64 
+
+
+# what are the 2 missing IDs from d_clean and d_analysis???
+lost_ids <- setdiff(common_ids, as.character(d_analysis$id))
+lost_ids # 202, 914 -- removed for less accuracy.
 ```
  
  
  
 
-#```{r}
 
 
-id_4_clean <- d_clean %>%
-  filter(id == 4) %>% 
-  group_by(id, block, trial) %>%
-  slice(1) %>%   # keep first occurrence
-  ungroup() %>% 
-  droplevels()
-#```
-
-
-#```{r}
-data_clean <- d_clean %>%
-  filter(id != 4) %>%   # keep everyone else untouched
-  bind_rows(id_4_clean) %>% 
-  droplevels()
-
-#```
 
 testing if traeoff itself is a function of cognitive capacity 
 
@@ -4045,6 +4040,79 @@ ungroup and then scale for within-subjects
 
 ###########################################################################################
 
+okay so d_clean and tests_clen has 66 common subjects. 
+step 1: making a subset of d_clean with only these subjects 
+step 2: renaming tests_clean ID as id 
+Step 3: merging back g and slots columns into d_clean
+
+```{r}
+
+#step 1: 
+d_filtered <- d_analysis %>%
+  filter(as.character(id) %in% common_ids_analysis)
+
+nrow(d_filtered) # 36,467 rows 
+
+#step 2:
+tests_clean <- tests_clean %>%
+  rename(id = ID)
 
 
+#step 3: 
+d_merged <- d_filtered %>%
+  mutate(id = as.character(id)) %>%
+  left_join(tests_clean %>% 
+              mutate(id = as.character(id)) %>%
+              select(id, g, Slots), 
+            by = "id")
+
+length(unique(d_merged$id)) # 64 
+
+
+
+```
+
+
+Now, running multilevel models by adding the g (IQ) and WM (Slots) columns as predictors. 
+
+1. experimental level
+
+A. log rt 
+
+```{r}
+# m_rt_effect_check<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1 + val_c_g + val_p_g + switch |  id),
+# 
+#                  data = d_analysis %>% filter(filter_correct == 0),
+#                  na.action = na.exclude,
+#               control = lmerControl(optimizer = "bobyqa"))
+
+
+## question, should g or Sorts be put into random slopes? 
+
+m_rt_effect_g <- lmer(log(time) ~  val_c_g * val_p_g * switch * g  + (1 + val_c_g + val_p_g + switch |  id),
+
+                 data = d_merged %>% filter(filter_correct == 0),
+                 na.action = na.exclude,
+                 control = lmerControl(optimizer = "bobyqa"))
+
+summary(m_rt_effect_g )
+
+ tab_model(m_rt_effect_g,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") 
+
+```
+
+B. error 
+
+```{r}
+
+m_error_effect_g <- glmer(error ~  val_c_g * val_p_g * switch * g + ( val_c_g + val_p_g + switch| id),
+                 data = d_merged, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+summary(m_error_effect_g )
+
+tab_model(m_error_effect_g ,show.est=T,auto.label=F,show.stat=T)
+```
 
