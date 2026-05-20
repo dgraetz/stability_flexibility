@@ -3952,6 +3952,19 @@ ggsave(plot = plt_betw_Error, "AC_betw_Error.svg", width = 4, height = 6, units 
 
 ```
 
+
+ 
+ 
+ 
+
+
+
+
+
+
+
+###########################################################################################
+
 ###############################################################################################
 
 IQ and WM Tests 
@@ -3983,7 +3996,7 @@ length(unique(tests_clean$ID)) ## 76 subjects
 
 sort(unique((d_clean$id))) # 3, 4, 5, 7 ,8, 9 , 10, 11, 12, 13, 14, 15, 16, 17, 99, 202 , 203    204, 401 , 402 , 403, 404, 405 , 406, 501,  502,  503, 504, 505, 701, 702, 703 , 704 ,705 ,706, 707, 708 , 752, 800, 903, 904, 905, 906, 907, 908, 909 , 910, 911, 912, 913, 914, 915, 916 ,   917 ,918, 919, 953, 954, 958, 962 ,963, 964 ,965 ,966 , 967 , 968 , 969 , 970,971, 974, 75033, 750445, 961422
 
-sort(unique(d_analysis$id))
+length(unique(d_analysis$id)) #71 subjects 
 
 sort(unique(tests_clean$ID)) #  3   4   5   7   9  10  11  12  13  14  15  17  99 202 203 204 301 403 404 405 406 501 502 503 504 505 701 702 703 704 705 706 707 708 751 752 800 903 904 905 906 907 908 909 910 911 912 913 914 915 916 917 918 919 951 952 953 954 956 957 958 960 961 962 963 964 965 966 967 968 969 970 971 972 973 974
 
@@ -4014,11 +4027,6 @@ length(common_ids_analysis) # 64
 lost_ids <- setdiff(common_ids, as.character(d_analysis$id))
 lost_ids # 202, 914 -- removed for less accuracy.
 ```
- 
- 
- 
-
-
 
 
 testing if traeoff itself is a function of cognitive capacity 
@@ -4037,13 +4045,13 @@ higher WM capacity would mean higher stability
 ungroup and then scale for within-subjects 
 
 
-
-###########################################################################################
-
+steps: 
 okay so d_clean and tests_clen has 66 common subjects. 
 step 1: making a subset of d_clean with only these subjects 
 step 2: renaming tests_clean ID as id 
 Step 3: merging back g and slots columns into d_clean
+
+note: d_analysis has 71 subjects BUT d_merged has 64 subjects 
 
 ```{r}
 
@@ -4079,6 +4087,8 @@ Now, running multilevel models by adding the g (IQ) and WM (Slots) columns as pr
 
 A. log rt 
 
+g
+
 ```{r}
 # m_rt_effect_check<- lmer(log(time) ~  val_c_g * val_p_g * switch + (1 + val_c_g + val_p_g + switch |  id),
 # 
@@ -4101,11 +4111,38 @@ summary(m_rt_effect_g )
 
 ```
 
+slots 
+
+```{r}
+m_rt_effect_slots <- lmer(log(time) ~  val_c_g * val_p_g * switch * Slots  + (1 + val_c_g + val_p_g + switch |  id),
+
+                 data = d_merged %>% filter(filter_correct == 0),
+                 na.action = na.exclude,
+                 control = lmerControl(optimizer = "bobyqa"))
+
+summary(m_rt_effect_slots ) # did not converge and is singular warning 
+
+ tab_model(m_rt_effect_slots,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") 
+ 
+ m_rt_effect_slots_simple <- lmer(log(time) ~  val_c_g * val_p_g * switch * Slots  + (1  |  id),
+
+                 data = d_merged %>% filter(filter_correct == 0),
+                 na.action = na.exclude,
+                 control = lmerControl(optimizer = "bobyqa"))
+
+summary(m_rt_effect_slots_simple ) # did not converge and is singular warning 
+
+ tab_model(m_rt_effect_slots_simple,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite")
+ 
+```
+
 B. error 
+
+g
 
 ```{r}
 
-m_error_effect_g <- glmer(error ~  val_c_g * val_p_g * switch * g + ( val_c_g + val_p_g + switch| id),
+m_error_effect_g <- glmer(error ~  val_c_g * val_p_g * switch * g + ( val_c_g  + switch| id),
                  data = d_merged, 
                  family = "binomial",
                   na.action = na.exclude, 
@@ -4114,5 +4151,63 @@ m_error_effect_g <- glmer(error ~  val_c_g * val_p_g * switch * g + ( val_c_g + 
 summary(m_error_effect_g )
 
 tab_model(m_error_effect_g ,show.est=T,auto.label=F,show.stat=T)
+
+
+
+```
+Slots 
+
+```{r}
+
+m_error_effect_slots <- glmer(error ~  val_c_g * val_p_g * switch * Slots + ( val_c_g +  switch| id),
+                 data = d_merged, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+summary(m_error_effect_slots )
+
+tab_model(m_error_effect_slots ,show.est=T,auto.label=F,show.stat=T)
+```
+confirming if g and Slots are z-scored: 
+
+yes they are! 
+
+```{r}
+hist(d_merged$g)
+hist(d_merged$Slots)
+
+ mean(d_merged$g, na.rm = TRUE)  #  -0.09907177
+sd(d_merged$g, na.rm = TRUE)     #  0.9599575
+
+  mean(d_merged$Slots, na.rm = TRUE)  # 0.003773407
+sd(d_merged$Slots, na.rm = TRUE) #  1.010969
+```
+
+putting both g and Slots in one model 
+
+```{r}
+m_rt_effect_both <- lmer(log(time) ~  val_c_g * val_p_g * switch * (g + Slots)  + (1 + val_c_g + val_p_g + switch |  id),
+
+                 data = d_merged %>% filter(filter_correct == 0),
+                 na.action = na.exclude,
+                 control = lmerControl(optimizer = "bobyqa"))
+
+summary(m_rt_effect_both )
+
+ tab_model(m_rt_effect_both,show.est=T,auto.label=F,show.stat=T, df.method = "satterthwaite") 
+```
+```{r}
+
+
+m_error_effect_both <- glmer(error ~  val_c_g * val_p_g * switch * (g+ Slots) + ( 1+ val_c_g + val_p_g +  switch| id),
+                 data = d_merged, 
+                 family = "binomial",
+                  na.action = na.exclude, 
+                 control = glmerControl(optimizer = "bobyqa"))
+
+summary(m_error_effect_both )
+
+tab_model(m_error_effect_both ,show.est=T,auto.label=F,show.stat=T)
 ```
 
