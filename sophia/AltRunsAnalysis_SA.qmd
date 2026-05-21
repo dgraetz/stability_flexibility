@@ -54,6 +54,10 @@ library(hlmer)
 AlternateRuns <- read_csv("AlternateRuns.csv")
 #view(AlternateRuns) 
 
+iqTest <- read_csv("tests.csv")
+
+view(iqTest)
+
 #make lmer models lmertests
 rerun_all <- 0
 
@@ -92,6 +96,8 @@ sum_er
 
 sum_er <- sum_er %>% 
   filter(acc < .8) 
+
+sum_er
 
 alt_run <- alt_run %>% 
   filter(!id %in% sum_er$id) #removing those outliers here 
@@ -230,6 +236,44 @@ contrasts(alt_run$cycle_helmert)
 
 #view(alt_run)
 ```
+IQ test 
+```{r}
+length(unique(iqTest$id)) #n=100
+
+iqTest <- iqTest %>%
+  filter(!id %in% c(19,70,87)) %>% 
+  droplevels()
+iqTest #same as alt_runs
+
+
+iqTest <- iqTest %>% 
+  mutate(
+    z_raven = (raven - mean(raven, na.rm = TRUE)) / sd(raven, na.rm = TRUE),
+    z_cfit  = (cfit  - mean(cfit,  na.rm = TRUE)) / sd(cfit,  na.rm = TRUE)
+  )
+
+iqTest <- iqTest %>% 
+  mutate(
+    g = (z_raven + z_cfit) / 2, 
+    g_c = scale(g, center = TRUE, scale = FALSE)
+  )
+
+iqTest
+
+alt_run <- alt_run %>% mutate(id = as.character(id))
+iqTest  <- iqTest  %>% mutate(id = as.character(id))
+
+alt_run <- alt_run %>%
+  left_join(
+    iqTest %>% select(id, g_c),
+    by = "id"
+  )
+
+view(alt_run)
+
+
+```
+
 
 Aggregation experimental level analysis
 
@@ -473,8 +517,8 @@ by rt log with valence contrasts
 
 ```{r}
 model_lmer_log_c <- xfun::cache_rds({
-  lmer(rt_log ~ valence_contr * lvalence_contr * switch +
-    (valence_contr + lvalence_contr + switch | id), 
+  lmer(rt_log ~ valence_contr * lvalence_contr * switch * g_c +
+    (valence_contr + lvalence_contr + switch| id), 
   control = lmerControl(optimizer = 'bobyqa'),
   data = alt_run %>% filter(filter_correct == 0)
 )
@@ -529,7 +573,7 @@ by error with valence contrasts
 ```{r}
 model_glmer_c <- xfun::cache_rds({
   glmer(
-  error ~ valence_contr * lvalence_contr*switch + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
+  error ~ valence_contr * lvalence_contr*switch*g_c + (valence_contr + lvalence_contr + switch|id), family = 'binomial', control = glmerControl(optimizer = 'bobyqa'), data = alt_run
 )
 }, dir = "sophia/output/", file = "model_glmer_c.rds", rerun = rerun_all)
 summary(model_glmer_c)
@@ -647,7 +691,7 @@ alt_run_agg_ddm <- alt_run_agg_ID_ddm %>%
 
 alt_run_agg_ID_ddm_collapsed <- alt_run  %>% #doing this a different way, if we groupby everything but cycle, the switch v no-switch will auto treat 2,3,4 as averaged i think
   mutate(RT_s = rt/1000) %>% #convert rt to seconds
-  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch) %>%
+  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch, g_c) %>%
   summarize(rt_log =  mean(rt_log[filter_correct == 0], na.rm = TRUE),
             RT_s_m = mean(RT_s[filter_correct == 0], na.rm = TRUE),
             RT_s_var = var(RT_s[filter_correct == 0], na.rm = TRUE),
@@ -661,7 +705,7 @@ alt_run_agg_ID_ddm_collapsed <- alt_run  %>% #doing this a different way, if we 
   unnest(ezddm) #this extracts the newly created dataframe per column into its own separate columns 
 
 alt_run_agg_ddm_collapsed <- alt_run_agg_ID_ddm_collapsed %>%
-  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch) %>%
+  group_by(id, valence,valence_contr, lvalence, lvalence_contr, switch, g_c) %>%
   normWS(s = "id", dv = "a") %>% #boundary separation. this is starting value
   mutate(a = DV_n) %>%
   normWS(s = "id", dv = "v") %>% #drift rate
@@ -880,9 +924,9 @@ tab_model(model_final_v, show.est = T, auto.label = F, show.stat = T, df.method 
 anova(model_final_v, v_switch) #sig
 
 model_final2_v <- xfun::cache_rds({
-  lmer(v ~ valence_contr * lvalence_contr *switch + (switch +valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
+  lmer(v ~ valence_contr * lvalence_contr *switch*g_c + (switch +valence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
 }, dir = "sophia/output/", file = "model_final2_v.rds", rerun = rerun_all)
-summary(v_switch_val) #good 
+summary(model_final2_v) #good 
 tab_model(model_final2_v, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 #evidence for an antitradeoff, the more pos here the more of an antitradeoff pattern 
