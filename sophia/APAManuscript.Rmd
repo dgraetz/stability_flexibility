@@ -1,18 +1,8 @@
 ---
-title             : "Desperately seeking Stability-Flexibility Tradeoffs: Relating Switch-Costs to Pre-Trial Stability Across Levels of Analysis "
+title             : "Desperately Seeking Stability-Flexibility Tradeoffs: Relating Switch-Costs To Pre-Trial Stability Across Levels of Analysis "
 shorttitle        : "Multi-level Analysis Of The Stability-Flexibility Tradeoff"
 
 author: 
-  - name          : "Ulrich Mayr"
-    affiliation   : "1"
-    corresponding : yes    # Define only one corresponding author
-    address       : "Lewis Integrative Science Building, room 350 Eugene, OR 97403-1227"
-    email         : "mayr@uoregon.edu"
-    role: # Contributorship roles (e.g., CRediT, https://credit.niso.org/)
-      - "Conceptualization"
-      - "Writing - Review & Editing"
-      - "Project Administration"
-      - "Supervision"
   - name          : "Sophia Vi Angleton"
     affiliation   : "1"
     email         : "sopa@uoregon.edu"
@@ -35,15 +25,21 @@ author:
       - "Writing - Review & Editing"
       - "Formal Analysis"
       - "Visualization"
-
+  - name          : "Ulrich Mayr"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Lewis Integrative Science Building, room 350 Eugene, OR 97403-1227"
+    email         : "mayr@uoregon.edu"
+    role: # Contributorship roles (e.g., CRediT, https://credit.niso.org/)
+      - "Conceptualization"
+      - "Writing - Review & Editing"
+      - "Project Administration"
+      - "Supervision"
+      
 affiliation:
   - id            : "1"
     institution   : "University of Oregon"
 
-authornote: |
-  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line. NOTE put somewhere here that this study is part of a larger investigation funded by a grant from NIH 
-
-  Enter author note here. 
 
 abstract: |
   While some theories of cognitive control suggest a tradeoff between stable task representations and adapting flexibly to new ones, empirical evidence is inconclusive and has rarely covered the different levels on which such tradeoffs could occur [@goschke_2000_intentional;@rogers_1995_costs; @goschke_2000_14; @egner_2007_congruency]. A smaller body of research supports a different account of stability-flexibility, where on the level of within-subject dynamics stability and flexibility are found to co-occur [@mayr_2014_longterm]. This raises the question that the stability–flexibility tradeoff seen through experimental level effects is not a fundamental property of cognitive control but may instead reflect the analytic level at which it is measured. Moreover, individual differences work hints at substantial variability in how people balance stability and flexibility, suggesting that the relationship may not be uniform across all individuals [@mayr_2024_does].
@@ -95,126 +91,90 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 
 A dominant view in research on cognitive control holds that adjustments of control are constrained by a general stability-flexibility tradeoff. Specifically, increasing the stability of a task-relevant representation makes flexible changes of that representation more difficult [@goschke_2000_intentional]. You may have spent weeks memorizing a speech word-for-word reflecting high stability, but falter when mid-talk someone raises a question, forcing you to switch into an improvised, conversational mode thereby reducing flexibility. The very thing that keeps you anchored can also slow you down when you need to pivot. The prediction of a tradeoff relationship arises from connectionist models of cognitive control. The behavior of these models can be described within an “attractor landscape” *(Fig. 1)* [@brown_2007_a; @geddert_2022_no]. In this framework, different task representations form basins in a state space, and the depth of a basin reflects how strongly a task is currently activated. A deeper basin corresponds to a more stable task state, but it also requires more “energy” to move out of, making task switching more difficult. 
 
-```{r predmodels, echo=FALSE, fig.cap = "The landscape attractor model. This prediction model represents the dominant view of how stability-flexibility interact, which is in a tradeoff manner. Tasks are represented as basins of varying depth along a state space. The more stable a task representation is, the deeper the corresponding basin in this attractor model. As a result for high stability, it takes more potential energy to move out of the task basin to a different task.", fig.align = "center", out.width = "50%"}
+```{r predmodels, echo=FALSE, fig.cap = "The landscape attractor model. Tasks are represented as basins of varying depth along a state space. More stable task representations have deeper basins in this attractor model taking more potential energy to flexibly switch to a different task.", fig.align = "center", out.width = "50%"}
 
 knitr::include_graphics("sophia/predmodels.png")
 ```
+\newpage 
 
-While foundational theories of cognitive control suggest this tradeoff between stability and flexibility, empirical evidence collected over the years are inconclusive and has rarely covered the different levels on which such tradeoffs could occur [@goschke_2000_intentional;@rogers_1995_costs; @goschke_2000_14]. Most empirical work has examined the stability–flexibility dilemma using blockwise manipulations, contrasting “stable” versus “flexible” blocks in a task-switching context by manipulating response level conflict and switch-frequency.
-
-As Eigner has argued, these two manipulations might affect different hierarchical levels of control. Therefore it is not clear whether tradeoff patterns could be observed when contrasting demands occur on the same level. For this reason we manipulated control demands directly on task level through using either univalent stimuli (associated only with one task) or bivalent stimuli (associated with two competing tasks).  
-
-The notion of a stability-flexibility tradeoff is typically applied in an indiscriminate manner, painting differences from trial level, individual differences, cultural phenomena, and psychiatric disorders with the same broad brush (citations). Sources of variability across levels of analysis are logically distinct, and systematic analysis of tradeoff phenomena across levels has been rarely conducted. The current study examines tradeoff relationship on the experimental effects (through mean differences), within-subject variability across trials, and average variability across individuals. 
-
-The later inter-individual differences level requires additional considerations. In previous work (e.g. Geddart & Egnier) inter-individual tradeoffs have been examined by directly relating factors representing stability and flexibility. This approach ignores the potential contamination of each measure through the "positive manifold" of positive correlations between almost any cognitive task (citations). It is therefore important to carefully control for such positive "baseline" correlations when testing for potential tradeoff relationships at this level.  
+  While foundational theories of cognitive control suggest this tradeoff between stability and flexibility, empirical evidence collected over the years are inconclusive and has rarely covered the different levels on which such tradeoffs could occur [@goschke_2000_intentional;@rogers_1995_costs; @goschke_2000_14]. Most empirical work has examined the stability–flexibility dilemma using blockwise manipulations, contrasting “stable” versus “flexible” blocks in a task-switching context by manipulating response level conflict and switch-frequency.
+  As Eigner has argued, these two manipulations might affect different hierarchical levels of control. Therefore it is not clear whether tradeoff patterns could be observed when contrasting demands occur on the same level. For this reason we manipulated control demands directly on task level through using either univalent stimuli (associated only with one task) or bivalent stimuli (associated with two competing tasks).  
+  The notion of a stability-flexibility tradeoff is typically applied in an indiscriminate manner, painting differences from trial level, individual differences, cultural phenomena, and psychiatric disorders with the same broad brush (citations). Sources of variability across levels of analysis are logically distinct, and systematic analysis of tradeoff phenomena across levels has been rarely conducted. The current study examines tradeoff relationship on the experimental effects (through mean differences), within-subject variability across trials, and average variability across individuals. 
+  The later inter-individual differences level requires additional considerations. In previous work (e.g. Geddart & Egnier) inter-individual tradeoffs have been examined by directly relating factors representing stability and flexibility. This approach ignores the potential contamination of each measure through the "positive manifold" of positive correlations between almost any cognitive task (citations). It is therefore important to carefully control for such positive "baseline" correlations when testing for potential tradeoff relationships at this level.  
 
 ### The Current Study
- 
- Across two experiments, we used a task-switching 'shape' or 'color' task with with both univalent and bivalent stimuli included to manipulate task conflict. We manipulated these cognitive demands on pre-switch to post‑trial for a more detailed measure of how stability-flexibility interact. The main component of experiment 1’s task design was the alternating sequence of four consistent trials per task, which on the one hand offers strong experimental control, also introduces group‑to‑group consistency. This may increase strategic adaptation, where participants adjust their control settings in anticipation of upcoming task demands rather than responding dynamically to each trial. Experiment 2 adopts a more run‑by‑run design in which task and stimulus conditions varied in a group of 3 trials than in fixed groups of 4 to account for this possible adaptation effect.
-
-We examine these cognitive demands across three complementary levels of analysis consistent across both experiments: (a) average experimental effects, (b) within-subject, trial-to-trial dynamics, and (c) inter-individual relationships. At the experimental‑effects level, we test whether manipulations of previous‑ and current‑trial control demands interact with the switch contrast in a manner consistent with a stability–flexibility tradeoff. At the within‑subject level, we assess whether trial‑by‑trial RT autocorrelations, considered alongside the experimental effects, reveal evidence of a tradeoff in moment‑to‑moment adjustments. Finally, at the individual‑differences level, we examine whether variability in measures of stability and flexibility aligns with the predictions of the tradeoff model. This multi‑level framework allows us to determine whether the stability–flexibility tradeoff emerges consistently across analytic levels or whether different levels reveal distinct patterns.
-
+  Across two experiments, we used a task-switching 'shape' or 'color' task with with both univalent and bivalent stimuli included to manipulate task conflict. We manipulated these cognitive demands on pre-switch to post‑trial for a more detailed measure of how stability-flexibility interact. The main component of experiment 1’s task design was the alternating sequence of four consistent trials per task, which on the one hand offers strong experimental control, also introduces group‑to‑group consistency. This may increase strategic adaptation, where participants adjust their control settings in anticipation of upcoming task demands rather than responding dynamically to each trial. Experiment 2 adopts a more run‑by‑run design in which task and stimulus conditions varied in a group of 3 trials than in fixed groups of 4 to account for this possible adaptation effect.
+  We examine these cognitive demands across three complementary levels of analysis consistent across both experiments: (a) average experimental effects, (b) within-subject, trial-to-trial dynamics, and (c) inter-individual relationships. At the experimental‑effects level, we test whether manipulations of previous‑ and current‑trial control demands interact with the switch contrast in a manner consistent with a stability–flexibility tradeoff. At the within‑subject level, we assess whether trial‑by‑trial RT autocorrelations, considered alongside the experimental effects, reveal evidence of a tradeoff in moment‑to‑moment adjustments. Finally, at the individual‑differences level, we examine whether variability in measures of stability and flexibility aligns with the predictions of the tradeoff model. This multi‑level framework allows us to determine whether the stability–flexibility tradeoff emerges consistently across analytic levels or whether different levels reveal distinct patterns.
 
 ### Experimental Level Hypotheses
 
- **No-switch Trials.**
+  We break down our predictions on this level into what we predict to occur on a switch-trial, that is when the task switches to a different task, and no-switch trials, or when task stays the same. We outline no-switch trial predictions first. 
 
-H1: Univalent trials (trials where one task is neutral) by definition have no conflict. Therefore, Univalent (Unambiguous) trials result in relatively shorter response times, and fewer errors compared to ambiguous. 
-
-H2: Bivalence (ambiguity) enforces stability because it introduces conflict resulting in longer reaction times and errors.  
-
- **Switch Trials.**
-
-H1: Previous trial-group bivalence (ambiguity) enforces stability and should therefore cause higher switch costs (longer response times, more errors). If the previous group of trials was univalent (unambiguous), previous performance required less stability and should therefore reduce switch costs (lower response times, fewer errors).   
-
-H2: Current-trial bivalence requires establishing a stronger task set and therefore further increases RT and errors. Previous and current ambiguity should produce particularly large switch costs (e.g., an interaction between previous and current ambiguity). 
+#### No-Switch Trials.
+  H1: Univalent trials (trials where one task is neutral) by definition have no conflict. Therefore, Univalent (Unambiguous) trials result in relatively shorter response times, and fewer errors compared to ambiguous. 
+  H2: Bivalence (ambiguity) enforces stability because it introduces conflict resulting in longer reaction times and errors.  
+  
+#### Switch Trials.
+  H1: Previous trial-group bivalence (ambiguity) enforces stability and should therefore cause higher switch costs (longer response times, more errors). If the previous group of trials was univalent (unambiguous), previous performance required less stability and should therefore reduce switch costs (lower response times, fewer errors).   
+  H2: Current-trial bivalence requires establishing a stronger task set and therefore further increases RT and errors. Previous and current ambiguity should produce particularly large switch costs (e.g., an interaction between previous and current ambiguity). 
 
 ### Within-Subject Level Hypotheses
 
 ()
 
-### Individual Differences Level Hypotheses
-
-H1: We test the hypothesis derived from the tradeoff model that participants who are stable under a no-switch condition, which should be more challenging if the previous trials and/or the current trial is bivalent, should be less efficient on switch trials. 
-
-Because efficiency in almost all cognitive tasks is positively related (i.e., the “positive manifold”) we will conduct a series of model tests, where on each level we will control for relationships occurring on “preceding” conditions to present less of a challenge to the stability-flexibility tradeoff. 
-
-H2: We predict that with an increase in stability demands (e.g., non-switch trials where the previous and/or current trial group were bivalent), the coefficients should turn negative in case of a tradeoff. 
+### Inter-individual Differences Level Hypotheses
+  H1: We test the hypothesis derived from the tradeoff model that participants who are stable under a no-switch condition, which should be more challenging if the previous trials and/or the current trial is bivalent, should be less efficient on switch trials. 
+  Because efficiency in almost all cognitive tasks is positively related (i.e., the “positive manifold”) we will conduct a series of model tests, where on each level we will control for relationships occurring on “preceding” conditions to present less of a challenge to the stability-flexibility tradeoff. 
+  H2: We predict that with an increase in stability demands (e.g., non-switch trials where the previous and/or current trial group were bivalent), the coefficients should turn negative in case of a tradeoff. 
 
 # Method
-We report how we determined our sample size, all data exclusions (if any), all manipulations, and all measures in the study. <!-- 21-word solution (Simmons, Nelson & Simonsohn, 2012; retrieved from http://ssrn.com/abstract=2160588) -->
 
 ## Participants
-
-Our sample size for experiment 1 was 100 (N=100), and the sample size for experiment 2 was 78 (N=78). Both experiments subject were collected using convenience sampling methods recruited from the human subjects pool from the University of Oregon.  
+  Our sample size for experiment 1 was 100 (N=100), and the sample size for experiment 2 was 78 (N=78). Both experiments subject were collected using convenience sampling methods recruited from the human subjects pool from the University of Oregon. Participants signed an informed consent form given by our lab, then were instructed through the experiment ahead. Upon learning the instructions, participants completed one practice block, then proceeded to the start of the experiment. Upon completion of the experiment, subjects were debriefed and thanked for their time. 
 
 ## Procedure
-
-### Participants
-
-Participants signed an informed consent form given by our lab, then were instructed through the experiment ahead. Upon learning the instructions, participants completed one practice block, then proceeded to the start of the experiment. Upon completion of the experiment, subjects were debriefed and thanked for their time.  
-
-### Design
-
-Across both experiments, we had the same basic task stimuli with key design differences that we will discuss after setting up the commonalities in structure. 
-
-**Stimuli and Variables.** The task involved the subject viewing a colored shape. The stimulus dimension shape and stimulus dimension color were consistent across both experiments 1 and 2, with 3 possible shapes appearing (circle, square, and triangle) as the bivalent stimuli, plus a neutral univalent shape which was a cross. The stimulus shapes were also 3 possible colors (red, green, and blue), with the neutral univalent color being gray. In no condition both univalent dimensions were shown. Per trial, subjects completed one of two tasks, one task, “color” determined what color the stimuli is and  “shape”, determined the shape of the presented stimuli. 
-
-Across both experiments, we were interested in the stimulus dimension shape, the stimulus dimension color, and the sequence position in a group of trials, where the first position versus the remaining position serving as the switch contrast. Sequence position in group changed across both experiments, for experiment 1 there were 4 positions per group whereas experiment 2 had 3 positions.
+  Across both experiments, we had the same basic task stimuli with key design differences that we will discuss after setting up the commonalities in structure. 
+  
+#### Stimuli and Variables
+  The task involved the subject viewing a colored shape. The stimulus dimension shape and stimulus dimension color were consistent across both experiments 1 and 2, with 3 possible shapes appearing (circle, square, and triangle) as the bivalent stimuli, plus a neutral univalent shape which was a cross. The stimulus shapes were also 3 possible colors (red, green, and blue), with the neutral univalent color being gray. In no condition both univalent dimensions were shown. Per trial, subjects completed one of two tasks, one task, “color” determined what color the stimuli is and  “shape”, determined the shape of the presented stimuli.
+  Across both experiments, we were interested in the stimulus dimension shape, the stimulus dimension color, and the sequence position in a group of trials, where the first position versus the remaining position serving as the switch contrast. Sequence position in group changed across both experiments, for experiment 1 there were 4 positions per group whereas experiment 2 had 3 positions.
 
 #### Experiment 1
-Subjects performed one of two tasks indicated by task instructions “color” or “shape”, where they identified either the color or shape attribute of a presented stimulus. The task switched every 4 trials, where the first trial of every group always marked a task switch into another group of 4 trials. Similar to the alternate cues experimental design, the univalent aspect was manipulated randomly in a between trial groups design, in this case with all four trials in one group being bivalent or all four trials in one group being univalent, so that the participants knew that the stimuli alternated task dimension in groups of four. Subjects completed a total of 8 blocks excluding a practice block, each block containing 112 trials. 
+  Subjects performed one of two tasks indicated by task instructions “color” or “shape”, where they identified either the color or shape attribute of a presented stimulus. The task switched every 4 trials, where the first trial of every group always marked a task switch into another group of 4 trials. Similar to the alternate cues experimental design, the univalent aspect was manipulated randomly in a between trial groups design, in this case with all four trials in one group being bivalent or all four trials in one group being univalent, so that the participants knew that the stimuli alternated task dimension in groups of four. Subjects completed a total of 8 blocks excluding a practice block, each block containing 112 trials. 
 
 #### Experiment 2
-In each group, the task remained to be univalent or bivalent, with a task switch after each group of 3 trials. Therefore, for each group, the currently irrelevant task could be either univalent or bivalent, and remained the same per group. The experiment was a task switching paradigm, wherein participants switched between a color and a shape task. In each trial, participants performed one of two tasks- color or shape, where they identify the color or shape of the stimulus, respectively. The task switches every three trials. In other words, the color or shape tasks were active for three consecutive trials. Three trials make up a group. Thus, the first trial of a group marks a task switch into the other task, the following two trials are task repetitions. There was a 100 ms Inter-trial-interval. The participants performed one initial practice block with 126 trials and then moved onto performing 5 experimental blocks with 120 trials each.
+  In each group, the task remained to be univalent or bivalent, with a task switch after each group of 3 trials. Therefore, for each group, the currently irrelevant task could be either univalent or bivalent, and remained the same per group. The experiment was a task switching paradigm, wherein participants switched between a color and a shape task. In each trial, participants performed one of two tasks- color or shape, where they identify the color or shape of the stimulus, respectively. The task switches every three trials. In other words, the color or shape tasks were active for three consecutive trials. Three trials make up a group. Thus, the first trial of a group marks a task switch into the other task, the following two trials are task repetitions. There was a 100 ms Inter-trial-interval. The participants performed one initial practice block with 126 trials and then moved onto performing 5 experimental blocks with 120 trials each.
 
-## Analysis Plan
+## Analysis and Results
 We used `r cite_r("my-packages.bib")` for all our analyses.
 
-Our analysis plan was consistent across both experiments. However, some models we used, particularly when conducting our within-subjects modeling we ran into issues of convergence and/or singularity across both experiments. As a result, we conducted a pre-set series of model comparisons detailed below to achieve the most complex model for each experiment that did not have any convergence or singularity issues. We outline the analysis stream for how we conducted our model comparison tests for this in our *supplementary materials*. 
+  Our analysis plan was consistent across both experiments and outlined in a *preregistered project* found here (link to preregistration). Across both experiments, our exclusion criteria for subjects were accuracy rates below a threshold of 80% accurate across the entire experiment and excluding a practice block that occured at the beginning of both experiments. In terms of response times, we identified outlier observations through excluding all trials with reaction times having a z-score greater or lower than 3. Outside of our exclusionary criteria, we note that in some models we used, particularly when conducting our within-subjects modeling, we ran into issues of convergence and/or singularity across both experiments. As a result, we conducted a pre-set series of model comparisons detailed below to achieve the most complex model for each experiment that did not have any convergence or singularity issues. We outline the analysis stream for how we conducted our model comparison tests for this in our *supplementary materials*.
 
 ### Experimental Level Analysis
-
-Analyses of the dependent variables were conducted on the trial level using multilevel modeling. Independent models for response times and error rates were fit according to the valence (univalent, bivalent) of the previous trial group, the valence of the current trial group, and the switch condition. We outline the models we used in the *pre-registration* which can be found (). 
-
+  Analyses of the dependent variables were conducted on the trial level using multilevel modeling. Independent models for response times and error rates were fit according to the valence (univalent, bivalent) of the previous trial group, the valence of the current trial group, and the switch condition. We outline the models we used in the *pre-registration* which can be found (link to preregistration). 
+  
+### Experimental Level Results
 
 
 ### Within-Subjects Level Analysis
+ At the within‑subject level, we assessed whether trial‑by‑trial response time autocorrelations, considered alongside the experimental effects, reveal evidence of a tradeoff in moment‑to‑moment adjustments. We used a residualized pre-switch logged response time as our predictor variable (residualizing out both the general trends and task) for (n-1 bivalent, n-1 univalent), current‑trial valence (n bivalent, n univalent), and switch condition (switch trial, no‑switch trial)
 
-()
+### Within-Subjects Level Results
 
-### Individual Differences Level Analysis
 
-Individuals’ reaction time and error data were aggregated for all crossings of previous‑trial group valence (n-1 bivalent, n-1 univalent), current‑trial valence (n bivalent, n univalent), and switch condition (switch trial, no‑switch trial). Reaction times were averaged across the no‑switch trials within each trial group. Each trial group consisted of three trials for the alternate‑cues experiment and four trials for the alternate‑runs experiment.
+### Inter-individual Differences Level Analysis
+  Individuals’ reaction time and error data were aggregated for all crossings of previous‑trial group valence (n-1 bivalent, n-1 univalent), current‑trial valence (n bivalent, n univalent), and switch condition (switch trial, no‑switch trial). Reaction times were averaged across the no‑switch trials within each trial group. Each trial group consisted of three trials for the alternate‑cues experiment and four trials for the alternate‑runs experiment. Individual differences analyses of the dependent variable were conducted using linear regression modeling. 
 
-Individual differences analyses of the dependent variable were conducted using linear regression modeling. For each participant, drift rate was computed as a function of switch condition and previous and current group‑valence conditions (eight estimates per subject). A stringent test was then performed to determine the presence of a trade‑off pattern by adding predictors sequentially. The first model type predicted drift rate in the least‑demanding switch condition (univalent-univalent) from the least‑demanding non‑switch condition (univalent-univalent). Predictors were subsequently added to this model in three steps (see model outline below).
-
-(model outline figure here)
-
-EZ‑DDM parameters of non‑decision time (Ter) and boundary separation (a) were also computed. If the EZ‑DDM non‑decision time parameter (Ter) was negative in fewer than 20% of cases across all subjects and conditions, the linear regression models were re‑run with data cells in those conditions set as missing. Results obtained from the drift‑rate models were cross‑referenced with two additional models: one using log‑transformed reaction time as the dependent variable and another using error rate as the dependent variable. These models were implemented identically to the steps outlined above.  
-
-# Results
-
-no interpretations here KISS
-
-Alt Cues: lmer & glmer models: higher RTs and more errors when switching into a bivalent task (favoring a tradeoff effect).
-EzDDM: v is slower when switching into bivalent task (consistent with lmer and glmer) 
-
-Alt runs: lmer & glmer models: Alt runs showed support for anti-tradeoff for log RTs and tradeoff for errors. 
-EzDDM: Alt runs ezDDM showed support for anti-tradeoff
+### Inter-individual Differences Level Results
 
 
 # Discussion
 
-There seems to not be one right answer to the stability-flexibility dilemma. Using a particularly stringent test of pre- to post- trial switching through conflict across analytic levels, what we find is a complicated picture of how stability-flexibility acts. Experimental level results suggest that there is no strong evidence for the tradeoff or antitradeoff relationship across both experiments. Experiment 1 is inconsistent across variables, with response time revealing a weak antitradeoff, error a weak tradeoff relationship. Experiment 2 finds a weak tradeoff relationship occurring in error and response time. This suggests ()
-
-Outside of experimental effects, we do not see many studies interested in understanding how stability-flexibility emerges on different levels of analysis. Within-subject dynamics are arguably more important to look at if interested in cognitive processing...
-
-If we are to believe that we can apply general cognitive processes as a behavior that applies to the general population, individual differences should be consistent with within-subjects. We find here that that is not the case. Across both experiments, we see a tradeoff occurring in within-sub dynamics. 
-
+  There seems to not be one right answer to the stability-flexibility dilemma. Using a particularly stringent test of pre- to post- trial switching through conflict across analytic levels, what we find is a complicated picture of how stability-flexibility acts. Experimental level results suggest that there is no strong evidence for the tradeoff or antitradeoff relationship across both experiments. Experiment 1 is inconsistent across variables, with response time revealing a weak antitradeoff, error a weak tradeoff relationship. Experiment 2 finds a weak tradeoff relationship occurring in error and response time. This suggests ()
+  Outside of experimental effects, we do not see many studies interested in understanding how stability-flexibility emerges on different levels of analysis. Within-subject dynamics are arguably more important to look at if interested in cognitive processing...
+  If we are to believe that we can apply general cognitive processes as a behavior that applies to the general population, individual differences should be consistent with within-subjects. We find here that that is not the case. Across both experiments, we see a tradeoff occurring in within-sub dynamics. 
 This is different from the mayrlongterm study mentioned in the review paper that found an anti-tradeoff at the level of within-sub. (posit why?)
-
-Across both experiments, we see an anti-tradeoff relationship occurring on the individual differences level. Co-occurance of stability-flexibility is consistently found across error rate, drift rate and logged RT. Where in general individuals who are better at switch trials will also be better at no-switch trials. Additionally, the switch to no-switch bivalent-bivalent pairing which is the strongest test of switching from stable trial is strongly positive in error rate and drift rate. This means that people who are good at bi-bi switch trials will also be better at bivalent-bivalent no-switch trials. 
+  Across both experiments, we see an anti-tradeoff relationship occurring on the individual differences level. Co-occurance of stability-flexibility is consistently found across error rate, drift rate and logged RT. Where in general individuals who are better at switch trials will also be better at no-switch trials. Additionally, the switch to no-switch bivalent-bivalent pairing which is the strongest test of switching from stable trial is strongly positive in error rate and drift rate. This means that people who are good at bi-bi switch trials will also be better at bivalent-bivalent no-switch trials. 
 
 extra to rework places: 
 Contrary to predictions from the attractor model, there are recent hints suggesting the possibility of an anti-tradeoff pattern, where flexibility and stability appear to co-occur [@mayr_2014_longterm; @morales_2022_age]. In response to these results, Mayr and Graetz have suggested replacing the attractor-landscape perspective with a cognitive map conceptualization (Fig. 1B). Here, different tasks are locations within a task space that can be represented with varying degrees of resolution. The higher the resolution, the more stable tasks are encoded, but also the easier they are to find when switching, resulting in an anti-tradeoff pattern [@mayr_2024_does].
@@ -222,6 +182,13 @@ Contrary to predictions from the attractor model, there are recent hints suggest
 This potential stability-flexibility tradeoff is also relevant in the clinical world, with impaired regulation of cognitive control being implicated in various neurodevelopmental disorders such as attention deficit hyperactivity disorder, cerebral palsy, and autism spectrum disorder [@cepeda_2000_task; @dcruz_2013_reduced; @tajikparvinchi_2021_the]. In these cases, disruptions in cognitive control can manifest as either overly rigid behavior or excessive distractibility, underscoring the importance of understanding the mechanisms that support both maintaining and updating task-relevant representations.
 
 (extra:) Addtionally,the broad capture of stability-flexibility from blockwise approaches loses trial‑level fluctuations that may reveal tradeoffs. For example, one data pattern that is consistent with the tradeoff prediction arises when examining task-switch costs as a function of previous-trial conflict.
+
+Alt Cues: lmer & glmer models: higher RTs and more errors when switching into a bivalent task (favoring a tradeoff effect).
+EzDDM: v is slower when switching into bivalent task (consistent with lmer and glmer) 
+
+Alt runs: lmer & glmer models: Alt runs showed support for anti-tradeoff for log RTs and tradeoff for errors. 
+EzDDM: Alt runs ezDDM showed support for anti-tradeoff
+
 \newpage
 
 # References
@@ -238,5 +205,11 @@ This potential stability-flexibility tradeoff is also relevant in the clinical w
 ## Experimental Effects
 
 These models were run on the data from both experiments. The outcomes of these analyses guided how subsequent analytic layers were approached. We accounted for the possibility of finding evidence for speed–accuracy trade‑offs through observation of opposing effects on reaction times and errors but they did not emerge. Consequently, drift‑diffusion modeling (EZ‑DDM) was applied not as an additional validation of the observed effects and we proceeded with analysis of within-subject dynamics. For the EZ‑DDM analysis, the mean and variance of reaction times and mean error rates were calculated for each subject and for the same contrasts specified above. The resulting parameters were analyzed using linear mixed‑effects models with random intercepts for each subject to confirm the robustness of the experimental‑level findings.
+
+Individual differences analyses of the dependent variable were conducted using linear regression modeling. For each participant, drift rate was computed as a function of switch condition and previous and current group‑valence conditions (eight estimates per subject). A stringent test was then performed to determine the presence of a trade‑off pattern by adding predictors sequentially. The first model type predicted drift rate in the least‑demanding switch condition (univalent-univalent) from the least‑demanding non‑switch condition (univalent-univalent). Predictors were subsequently added to this model in three steps (see model outline below).
+
+(model outline figure here)
+
+EZ‑DDM parameters of non‑decision time (Ter) and boundary separation (a) were also computed. If the EZ‑DDM non‑decision time parameter (Ter) was negative in fewer than 20% of cases across all subjects and conditions, the linear regression models were re‑run with data cells in those conditions set as missing. Results obtained from the drift‑rate models were cross‑referenced with two additional models: one using log‑transformed reaction time as the dependent variable and another using error rate as the dependent variable. These models were implemented identically to the steps outlined above.  
 
 (add in ddm model builds with also explanation across both experiemtns what models were different and why)
