@@ -90,11 +90,11 @@ alt_cue <- alt_cue %>%
 nrow(alt_cue)
 
 #read in indiv differences
-alt_cue_indivdiff <- import("data/AlternateCues_indivdiff.txt") %>%
+alt_cue_cog <- import("data/AlternateCues_indivdiff.txt") %>%
   mutate(ID = as.character(ID))
 
 
-alt_cue <- alt_cue %>% left_join(alt_cue_indivdiff, by = c("id" = "ID"))
+alt_cue <- alt_cue %>% left_join(alt_cue_cog, by = c("id" = "ID"))
 
 ```
 
@@ -329,16 +329,17 @@ make_model_table(alt_cue_rt_log_eff)
 
 ```{r}
 
-
+alt_cue_id <- alt_cue %>%
+  filter(!is.na(g))
 
 alt_cue_rt_log_eff_id_g <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * g+ (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
-                           alt_cue %>% 
+                           alt_cue_id %>% 
                              filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
 
 make_model_table(alt_cue_rt_log_eff_id_g)
 
 alt_cue_rt_log_eff_id_slots <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * Slots + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
-                           alt_cue %>% 
+                           alt_cue_id %>% 
                              filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
 
 
@@ -346,7 +347,7 @@ make_model_table(alt_cue_rt_log_eff_id_slots)
 
 
 alt_cue_rt_log_eff_id_gslots <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * (g + Slots) + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
-                           alt_cue %>% 
+                           alt_cue_id %>% 
                              filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
 
 
@@ -481,6 +482,40 @@ emmeans::emmeans(alt_cue_error_eff, ~is_bivalent_eff * prev_bivalent_eff * switc
   geom_errorbar(aes(ymin = asymp.LCL, max = asymp.UCL), position = pos)+
   scale_x_discrete(limits = c("1", "0"))+
   theme_classic()
+
+```
+
+
+#### Adding individual differences
+
+```{r}
+
+alt_cue_error_eff_id_g <- xfun::cache_rds({
+  
+  glmer(error ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * g + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id),
+        family = "binomial",
+        control = glmerControl(optimizer = "bobyqa"),
+        alt_cue_id)
+}, dir = "dominik/models/", file = "alt_cue_errors_dg_g.RDS", rerun = rerun_all)
+
+
+alt_cue_error_eff_id_slots <- xfun::cache_rds({
+  
+  glmer(error ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * Slots + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id),
+        family = "binomial",
+        control = glmerControl(optimizer = "bobyqa"),
+        alt_cue_id)
+}, dir = "dominik/models/", file = "alt_cue_error_eff_id_slots.RDS", rerun = rerun_all)
+
+alt_cue_error_eff_id_gslots <- xfun::cache_rds({
+  
+  glmer(error ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * (g + Slots) + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id),
+        family = "binomial",
+        control = glmerControl(optimizer = "bobyqa"),
+        alt_cue_id)
+}, dir = "dominik/models/", file = "alt_cue_error_eff_id_gslots.RDS", rerun = rerun_all)
+
+
 
 ```
 
@@ -917,6 +952,28 @@ make_model_table(alt_cue_Ter_eff_final)
 ```
 
 
+
+###### individual differences
+
+v
+
+```{r}
+alt_cue_agg_ID_ddm_nocycle_id <- alt_cue_agg_ID_ddm_nocycle %>%
+  left_join(alt_cue_cog, by = c("id" = "ID")) %>%
+  filter(!is.na(g))
+
+
+alt_cue_v_eff_id <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * g + (prev_bivalent_eff + is_bivalent_eff + switch_contr|id),
+                      control = lmerControl(optimizer = "bobyqa"),
+                      alt_cue_agg_ID_ddm_nocycle_id)
+#summary(alt_cue_v)
+make_model_table(alt_cue_v_eff_id)
+
+
+
+```
+
+
 #### Contrast coded (0, 1)
 
 ##### a
@@ -1225,6 +1282,27 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
 
 ```
 
+#### Adding a lag switch
+
+```{r}
+
+alt_cue <- alt_cue %>%
+  group_by(id, block) %>%
+  mutate(lagSwitch_contr = lag(switch_contr, 1))
+
+alt_cue_rt_log_resrt_eff_w_s_int_lagswitch_switch_is_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + lagSwitch_contr + 
+         (lag1_time_log_res_w_s_int_c + switch_contr + is_bivalent_eff + lagSwitch_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_cue %>% filter(filter_correct == 0)
+  )
+}, dir = "dominik/models/", file = "alt_cue_rt_log_resrt_eff_w_s_int_lagswitch_switch_is_bivalent.RDS", rerun = rerun_all)
+
+summary(alt_cue_rt_log_resrt_eff_w_s_int_is_bivalent_switch)
+summary(alt_cue_rt_log_resrt_eff_w_s_int_lagswitch_switch_is_bivalent)
+anova(alt_cue_rt_log_resrt_eff_w_s_int_lagswitch_switch_is_bivalent, alt_cue_rt_log_resrt_eff_w_s_int_is_bivalent_switch)
+
+```
 
 
 
@@ -1663,7 +1741,9 @@ alt_cue_agg_ID_ddm_nocycle %>%
 
 
 alt_cue_indiv <- alt_cue_indiv %>%
-  mutate(across(!id, ~ as.vector(scale(.x))))
+  mutate(across(!id, ~ as.vector(scale(.x)))) %>%
+  left_join(alt_cue_cog, by = c("id" = "ID")) 
+
 
 ```
 
@@ -1691,48 +1771,45 @@ alt_cue_indiv_diff_models <- list(
             bb2 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv),
             bb3 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv),
             bb4 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv)
+            
   ),
   
   Error = list(uu1 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
                uu2 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
                uu3 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
                uu4 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
-               
                bu1 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
                bu2 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
                bu3 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
                bu4 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
-               
                ub1 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
                ub2 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
                ub3 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
                ub4 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv),
-               
                bb1 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv),
                bb2 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv),
                bb3 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv),
                bb4 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv)
+               
   ),
   
   v = list(uu1 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
            uu2 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
            uu3 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
            uu4 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
-           
            bu1 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
            bu2 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
            bu3 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
            bu4 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
-           
            ub1 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
            ub2 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
            ub3 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
            ub4 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv),
-           
            bb1 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv),
            bb2 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv),
            bb3 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv),
            bb4 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv)
+           
   ),
   
   v_NA = list(uu1 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv),
@@ -1764,6 +1841,8 @@ alt_cue_indiv_diff_models <- list(
 ## RT
 
 ```{r}
+
+
 
 RT_comparisons <- lapply(c("uu", "bu", "ub", "bb"), function(x){
   
@@ -2052,6 +2131,8 @@ compare_models(alt_cue_indiv_diff_models$v, "bb")$comparison
 
 
 
+
+
 ## v NA
 
 ```{r}
@@ -2115,7 +2196,205 @@ ggplot(alt_cue_v_NA_model_summary, aes(x = coefficient, y = estimate, group = mo
 
 ```
 
+
+
+## Individual Differences Models
+
 ```{r}
+
+alt_cue_indiv_rm_g_na <- alt_cue_indiv %>%
+  filter(!is.na(g))
+
+
+
+alt_cue_indiv_rm_g_na_diff_models <- list(
+  RT = list(uu1 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+            uu2 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+            uu3 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+            uu4 = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+            
+            bu1 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+            bu2 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+            bu3 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+            bu4 = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+            
+            ub1 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+            ub2 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+            ub3 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+            ub4 = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+            
+            bb1 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+            bb2 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+            bb3 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+            bb4 = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+            
+            uu1_g_add = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            uu2_g_add = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            uu3_g_add = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            uu4_g_add = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            bu1_g_add = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            bu2_g_add = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            bu3_g_add = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            bu4_g_add = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            ub1_g_add = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            ub2_g_add = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            ub3_g_add = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            ub4_g_add = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            bb1_g_add = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            bb2_g_add = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            bb3_g_add = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+            bb4_g_add = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+            
+            uu1_g_int = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            uu2_g_int = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            uu3_g_int = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            uu4_g_int = lm(RT_log_s1_cbiv0_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            bu1_g_int = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            bu2_g_int = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            bu3_g_int = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            bu4_g_int = lm(RT_log_s1_cbiv1_lbiv0 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            ub1_g_int = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            ub2_g_int = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            ub3_g_int = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            ub4_g_int = lm(RT_log_s1_cbiv0_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            bb1_g_int = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            bb2_g_int = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+            bb3_g_int = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+            bb4_g_int = lm(RT_log_s1_cbiv1_lbiv1 ~ RT_log_s0_cbiv0_lbiv0 + RT_log_s0_cbiv0_lbiv1 + RT_log_s0_cbiv1_lbiv0 + RT_log_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na)
+  ),
+  
+  Error = list(uu1 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+               uu2 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+               uu3 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+               uu4 = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+               bu1 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+               bu2 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+               bu3 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+               bu4 = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+               ub1 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+               ub2 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+               ub3 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+               ub4 = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+               bb1 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+               bb2 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+               bb3 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+               bb4 = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+               
+               uu1_g_add = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               uu2_g_add = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               uu3_g_add = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               uu4_g_add = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               bu1_g_add = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               bu2_g_add = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               bu3_g_add = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               bu4_g_add = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               ub1_g_add = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               ub2_g_add = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               ub3_g_add = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               ub4_g_add = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               bb1_g_add = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               bb2_g_add = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               bb3_g_add = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+               bb4_g_add = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+               
+               uu1_g_int = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               uu2_g_int = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               uu3_g_int = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               uu4_g_int = lm(Error_s1_cbiv0_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               bu1_g_int = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               bu2_g_int = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               bu3_g_int = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               bu4_g_int = lm(Error_s1_cbiv1_lbiv0 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               ub1_g_int = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               ub2_g_int = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               ub3_g_int = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               ub4_g_int = lm(Error_s1_cbiv0_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               bb1_g_int = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               bb2_g_int = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+               bb3_g_int = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+               bb4_g_int = lm(Error_s1_cbiv1_lbiv1 ~ Error_s0_cbiv0_lbiv0 + Error_s0_cbiv0_lbiv1 + Error_s0_cbiv1_lbiv0 + Error_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na)
+  ),
+  
+  v = list(uu1 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+           uu2 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+           uu3 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+           uu4 = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+           bu1 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+           bu2 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+           bu3 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+           bu4 = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+           ub1 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+           ub2 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+           ub3 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+           ub4 = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+           bb1 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0, alt_cue_indiv_rm_g_na),
+           bb2 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1, alt_cue_indiv_rm_g_na),
+           bb3 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0, alt_cue_indiv_rm_g_na),
+           bb4 = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1, alt_cue_indiv_rm_g_na),
+           
+           uu1_g_add = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           uu2_g_add = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           uu3_g_add = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           uu4_g_add = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           bu1_g_add = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           bu2_g_add = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           bu3_g_add = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           bu4_g_add = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           ub1_g_add = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           ub2_g_add = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           ub3_g_add = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           ub4_g_add = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           bb1_g_add = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           bb2_g_add = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           bb3_g_add = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + g, alt_cue_indiv_rm_g_na),
+           bb4_g_add = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 + g, alt_cue_indiv_rm_g_na),
+           
+           uu1_g_int = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           uu2_g_int = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           uu3_g_int = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           uu4_g_int = lm(v_s1_cbiv0_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           bu1_g_int = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           bu2_g_int = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           bu3_g_int = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           bu4_g_int = lm(v_s1_cbiv1_lbiv0 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           ub1_g_int = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           ub2_g_int = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           ub3_g_int = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           ub4_g_int = lm(v_s1_cbiv0_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           bb1_g_int = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           bb2_g_int = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 * g, alt_cue_indiv_rm_g_na),
+           bb3_g_int = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 * g, alt_cue_indiv_rm_g_na),
+           bb4_g_int = lm(v_s1_cbiv1_lbiv1 ~ v_s0_cbiv0_lbiv0 + v_s0_cbiv0_lbiv1 + v_s0_cbiv1_lbiv0 + v_s0_cbiv1_lbiv1 * g, alt_cue_indiv_rm_g_na)
+  ),
+  
+  v_NA = list(uu1 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              uu2 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              uu3 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              uu4 = lm(v_s1_cbiv0_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              
+              bu1 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              bu2 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              bu3 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              bu4 = lm(v_s1_cbiv1_lbiv0_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              
+              ub1 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              ub2 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              ub3 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              ub4 = lm(v_s1_cbiv0_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              
+              bb1 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              bb2 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA, alt_cue_indiv_rm_g_na),
+              bb3 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA, alt_cue_indiv_rm_g_na),
+              bb4 = lm(v_s1_cbiv1_lbiv1_NA ~ v_s0_cbiv0_lbiv0_NA + v_s0_cbiv0_lbiv1_NA + v_s0_cbiv1_lbiv0_NA + v_s0_cbiv1_lbiv1_NA, alt_cue_indiv_rm_g_na)
+  )
+)
+
+
+alt_cue_indiv_rm_g_na_diff_models$Error$bb4 %>% summary()
+alt_cue_indiv_rm_g_na_diff_models$Error$bb4_g_add %>% summary()
+alt_cue_indiv_rm_g_na_diff_models$Error$bb4_g_int %>% summary()
+
+
 
 ```
 
