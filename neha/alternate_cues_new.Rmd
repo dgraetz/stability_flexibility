@@ -2992,8 +2992,8 @@ log_rt_plot_df
 logrt_explevel_plot <- ggplot(log_rt_plot_df,
     aes(x        = switch,
         y        = RT_m,
-        color    = valence_current_group,
-        linetype = valence_previous_group,
+        color    = valence_previous_group,
+        linetype = valence_current_group,
         group    = interaction(valence_previous_group,
                                valence_current_group))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
@@ -3004,14 +3004,14 @@ logrt_explevel_plot <- ggplot(log_rt_plot_df,
                 position  = pos, 
                 linetype = "solid") +
   scale_linetype_manual(
-    name   = "Previous Group",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
+    name   = "Current Group",
+    values = c("Univalent" = design$curr_val$linetype$uni,
+               "Bivalent"  = design$curr_val$linetype$bi)
   ) +
   scale_color_manual(
-    name   = "Current Group",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
+    name   = "Previous Group",
+    values = c("Univalent" = design$prev_val$color$uni,
+               "Bivalent"  = design$prev_val$color$bi)
   ) +
   labs(
     x = NULL,
@@ -3089,8 +3089,8 @@ err_plot_df <- d_analysis %>%
 error_explevel_plot <- ggplot(err_plot_df,
     aes(x        = switch,
         y        = Error_m,
-        color    = valence_current_group,
-        linetype = valence_previous_group,
+        color    = valence_previous_group,
+        linetype = valence_current_group,
         group    = interaction(valence_previous_group,
                                valence_current_group))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
@@ -3101,14 +3101,14 @@ error_explevel_plot <- ggplot(err_plot_df,
                 position  = pos, 
                 linetype = "solid") +
   scale_linetype_manual(
-    name   = "Previous Group Valence",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
+    name   = "Current Group Valence",
+    values = c("Univalent" = design$curr_val$linetype$uni,
+               "Bivalent"  = design$curr_val$linetype$bi)
   ) +
   scale_color_manual(
-    name   = "Current Group Valence",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
+    name   = "Previous Group Valence",
+    values = c("Univalent" = design$prev_val$color$uni,
+               "Bivalent"  = design$prev_val$color$bi)
   ) +
   labs(
     x = NULL,
@@ -3222,14 +3222,14 @@ alt_cue_agg_ddm_nocycle <- alt_cue_agg_ddm_nocycle %>%
 # shared scale calls to avoid repetition
 ddm_scales <- list(
   scale_color_manual(
-    name   = "Current Group",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
+    name   = "Previous Group",
+    values = c("Univalent" = design$prev_val$color$uni,
+               "Bivalent"  = design$prev_val$color$bi)
   ),
   scale_linetype_manual(
-    name   = "Previous Group",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
+    name   = "Current Group",
+    values = c("Univalent" = design$curr_val$linetype$uni,
+               "Bivalent"  = design$curr_val$linetype$bi)
   )
 )
 
@@ -3273,8 +3273,8 @@ pos <- position_dodge(0.3)
 
 plt_ddm_a_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = a_m,
-        color    = val_c_g,
-        linetype = val_p_g,
+        color    = val_p_g,
+        linetype = val_c_g,
         group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper),
@@ -3287,8 +3287,8 @@ scale_x_discrete(limits = c("Switch", "Repeat"))+
 
 plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = v_m,
-        color    = val_c_g,
-        linetype = val_p_g,
+        color    = val_p_g,
+        linetype = val_c_g,
         group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper),
@@ -3301,8 +3301,8 @@ plt_ddm_v_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
 
 plt_ddm_Ter_nocycle <- ggplot(alt_cue_agg_ddm_nocycle,
     aes(x = switch, y = Ter_m,
-        color    = val_c_g,
-        linetype = val_p_g,
+        color    = val_p_g,
+        linetype = val_c_g,
         group    = interaction(val_p_g, val_c_g))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper),
@@ -3378,8 +3378,8 @@ pos <- position_dodge(0.3)
 logrt_pred_switch <- ggplot(preds_switch,
     aes(x        = switch_factor,
         y        = emmean,
-        color    = is_bivalent,
-        linetype = prev_bivalent,
+        color    = prev_bivalent,
+        linetype = is_bivalent,
         group    = interaction(prev_bivalent, is_bivalent))) +
   geom_line(linewidth = design$lines$linewidth, position = pos) +
   #geom_point(size = 3, position = pos) +
@@ -3391,14 +3391,14 @@ logrt_pred_switch <- ggplot(preds_switch,
                                                    "Fast" = "Lag RT Fast"))) +
  
   scale_linetype_manual(
-    name   = "Previous Group Valence",
-    values = c("Univalent" = design$prev_val$linetype$uni,
-               "Bivalent"  = design$prev_val$linetype$bi)
+    name   = "Current Group Valence",
+    values = c("Univalent" = design$curr_val$linetype$uni,
+               "Bivalent"  = design$curr_val$linetype$bi)
   ) +
    scale_color_manual(
-    name   = "Current Group Valnece",
-    values = c("Univalent" = design$curr_val$color$uni,
-               "Bivalent"  = design$curr_val$color$bi)
+    name   = "previous Group Valnece",
+    values = c("Univalent" = design$prev_val$color$uni,
+               "Bivalent"  = design$prev_val$color$bi)
   ) +
   labs(
   #  title = "Model predictions for log RTs",
@@ -4209,5 +4209,21 @@ m_error_effect_both <- glmer(error ~  val_c_g * val_p_g * switch * (g+ Slots) + 
 summary(m_error_effect_both )
 
 tab_model(m_error_effect_both ,show.est=T,auto.label=F,show.stat=T)
+```
+
+```{r}
+write.csv(d_merged , "d_merged.csv")
+```
+
+```{r}
+
+cor(tests_clean$CF, tests_clean$Raven, method = "pearson", use = "complete.obs") # 0.5571452
+cor(tests_clean$CF, tests_clean$Slots,method = "pearson", use = "complete.obs" ) #0.274218
+cor(tests_clean$Raven, tests_clean$Slots,method = "pearson", use = "complete.obs" ) # 0.3794154
+
+names(tests_clean)
+
+class(tests_clean$Raven)
+class(tests_clean$CF)
 ```
 
