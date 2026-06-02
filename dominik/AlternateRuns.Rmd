@@ -106,6 +106,9 @@ alt_run_indivdiff <- alt_run_indivdiff %>%
   mutate(cog_score = (CFIT_c + RAVEN_c)/2)
 
 alt_run <- alt_run %>% left_join(alt_run_indivdiff, by = c("id" = "Number"))
+
+saveRDS(alt_run, "dominik/file_outputs/alt_run_cleaned.RDS")
+
 ```
 
 

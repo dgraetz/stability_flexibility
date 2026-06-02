@@ -96,6 +96,8 @@ alt_cue_cog <- import("data/AlternateCues_indivdiff.txt") %>%
 
 alt_cue <- alt_cue %>% left_join(alt_cue_cog, by = c("id" = "ID"))
 
+saveRDS(alt_cue, "dominik/file_outputs/alt_cue_cleaned.RDS")
+
 ```
 
 # Contrast coding
@@ -195,6 +197,8 @@ alt_cue %>%
   theme_classic() +
   labs(x = "Subject ID",
        y = "Residual log(RT), *with* subject intecepts")
+
+
 
 ```
 
