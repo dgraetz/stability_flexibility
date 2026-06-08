@@ -10,9 +10,12 @@ design$curr_val$linetype$uni <- "41" #dashed
 design$prev_val$linetype$bi <- "solid"
 design$prev_val$linetype$uni <- "41" #dashed
 
+
+
+
 design$lines$linewidth <- 1.1
 
-design$errorbar$width <- 0
+design$errorbar$width <- 0.3
 design$errorbar$linewidth <- 0.8
 
 apa_theming <- function(base_size = 10,

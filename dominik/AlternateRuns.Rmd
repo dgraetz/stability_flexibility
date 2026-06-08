@@ -98,7 +98,16 @@ nrow(alt_run)
 
 
 #read in indiv differences
-alt_run_indivdiff <- import("data/AlternateRuns_indivdiff.txt")
+alt_run_indivdiff <- import("data/AlternateRuns_indivdiff.xls")
+
+alt_run_indivdiff <- alt_run_indivdiff %>%
+  mutate(across(c(CFIT, RAVEN), ~as.vector(scale(.x)), .names = "{col}_c")) %>%
+  rowwise() %>%
+  mutate(cog_score = (CFIT_c + RAVEN_c)/2)
+
+alt_run <- alt_run %>% left_join(alt_run_indivdiff, by = c("id" = "Number"))
+
+saveRDS(alt_run, "dominik/file_outputs/alt_run_cleaned.RDS")
 
 ```
 
@@ -312,23 +321,23 @@ ggpubr::ggarrange(plt_error_cycle, plt_error_switch)
 
 ```{r}
 
-plt_RT_log <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = RT_log_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+plt_RT_log <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = RT_log_m, color = prev_bivalent_contr, linetype = is_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = RT_log_ci_lower, ymax = RT_log_ci_upper), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_linetype_manual(name = "Previous Valence",
+  scale_linetype_manual(name = "Current Valence",
                        labels = c("0" = "Univalent",
                                   "1" = "Bivalent"),
                        values = c("0" = design$curr_val$linetype$uni,
                                  "1" = design$curr_val$linetype$bi))+
-  scale_color_manual(name = "Current Valence",
+  scale_color_manual(name = "Previous Valence",
                        labels = c("0" = "Univalent",
                                   "1" = "Bivalent"),
-                       values = c("0" = design$curr_val$color$uni,
-                                 "1" = design$curr_val$color$bi))+
+                       values = c("0" = design$prev_val$color$uni,
+                                 "1" = design$prev_val$color$bi))+
   scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   labs(x = "", y = "log(RT)")+
   guides(
@@ -340,23 +349,23 @@ plt_RT_log
 ggsave(plot = plt_RT_log, "figures/AR_RTlog.svg", width = 5, height = 5, units = "in")
 saveRDS(plt_RT_log, "figures/AR_RTlog.RDS")
 
-plt_Error <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = Error_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
+plt_Error <- ggplot(alt_run_contr_agg, aes(x = switch_contr, y = Error_m, color = prev_bivalent_contr, linetype = is_bivalent_contr, group = interaction(is_bivalent_contr, prev_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = Error_ci_lower, ymax = Error_ci_upper), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
-                       labels = c("0" = "Univalent",
-                                  "1" = "Bivalent"),
-                       values = c("0" = design$curr_val$color$uni,
-                                 "1" = design$curr_val$color$bi))+
-  scale_linetype_manual(name = "Previous Valence",
+  scale_linetype_manual(name = "Current Valence",
                        labels = c("0" = "Univalent",
                                   "1" = "Bivalent"),
                        values = c("0" = design$curr_val$linetype$uni,
                                  "1" = design$curr_val$linetype$bi))+
+  scale_color_manual(name = "Previous Valence",
+                       labels = c("0" = "Univalent",
+                                  "1" = "Bivalent"),
+                       values = c("0" = design$prev_val$color$uni,
+                                 "1" = design$prev_val$color$bi))+
   scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   labs(x = "", y = "Errors")
 plt_Error
@@ -382,6 +391,23 @@ alt_run_rt_log_eff <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * swit
 make_model_table(alt_run_rt_log_eff)
 
 ```
+
+#### Adding individual differences
+
+```{r}
+
+alt_run_id <- alt_run %>%
+  filter(!is.na(cog_score))
+
+alt_run_rt_log_eff_id_cog <- lmer(time_log ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * cog_score + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id), 
+                           alt_run_id %>% 
+                             filter(filter_correct == 0), control = lmerControl(optimizer = "bobyqa"))
+
+make_model_table(alt_run_rt_log_eff_id_cog)
+
+```
+
+
 
 
 ### Contrast coded (0, 1)
@@ -443,6 +469,23 @@ emmeans::emmeans(alt_run_error_eff, ~is_bivalent_eff * prev_bivalent_eff * switc
 
 ```
 
+#### Adding individual differences
+
+```{r}
+
+alt_run_error_eff_cogscore <- xfun::cache_rds({
+  
+  glmer(error ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * cog_score + (is_bivalent_eff + prev_bivalent_eff + switch_contr|id),
+        family = "binomial",
+        control = glmerControl(optimizer = "bobyqa"),
+        alt_run)
+}, dir = "dominik/models/", file = "alt_run_error_eff_cogscore.RDS", rerun = rerun_all)
+
+make_model_table(alt_run_error_eff_cogscore)
+
+
+
+```
 
 
 ### Contrast coded (0, 1)
@@ -599,23 +642,23 @@ ggpubr::ggarrange(plt_ddm_a, plt_ddm_a_nocycle,
 
 ```{r}
 pos = position_dodge(0.3)
-plt_ddm_a_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = a_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+plt_ddm_a_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = a_m, color =  prev_bivalent_contr, linetype =is_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = a_ci_lower, ymax = a_ci_upper), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
+  scale_color_manual(name = "Previous Valence",
                      labels = c("0" = "Univalent",
                                 "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
-  scale_linetype_manual(name = "Previous Valence",
+  scale_linetype_manual(name = "Current Valence",
                         labels = c("0" = "Univalent",
                                    "1" = "Bivalent"),
-                        values = c("0" = design$curr_val$linetype$uni,
-                                   "1" = design$curr_val$linetype$bi))+
+                        values = c("0" = design$prev_val$linetype$uni,
+                                   "1" = design$prev_val$linetype$bi))+
   scale_x_discrete(limits = c("1", "0"), labels = c("1" = "Switch", "0" = "Repeat"))+
   labs(x = "",
        y = "Boundary Separation\na") +
@@ -628,19 +671,19 @@ plt_ddm_a_nocycle
 
 
 
-plt_ddm_v_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = v_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+plt_ddm_v_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = v_m, color = prev_bivalent_contr, linetype = is_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = v_ci_lower, ymax = v_ci_upper), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
+  scale_color_manual(name = "Previous Valence",
                      labels = c("0" = "Univalent",
                                 "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
-  scale_linetype_manual(name = "Previous Valence",
+  scale_linetype_manual(name = "Current Valence",
                         labels = c("0" = "Univalent",
                                    "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
@@ -655,19 +698,19 @@ plt_ddm_v_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = v
 plt_ddm_v_nocycle
 
 
-plt_ddm_Ter_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = Ter_m, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+plt_ddm_Ter_nocycle <- ggplot(alt_run_agg_ddm_nocycle, aes(x = switch_contr, y = Ter_m, color = prev_bivalent_contr, linetype = is_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = Ter_ci_lower, ymax = Ter_ci_upper), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
+  scale_color_manual(name = "Previous Valence",
                      labels = c("0" = "Univalent",
                                 "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
-  scale_linetype_manual(name = "Previous Valence",
+  scale_linetype_manual(name = "Current Valence",
                         labels = c("0" = "Univalent",
                                    "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
@@ -904,6 +947,30 @@ make_model_table(alt_run_Ter_eff_baseline)
 ```
 
 
+
+###### individual differences
+
+v
+
+```{r}
+alt_run_agg_ID_ddm_nocycle_id <- alt_run_agg_ID_ddm_nocycle %>%
+  left_join(alt_run_indivdiff, by = c("id" = "Number")) %>%
+  filter(!is.na(cog_score))
+
+
+alt_run_v_eff_id <- lmer(v ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * cog_score + (prev_bivalent_eff + is_bivalent_eff + switch_contr|id),
+                      control = lmerControl(optimizer = "bobyqa"),
+                      alt_run_agg_ID_ddm_nocycle_id)
+#summary(alt_run_v)
+make_model_table(alt_run_v_eff_id)
+
+
+
+```
+
+
+
+
 #### Contrast coded (0, 1)
 
 ##### a
@@ -1104,7 +1171,7 @@ This model is singular.
 alt_run <- alt_run %>%
   ungroup() %>%
   mutate(time_log_res_w_s_int_c = time_log_res_w_s_int - mean(time_log_res_w_s_int, na.rm = TRUE),
-         lag1_time_log_res_w_s_int_c = lag1_time_log_res_w_s_int - mean(lag1_time_log_res_w_s_int, na.rm = TRUE))
+         lag1_time_log_res_w_s_int_c = lag1_time_log_res_w_s_int - mean(lag1_time_log_res_w_s_int, na.rm = TRUE)) 
 
 alt_run_rt_log_resrt_eff_w_s_int <- xfun::cache_rds({
   lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + (is_bivalent_eff + switch_contr + prev_bivalent_eff + lag1_time_log_res_w_s_int_c | id), 
@@ -1214,6 +1281,28 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_eff, linetyp
   theme_classic()+
   theme(legend.position = "bottom")
 
+```
+
+
+#### Adding a lag switch
+
+```{r}
+
+alt_run <- alt_run %>%
+  group_by(id, block) %>%
+  mutate(lagSwitch_contr = lag(switch_contr, 1))
+
+alt_run_rt_log_resrt_eff_w_s_int_lagswitch_switch_prev_bivalent <- xfun::cache_rds({
+  lmer(time_log_res_w_s_int_c ~ is_bivalent_eff * prev_bivalent_eff * switch_contr * lag1_time_log_res_w_s_int_c + lagSwitch_contr + 
+         (lag1_time_log_res_w_s_int_c + switch_contr + prev_bivalent_eff + lagSwitch_contr| id), 
+       control = lmerControl(optimizer = "bobyqa"),
+       alt_run %>% filter(filter_correct == 0)
+  )
+}, dir = "dominik/models/", file = "alt_run_rt_log_resrt_eff_w_s_int_lagswitch_switch_prev_bivalent.RDS", rerun = rerun_all)
+
+summary(alt_run_rt_log_resrt_eff_w_s_int_switch_prev_bivalent)
+summary(alt_run_rt_log_resrt_eff_w_s_int_lagswitch_switch_prev_bivalent)
+anova(alt_run_rt_log_resrt_eff_w_s_int_switch_prev_bivalent, alt_run_rt_log_resrt_eff_w_s_int_lagswitch_switch_prev_bivalent)
 ```
 
 
@@ -1461,19 +1550,19 @@ ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linet
 ```{r}
  
 
-plt_RTlog <- ggplot(preds, aes(x = switch_contr, y = emmean, color = is_bivalent_contr, linetype = prev_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
+plt_RTlog <- ggplot(preds, aes(x = switch_contr, y = emmean, color = prev_bivalent_contr, linetype = is_bivalent_contr, group = interaction(prev_bivalent_contr, is_bivalent_contr)))+
   geom_line(position = pos, linewidth = design$lines$linewidth)+
   geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL), 
                 width = design$errorbar$width, 
                 position = pos, 
                 linewidth = design$errorbar$linewidth,
                 linetype = "solid")+
-  scale_color_manual(name = "Current Valence",
+  scale_color_manual(name = "Previous Valence",
                      labels = c("0" = "Univalent",
                                 "1" = "Bivalent"),
                      values = c("0" = design$curr_val$color$uni,
                                 "1" = design$curr_val$color$bi))+
-  scale_linetype_manual(name = "Previous Valence",
+  scale_linetype_manual(name = "Current Valence",
                         labels = c("0" = "Univalent",
                                    "1" = "Bivalent"),
                         values = c("0" = design$curr_val$linetype$uni,
