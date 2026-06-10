@@ -17,6 +17,26 @@ get_ci <- function(var, mean){
   return(c(mean + ci, mean - ci, sd, se, n))
 }
 
+
+get_ci2 <- function(var){
+  mean <- mean(var, na.rm = TRUE)
+  sd <- sd(var, na.rm = TRUE)
+  n <- length(var[!is.na(var)])
+  se <- sd/sqrt(n)
+  ci <- abs(qt(0.025, n-1, lower.tail = FALSE))*se
+  df <- data.frame(M = mean,
+                   CI_lower = mean - ci,
+                   CI_upper = mean + ci,
+                   SD = sd, 
+                   SE = se, 
+                   N = n)
+  
+  var_name <- deparse(substitute(var))
+  colnames(df) <- paste0(var_name, "_", colnames(df))
+  return(df)
+}
+
+
 convert_extremes <- function(value){
   
   if(value == 1){
