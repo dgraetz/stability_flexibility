@@ -10,11 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-install.packages("hausekeep")
 library(lmerTest)
 library(tidyverse)
 library(lavaan)
-#library(hausekeep)
+library(hausekeep)
 library(semPlot)
 library(tidySEM)
 library(ggcorrplot)
@@ -22,8 +21,8 @@ library(ggcorrplot)
 
 
 ```{r}
-alt_cue <- readRDS("/Users/mayr/University of Oregon Dropbox/Ulrich Mayr/SEMUlrich/dominik/file_outputs/alt_cue_cleaned.RDS") 
-alt_run <- readRDS("/Users/mayr/University of Oregon Dropbox/Ulrich Mayr/SEMUlrich/dominik/file_outputs/alt_run_cleaned.RDS")
+alt_cue <- readRDS("dominik/file_outputs/alt_cue_cleaned.RDS") 
+alt_run <- readRDS("dominik/file_outputs/alt_run_cleaned.RDS")
 
 alt_cue <- alt_cue %>%
   mutate(id = paste0("AC_", id),
@@ -58,7 +57,7 @@ alt_cue <- alt_cue %>%
 # Calculating Stats and ddm parameters
 
 ```{r}
-source("/Users/mayr/University of Oregon Dropbox/Ulrich Mayr/SEMUlrich/dominik/functions.R")
+source("dominik/functions.R")
 alt_run_ddm <- alt_run %>%
   mutate(RT_s = time/1000) %>%
   group_by(id, is_bivalent_contr, prev_bivalent_contr, switch_contr, sem_group) %>%
