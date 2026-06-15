@@ -236,7 +236,9 @@ contrasts(alt_run$cycle_helmert)
 
 #view(alt_run)
 ```
-IQ test 
+
+IQ test
+
 ```{r}
 length(unique(iqTest$id)) #n=100
 
@@ -273,7 +275,6 @@ view(alt_run)
 
 
 ```
-
 
 Aggregation experimental level analysis
 
@@ -796,6 +797,7 @@ tab_model(model_a_int, show.est = T, auto.label = F, show.stat = T, df.method = 
 ```
 
 for one variable
+
 ```{r}
 #this creates singularity issues so running model with only 1 random intercept included and then running anova to compare them together
 
@@ -820,6 +822,7 @@ anova(model_a_int, a_switch) # sig
 ```
 
 for two values all singular
+
 ```{r}
  a_val_lval<-  lmer(a ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
@@ -865,6 +868,7 @@ tab_model(model_v_c, show.est = T, auto.label = F, show.stat = T, df.method = 's
 ```
 
 for one value
+
 ```{r}
 model_v_int<-  lmer(v ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
@@ -888,7 +892,9 @@ summary(v_switch)
 
 anova(model_v_int, v_switch) #sig
 ```
+
 two random effect
+
 ```{r}
  v_val_lval<-  lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
@@ -912,8 +918,8 @@ AIC(v_lval_switch, v_switch_val)
 BIC(v_lval_switch, v_switch_val)
 ```
 
-
 final model with val and switch random int
+
 ```{r}
 model_final_v <- xfun::cache_rds({
   lmer(v ~ valence_contr * lvalence_contr *switch + (valence_contr+switch | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
@@ -942,6 +948,7 @@ tab_model(model_Ter_c, show.est = T, auto.label = F, show.stat = T, df.method = 
 ```
 
 for one value
+
 ```{r}
 model_Ter_int <-
   lmer(Ter ~ valence_contr * lvalence_contr *switch + (1 | id), control = lmerControl(optimizer = "bobyqa"),data = alt_run_agg_ID_ddm_collapsed)
@@ -966,7 +973,9 @@ summary(ter_switch)
 
 #anova(model_Ter_int, ter_switch) #sig
 ```
+
 for two values
+
 ```{r}
  ter_val_lval<-  lmer(Ter ~ valence_contr * lvalence_contr *switch + (valence_contr+lvalence_contr | id), control = lmerControl(optimizer = "bobyqa"), data = alt_run_agg_ID_ddm_collapsed)
  
@@ -1132,7 +1141,9 @@ summary(autocor_model_switch)
 
 anova(autocor_model_lrt, autocor_model_switch) #sig and converges
 ```
-two values 
+
+two values
+
 ```{r}
 autocor_model_val_lval <- 
   
@@ -1152,7 +1163,6 @@ summary(autocor_model_switch_val) #singular
 anova(autocor_model_lrt, autocor_model_switch_val) #sig
 ```
 
-
 ```{r}
 #final model, converges and is not singular anova sig
 
@@ -1167,7 +1177,6 @@ print(autocor_model_switch_lval, correlation = TRUE)
 tab_model(autocor_model_switch_lval, show.est = T, auto.label = F, show.stat = T, df.method = 'satterthwaite')
 
 ```
-
 
 no valence contrast with switch
 

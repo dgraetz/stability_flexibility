@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  7 JUN 2026 18:19
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.4.20)  15 JUN 2026 15:43
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -879,30 +879,24 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
 [5] [6] [7] [8]
-<figures/experimental.jpg, id=64, 565.36218pt x 283.0575pt>
+<figures/experimental.jpg, id=62, 565.36218pt x 283.0575pt>
 File: figures/experimental.jpg Graphic file (type jpg)
 <use figures/experimental.jpg>
-Package pdftex.def Info: figures/experimental.jpg  used on input line 318.
-(pdftex.def)             Requested size: 375.80544pt x 188.15744pt.
+Package pdftex.def Info: figures/experimental.jpg  used on input line 304.
+(pdftex.def)             Requested size: 399.29463pt x 199.91835pt.
 [9 <./figures/experimental.jpg>]
-<figures/within.jpg, id=73, 565.36218pt x 278.54062pt>
+<figures/within.jpg, id=70, 565.36218pt x 278.54062pt>
 File: figures/within.jpg Graphic file (type jpg)
 <use figures/within.jpg>
-Package pdftex.def Info: figures/within.jpg  used on input line 333.
-(pdftex.def)             Requested size: 375.80544pt x 185.15492pt.
-[10 <./figures/within.jpg>]
-<figures/Slide2.jpg, id=82, 614.295pt x 794.97pt>
+Package pdftex.def Info: figures/within.jpg  used on input line 323.
+(pdftex.def)             Requested size: 399.29463pt x 196.72816pt.
+[10]
+<figures/Slide2.jpg, id=77, 614.295pt x 794.97pt>
 File: figures/Slide2.jpg Graphic file (type jpg)
 <use figures/Slide2.jpg>
-Package pdftex.def Info: figures/Slide2.jpg  used on input line 350.
+Package pdftex.def Info: figures/Slide2.jpg  used on input line 341.
 (pdftex.def)             Requested size: 375.80544pt x 486.3381pt.
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
-[11 <./figures/Slide2.jpg>] [12] [13] [14]
+[11 <./figures/within.jpg>] [12 <./figures/Slide2.jpg>] [13] [14]
 Underfull \vbox (badness 1028) has occurred while \output is active []
 
 
@@ -916,11 +910,11 @@ L3 programming layer <2020/03/25>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 18915 strings out of 467871
- 311556 string characters out of 5417408
- 783784 words of memory out of 5000000
- 47298 multiletter control sequences out of 15000+600000
- 681048 words of font info for 135 fonts, out of 8000000 for 9000
+ 18911 strings out of 467871
+ 311516 string characters out of 5417408
+ 783901 words of memory out of 5000000
+ 47297 multiletter control sequences out of 15000+600000
+ 680951 words of font info for 134 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  83i,11n,93p,2254b,638s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.
@@ -930,9 +924,9 @@ r12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mr8.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/l
 mri12.pfb><C:/Users/forrest/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm
 /lmss8.pfb>
-Output written on APAManuscript.pdf (18 pages, 529241 bytes).
+Output written on APAManuscript.pdf (18 pages, 525625 bytes).
 PDF statistics:
- 247 PDF objects out of 1000 (max. 8388607)
- 66 named destinations out of 1000 (max. 500000)
+ 246 PDF objects out of 1000 (max. 8388607)
+ 65 named destinations out of 1000 (max. 500000)
  26797 words of extra memory for PDF output out of 29859 (max. 10000000)
 
